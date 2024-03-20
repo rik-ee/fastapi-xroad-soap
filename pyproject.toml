@@ -1,0 +1,94 @@
+[tool.poetry]
+name = "fastapi-xroad-soap"
+version = "0.1.0"
+description = "FastAPI Extension for X-Road SOAP"
+authors = ["Zero Reports Team <zero.dev@rik.ee>"]
+license = "EUPL-1.2"
+readme = "README.md"
+keywords = ["fastapi", "xroad", "soap"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Framework :: Pydantic :: 2",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+packages = [
+    { include = "*", from = "src", to = "fastapi_xroad_soap" }
+]
+
+[tool.poetry.urls]
+"Repository" = "https://github.com/rik-ee/fastapi-xroad-soap"
+"Documentation" = "https://github.com/rik-ee/fastapi-xroad-soap/wiki"
+"Bug Tracker" = "https://github.com/rik-ee/fastapi-xroad-soap/issues"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "^2.6.4"
+pydantic-xml = "^2.9.0"
+fastapi = "^0.110.0"
+lxml = "^5.1.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.4.4"
+pyright = "^1.1.355"
+pytest = "^8.1.1"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.23.6"
+pytest-pyright = "^0.0.6"
+devtools-cli = "^0.13.1"
+types-lxml = "^2024.2.9"
+httpx = "^0.27.0"
+black = "^24.3.0"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+console_output_style = "count"
+filterwarnings = ["ignore::DeprecationWarning"]
+pythonpath = [".", "src"]
+testpaths = ["tests"]
+addopts = [
+    "--cov=src",
+    "--cov-report=html",
+    "--no-cov-on-fail",
+    "--import-mode=append"
+]
+
+[tool.coverage.run]
+source = ["src/*"]
+branch = true
+
+[tool.coverage.report]
+skip_empty = true
+ignore_errors = true
+exclude_lines = [
+    "@abstractmethod",
+    "pragma: no cover",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "def __repr__"
+]
+
+[tool.coverage.html]
+directory = ".htmlcov"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
