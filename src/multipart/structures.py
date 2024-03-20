@@ -49,18 +49,3 @@ class CaseInsensitiveDict(MutableMapping):
 
     def __repr__(self):
         return str(dict(self.items()))
-
-
-class LookupDict(dict):
-    def __init__(self, name=None):
-        self.name = name
-        super().__init__()
-
-    def __repr__(self):
-        return f"<lookup '{self.name}'>"
-
-    def __getitem__(self, key):
-        return self.__dict__.get(key, None)
-
-    def get(self, key, default=None):
-        return self.__dict__.get(key, default)
