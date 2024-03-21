@@ -53,8 +53,8 @@ class WSDLOutputBinding(BaseXmlModel, tag="output", ns="wsdl", nsmap=NSMAP):
 		SOAPHeader(part="client"),
 		SOAPHeader(part="service"),
 		SOAPHeader(part="id"),
-		SOAPHeader(part="protocolVersion"),
-		SOAPHeader(part="userId")
+		SOAPHeader(part="userId"),
+		SOAPHeader(part="protocolVersion")
 	]
 	body: SOAPBody = SOAPBody()
 

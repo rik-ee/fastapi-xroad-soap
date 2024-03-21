@@ -19,7 +19,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from pydantic_xml import BaseXmlModel, attr
-from src.constants import NSMAP, service_url
+from src.constants import NSMAP
 
 
 __all__ = [
@@ -30,7 +30,7 @@ __all__ = [
 
 
 class SOAPAddress(BaseXmlModel, tag="address", ns="soap", nsmap=NSMAP):
-	location: str = attr(default=service_url())
+	location: str = attr(default="__SERVICE_LOCATION_PLACEHOLDER__")
 
 
 class WSDLPortBinding(BaseXmlModel, tag="port", ns="wsdl", nsmap=NSMAP):

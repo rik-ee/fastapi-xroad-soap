@@ -10,7 +10,7 @@
 #
 from typing import List
 from pydantic_xml import BaseXmlModel, element, attr
-from src.constants import NSMAP, wsdl_url
+from src.constants import NSMAP
 from .port_type import WSDLPortType
 from .binding import WSDLBinding
 from .service import WSDLService
@@ -40,7 +40,7 @@ class WSDLMessage(BaseXmlModel, tag="message", ns='wsdl', nsmap=NSMAP):
 
 
 class WSDLDefinitions(BaseXmlModel, tag="definitions", ns="wsdl", nsmap=NSMAP):
-    targetNamespace: str = attr(default=wsdl_url())
+    target_ns: str = attr(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
     name: str = attr()
     types: WSDLTypes = element()
     messages: List[WSDLMessage]

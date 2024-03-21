@@ -10,7 +10,7 @@
 #
 from typing import List, Union
 from pydantic_xml import BaseXmlModel, attr
-from src.constants import NSMAP, wsdl_url
+from src.constants import NSMAP
 from .restrictions import *
 
 
@@ -70,7 +70,7 @@ class Include(BaseXmlModel, tag="include"):
 
 class Schema(BaseXmlModel, tag="schema"):
     xmlns: str = attr(default=NSMAP["xs"])
-    target_ns: str = attr(name="targetNamespace", default=wsdl_url())
+    target_ns: str = attr(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
     imports: List[Import]
     includes: List[Include]
     elements: List[Element]
