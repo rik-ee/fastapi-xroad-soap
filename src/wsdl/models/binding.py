@@ -10,7 +10,7 @@
 #
 from typing import List
 from pydantic_xml import BaseXmlModel, attr
-from src.constants import NSMAP
+from src.constants import WSDL_NSMAP
 
 
 __all__ = [
@@ -28,27 +28,27 @@ __all__ = [
 ]
 
 
-class SOAPFault(BaseXmlModel, tag="fault", ns="soap", nsmap=NSMAP):
+class SOAPFault(BaseXmlModel, tag="fault", ns="soap", nsmap=WSDL_NSMAP):
 	name: str = attr(default="FaultResponse")
 	use: str = attr(default="literal")
 
 
-class SOAPBody(BaseXmlModel, tag="body", ns="soap", nsmap=NSMAP):
+class SOAPBody(BaseXmlModel, tag="body", ns="soap", nsmap=WSDL_NSMAP):
 	use: str = attr(default="literal")
 
 
-class SOAPHeader(BaseXmlModel, tag="header", ns="soap", nsmap=NSMAP):
+class SOAPHeader(BaseXmlModel, tag="header", ns="soap", nsmap=WSDL_NSMAP):
 	message: str = attr(default="tns:xroadHeader")
 	use: str = attr(default="literal")
 	part: str = attr()
 
 
-class WSDLFaultBinding(BaseXmlModel, tag="fault", ns="wsdl", nsmap=NSMAP):
+class WSDLFaultBinding(BaseXmlModel, tag="fault", ns="wsdl", nsmap=WSDL_NSMAP):
 	name: str = attr(default="FaultResponse")
 	fault: SOAPFault = SOAPFault()
 
 
-class WSDLOutputBinding(BaseXmlModel, tag="output", ns="wsdl", nsmap=NSMAP):
+class WSDLOutputBinding(BaseXmlModel, tag="output", ns="wsdl", nsmap=WSDL_NSMAP):
 	headers: List[SOAPHeader] = [
 		SOAPHeader(part="client"),
 		SOAPHeader(part="service"),
@@ -59,7 +59,7 @@ class WSDLOutputBinding(BaseXmlModel, tag="output", ns="wsdl", nsmap=NSMAP):
 	body: SOAPBody = SOAPBody()
 
 
-class WSDLInputBinding(BaseXmlModel, tag="input", ns="wsdl", nsmap=NSMAP):
+class WSDLInputBinding(BaseXmlModel, tag="input", ns="wsdl", nsmap=WSDL_NSMAP):
 	headers: List[SOAPHeader] = [
 		SOAPHeader(part="client"),
 		SOAPHeader(part="service"),
@@ -70,15 +70,15 @@ class WSDLInputBinding(BaseXmlModel, tag="input", ns="wsdl", nsmap=NSMAP):
 	body: SOAPBody = SOAPBody()
 
 
-class XROADVersion(BaseXmlModel, tag="version", ns="xroad", nsmap=NSMAP):
+class XROADVersion(BaseXmlModel, tag="version", ns="xroad", nsmap=WSDL_NSMAP):
 	version: str = "v1"
 
 
-class SOAPOperationBinding(BaseXmlModel, tag="operation", ns="soap", nsmap=NSMAP):
+class SOAPOperationBinding(BaseXmlModel, tag="operation", ns="soap", nsmap=WSDL_NSMAP):
 	soap_action: str = attr(name="soapAction")
 
 
-class WSDLOperationBinding(BaseXmlModel, tag="operation", ns="wsdl", nsmap=NSMAP):
+class WSDLOperationBinding(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSMAP):
 	name: str = attr()
 	operation: SOAPOperationBinding
 	version: XROADVersion = XROADVersion()
@@ -87,12 +87,12 @@ class WSDLOperationBinding(BaseXmlModel, tag="operation", ns="wsdl", nsmap=NSMAP
 	fault: WSDLFaultBinding = WSDLFaultBinding()
 
 
-class SOAPBinding(BaseXmlModel, tag="binding", ns="soap", nsmap=NSMAP):
+class SOAPBinding(BaseXmlModel, tag="binding", ns="soap", nsmap=WSDL_NSMAP):
 	style: str = attr(default="document")
 	transport: str = attr(default="http://schemas.xmlsoap.org/soap/http")
 
 
-class WSDLBinding(BaseXmlModel, tag="binding", ns="wsdl", nsmap=NSMAP):
+class WSDLBinding(BaseXmlModel, tag="binding", ns="wsdl", nsmap=WSDL_NSMAP):
 	name: str = attr(default="serviceBinding")
 	type: str = attr(default="tns:servicePortType")
 	binding: SOAPBinding
