@@ -8,9 +8,9 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from typing import List
-from pydantic_xml import BaseXmlModel, element, attr
-from src.constants import WSDL_NSMAP
+import typing as t
+from ...envelope import BaseXmlModel, Attribute, Element
+from ...constants import WSDL_NSMAP
 from .port_type import WSDLPortType
 from .binding import WSDLBinding
 from .service import WSDLService
@@ -30,20 +30,20 @@ class WSDLTypes(BaseXmlModel, tag="types", nsmap=WSDL_NSMAP):
 
 
 class WSDLPart(BaseXmlModel, tag="part", ns='wsdl', nsmap=WSDL_NSMAP):
-    element: str = attr()
-    name: str = attr(default="parameters")
+    element: str = Attribute()
+    name: str = Attribute(default="parameters")
 
 
 class WSDLMessage(BaseXmlModel, tag="message", ns='wsdl', nsmap=WSDL_NSMAP):
-    name: str = attr()
-    parts: List[WSDLPart]
+    name: str = Attribute()
+    parts: t.List[WSDLPart]
 
 
 class WSDLDefinitions(BaseXmlModel, tag="definitions", ns="wsdl", nsmap=WSDL_NSMAP):
-    target_ns: str = attr(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
-    name: str = attr()
-    types: WSDLTypes = element()
-    messages: List[WSDLMessage]
+    target_ns: str = Attribute(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
+    name: str = Attribute()
+    types: WSDLTypes = Element()
+    messages: t.List[WSDLMessage]
     port_type: WSDLPortType
     binding: WSDLBinding
     service: WSDLService

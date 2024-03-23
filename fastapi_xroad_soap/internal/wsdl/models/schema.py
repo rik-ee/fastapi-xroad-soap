@@ -8,9 +8,9 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from typing import List, Union
-from pydantic_xml import BaseXmlModel, attr
-from src.constants import WSDL_NSMAP
+import typing as t
+from ...envelope import BaseXmlModel, Attribute
+from ...constants import WSDL_NSMAP
 from .restrictions import *
 
 
@@ -27,8 +27,8 @@ __all__ = [
 
 
 class SimpleType(BaseXmlModel, tag="simpleType"):
-    name: str = attr()
-    restriction: Union[
+    name: str = Attribute()
+    restriction: t.Union[
         StringRestriction,
         IntegerRestriction,
         DecimalRestriction,
@@ -40,39 +40,39 @@ class SimpleType(BaseXmlModel, tag="simpleType"):
 
 
 class AnyXML(BaseXmlModel, tag="any"):
-    process_contents: str = attr(default="lax")
+    process_contents: str = Attribute(default="lax")
 
 
 class Element(BaseXmlModel, tag="element"):
-    name: str = attr()
-    type: str = attr()
-    min_occurs: Union[str, None] = attr(name="minOccurs", default=None)
-    max_occurs: Union[str, None] = attr(name="maxOccurs", default=None)
+    name: str = Attribute()
+    type: str = Attribute()
+    min_occurs: t.Union[str, None] = Attribute(name="minOccurs", default=None)
+    max_occurs: t.Union[str, None] = Attribute(name="maxOccurs", default=None)
 
 
 class Sequence(BaseXmlModel, tag="sequence"):
-    elements: List[Union[Element, AnyXML]]
+    elements: t.List[t.Union[Element, AnyXML]]
 
 
 class ComplexType(BaseXmlModel, tag="complexType"):
-    name: str = attr()
+    name: str = Attribute()
     sequence: Sequence
 
 
 class Import(BaseXmlModel, tag="import"):
-    schema_loc: str = attr(name="schemaLocation")
-    namespace: str = attr()
+    schema_loc: str = Attribute(name="schemaLocation")
+    namespace: str = Attribute()
 
 
 class Include(BaseXmlModel, tag="include"):
-    schema_loc: str = attr(name="schemaLocation")
+    schema_loc: str = Attribute(name="schemaLocation")
 
 
 class Schema(BaseXmlModel, tag="schema"):
-    xmlns: str = attr(default=WSDL_NSMAP["xs"])
-    target_ns: str = attr(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
-    imports: List[Import]
-    includes: List[Include]
-    elements: List[Element]
-    complex_types: List[ComplexType]
-    simple_types: List[SimpleType]
+    xmlns: str = Attribute(default=WSDL_NSMAP["xs"])
+    target_ns: str = Attribute(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
+    imports: t.List[Import]
+    includes: t.List[Include]
+    elements: t.List[Element]
+    complex_types: t.List[ComplexType]
+    simple_types: t.List[SimpleType]
