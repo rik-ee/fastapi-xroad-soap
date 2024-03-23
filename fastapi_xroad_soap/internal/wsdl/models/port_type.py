@@ -8,9 +8,9 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from typing import List
-from pydantic_xml import BaseXmlModel, element, attr
-from src.constants import WSDL_NSMAP
+import typing as t
+from ...envelope import BaseXmlModel, Attribute, Element
+from ...constants import WSDL_NSMAP
 
 
 __all__ = [
@@ -24,23 +24,23 @@ __all__ = [
 
 
 class WSDLFaultPort(BaseXmlModel, tag="fault", nsmap=WSDL_NSMAP):
-    message: str = attr()
-    name: str = attr()
+    message: str = Attribute()
+    name: str = Attribute()
 
 
 class WSDLOutputPort(BaseXmlModel, tag="output", nsmap=WSDL_NSMAP):
-    message: str = attr()
-    name: str = attr()
+    message: str = Attribute()
+    name: str = Attribute()
 
 
 class WSDLInputPort(BaseXmlModel, tag="input", nsmap=WSDL_NSMAP):
-    message: str = attr()
-    name: str = attr()
+    message: str = Attribute()
+    name: str = Attribute()
 
 
 class WSDLDocumentation(BaseXmlModel, tag="documentation", nsmap=WSDL_NSMAP):
-    title: str = element(ns='xroad', nsmap=WSDL_NSMAP)
-    notes: str = element(ns='xroad', nsmap=WSDL_NSMAP)
+    title: str = Element(ns='xroad', nsmap=WSDL_NSMAP)
+    notes: str = Element(ns='xroad', nsmap=WSDL_NSMAP)
 
 
 class WSDLOperationPort(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSMAP):
@@ -48,9 +48,9 @@ class WSDLOperationPort(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSM
     input: WSDLInputPort
     output: WSDLOutputPort
     fault: WSDLFaultPort
-    name: str = attr()
+    name: str = Attribute()
 
 
 class WSDLPortType(BaseXmlModel, tag="portType", ns="wsdl", nsmap=WSDL_NSMAP):
-    name: str = attr(default="servicePortType")
-    operations: List[WSDLOperationPort]
+    name: str = Attribute(default="servicePortType")
+    operations: t.List[WSDLOperationPort]
