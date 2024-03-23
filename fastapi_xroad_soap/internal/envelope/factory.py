@@ -9,9 +9,10 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from typing import ClassVar, Type, Generic, Union, cast
-from src.envelope.header import XroadHeader
-from src.constants import ENV_NSMAP
-from src.envelope.parts import *
+from ..constants import ENV_NSMAP
+from .header import XroadHeader
+from .base import MessageBody, MessageBodyType
+from .generics import GenericEnvelope, GenericBody
 
 
 __all__ = ["EnvelopeFactory"]
@@ -20,14 +21,18 @@ __all__ = ["EnvelopeFactory"]
 class EnvelopeFactory(Generic[MessageBodyType]):
 	_type: ClassVar[Type[MessageBody]]
 
-	def __class_getitem__(cls, content_type: Type[MessageBodyType]):
+	def __class_getitem__(cls, content_type: Type[MessageBody]):
 		cls_name = f"{cls.__name__}[{content_type.__name__}]"
+		if content_type.__xml_tag__ is None:
+			content_type.__xml_tag__ = content_type.__name__
 		return type(cls_name, (cls,), {"_type": content_type})
 
 	def __init__(self) -> None:
 		nsmap = {**ENV_NSMAP, **(self._type.__xml_nsmap__ or {})}
-		factory = type('Factory', (GenericEnvelope,), {}, ns="soapenv", nsmap=nsmap)
-		self._factory_ = cast(Type[MessageBody], factory)
+		self._factory = cast(GenericEnvelope, type(
+			'Factory', (GenericEnvelope,), {},
+			ns="soapenv", nsmap=nsmap
+		))
 
 	def serialize(
 			self,
@@ -41,12 +46,12 @@ class EnvelopeFactory(Generic[MessageBodyType]):
 				f"Cannot use '{content.__class__.__name__}' type instances "
 				f"with '{self._type.__name__}' type envelope factory."
 			)
-		factory = cast(
-			Type[MessageBody],
-			self._factory_[GenericBody[content.__class__]]
-		)
-		body = GenericBody[content.__class__](content=content)
+		body_type = GenericBody[content.__class__]
+		body = body_type(content=content)
+
+		factory = self._factory[body_type]
 		obj = factory(header=header, body=body)
+
 		return obj.to_xml(
 			pretty_print=pretty_print,
 			skip_empty=skip_empty
@@ -55,5 +60,6 @@ class EnvelopeFactory(Generic[MessageBodyType]):
 	def deserialize(self, content: Union[str, bytes]) -> MessageBodyType:
 		if not isinstance(content, bytes):
 			content = content.encode("utf-8")
-		model = self._factory_[GenericBody[self._type]]
-		return cast(self._type, model.from_xml(content))
+
+		model = self._factory[GenericBody[self._type]]
+		return model.from_xml(content)

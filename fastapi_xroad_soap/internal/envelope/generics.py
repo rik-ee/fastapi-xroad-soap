@@ -8,37 +8,13 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from pydantic_xml import (
-	BaseXmlModel,
-	element as Element,
-	attr as Attribute
-)
-from typing import (
-	ClassVar, TypeVar, Dict, Generic,
-	Optional, TypeAlias, Callable
-)
-from src.envelope.header import XroadHeader
-from src.constants import ENV_NSMAP
+from typing import Generic, Optional
+from ..constants import ENV_NSMAP
+from .header import XroadHeader
+from .base import Element, MessageBody, MessageBodyType
 
 
-__all__ = [
-	"Element",
-	"Attribute",
-	"MessageBody",
-	"MessageBodyType",
-	"FactoryAlias",
-	"GenericBody",
-	"GenericEnvelope",
-	"GenericFault"
-]
-
-
-class MessageBody(BaseXmlModel):
-	pass
-
-
-MessageBodyType = TypeVar("MessageBodyType", bound=MessageBody)
-FactoryAlias: TypeAlias = Callable[..., MessageBodyType]
+__all__ = ["GenericBody", "GenericEnvelope", "GenericFault"]
 
 
 class GenericBody(MessageBody, Generic[MessageBodyType], tag='Body'):
@@ -46,14 +22,11 @@ class GenericBody(MessageBody, Generic[MessageBodyType], tag='Body'):
 
 
 class GenericEnvelope(MessageBody, Generic[MessageBodyType], tag="Envelope"):
-	ns: ClassVar[str]
-	nsmap: ClassVar[Dict[str, str]]
 	header: Optional[XroadHeader] = None
 	body: MessageBodyType
 
 
 class GenericFault(MessageBody, Generic[MessageBodyType], tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
-	envelope: ClassVar[FactoryAlias]
 	faultcode: str = Element(tag="faultcode", ns='')
 	faultstring: str = Element(tag="faultstring", ns='')
 	faultactor: str = Element(tag="faultactor", ns='')
