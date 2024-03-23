@@ -25,5 +25,11 @@ __all__ = [
 ]
 
 
-MessageBody = type("MessageBody", (BaseXmlModel,), {})
-MessageBodyType = t.TypeVar("MessageBodyType", bound=MessageBody)
+class MessageBody(BaseXmlModel):
+	pass
+
+
+MessageBodyType = t.TypeVar(
+	"MessageBodyType",
+	bound=MessageBody
+)
