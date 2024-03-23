@@ -8,29 +8,29 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from typing import Any
+import typing as t
 from fastapi.types import DecoratedCallable
-from src.envelope.header import XroadHeader
-from src.envelope.parts import MessageBody
+from ..envelope import MessageBody, XroadHeader
 
 
 __all__ = [
 	"get_annotations",
-	"validate_annotations"
+	"validate_annotations",
+	"extract_parameter_positions"
 ]
 
 
-def get_annotations(func: Any) -> dict:
+def get_annotations(func: t.Any) -> dict:
 	key: str = "__annotations__"
-	atd = getattr(func, key, None)
-	if atd is None and hasattr(func, "__dict__"):
-		atd = func.__dict__.get(key, None)
-	return atd or dict()
+	anno = getattr(func, key, None)
+	if anno is None and hasattr(func, "__dict__"):
+		anno = func.__dict__.get(key, None)
+	return anno or dict()
 
 
 def validate_annotations(name: str, func: DecoratedCallable) -> dict:
-	atd = get_annotations(func)
-	for key, value in atd.items():
+	anno = get_annotations(func)
+	for key, value in anno.items():
 		if key not in ["body", "header", "return"]:
 			raise ValueError(
 				f"Parameter name '{key}' not allowed for SOAP action '{name}'."
@@ -60,4 +60,13 @@ def validate_annotations(name: str, func: DecoratedCallable) -> dict:
 				f"The annotation of the 'headers' parameter of the '{name}' "
 				f"SOAP action must be the 'XroadHeaders' class."
 			)
-	return atd
+	return anno
+
+
+def extract_parameter_positions(anno: dict) -> dict:
+	pos = dict(body=None, header=None)
+	keys = list(anno.keys())
+	for key in ["body", "header"]:
+		if key in keys:
+			pos[key] = keys.index(key)
+	return pos

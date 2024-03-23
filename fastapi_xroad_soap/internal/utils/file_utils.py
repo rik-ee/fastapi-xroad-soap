@@ -18,7 +18,8 @@ __all__ = ["search_upwards", "read_cached_file"]
 
 @functools.lru_cache(maxsize=None)
 def search_upwards(
-    for_path: Union[Path, str], from_path: Union[Path, str] = __file__
+        for_path: Union[Path, str],
+        from_path: Union[Path, str] = __file__
 ) -> Path:
     current = Path(from_path).resolve()
     while current != current.parent:
@@ -31,7 +32,10 @@ def search_upwards(
 
 @functools.lru_cache(maxsize=None)
 def read_cached_file(
-    path: str, binary: bool = False, as_lines: bool = False, encoding: str = "UTF-8"
+        path: str,
+        binary: bool = False,
+        as_lines: bool = False,
+        encoding: str = "UTF-8"
 ) -> Union[str, bytes]:
     mode = "rb" if binary else "r"
     path_obj = search_upwards(path)

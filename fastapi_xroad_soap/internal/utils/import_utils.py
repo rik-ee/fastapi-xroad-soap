@@ -8,7 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from typing import Any
+import typing as t
 from importlib import import_module
 
 
@@ -20,7 +20,7 @@ class LazyImport:
 		self.module_name = module_name
 		self.module = None
 
-	def __getattr__(self, name: str) -> Any:
+	def __getattr__(self, name: str) -> t.Any:
 		if self.module is None:
 			self.module = import_module(self.module_name)
 		return getattr(self.module, name)
