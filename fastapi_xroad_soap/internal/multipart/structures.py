@@ -8,13 +8,13 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from collections import OrderedDict
-from typing import Mapping, MutableMapping
+import collections as c
+import typing as t
 
 
-class CaseInsensitiveDict(MutableMapping):
+class CaseInsensitiveDict(t.MutableMapping):
     def __init__(self, data=None, **kwargs):
-        self._store = OrderedDict()
+        self._store = c.OrderedDict()
         if data is None:
             data = {}
         self.update(data, **kwargs)
@@ -38,7 +38,7 @@ class CaseInsensitiveDict(MutableMapping):
         return ((lowerkey, keyval[1]) for (lowerkey, keyval) in self._store.items())
 
     def __eq__(self, other):
-        if isinstance(other, Mapping):
+        if isinstance(other, t.Mapping):
             other = CaseInsensitiveDict(other)
         else:
             return NotImplemented

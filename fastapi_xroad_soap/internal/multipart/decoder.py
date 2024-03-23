@@ -12,7 +12,7 @@ import typing as t
 from email.parser import HeaderParser
 from .structures import CaseInsensitiveDict
 from .encoder import encode_with
-from src import errors
+from .. import errors
 
 
 USB = t.Union[str, bytes]
