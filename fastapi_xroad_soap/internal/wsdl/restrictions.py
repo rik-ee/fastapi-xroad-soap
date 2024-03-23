@@ -9,8 +9,21 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from ...envelope import BaseXmlModel, Attribute
-from .conditions import *
+from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
+from fastapi_xroad_soap.internal.wsdl.conditions import (
+	Enumeration,
+	RegexPattern,
+	MinInclusive,
+	MaxInclusive,
+	MinExclusive,
+	MaxExclusive,
+	FractionDigits,
+	TotalDigits,
+	Length,
+	MinLength,
+	MaxLength,
+	WhiteSpace
+)
 
 
 __all__ = [
@@ -33,6 +46,7 @@ class StringRestriction(BaseXmlModel, tag="restriction"):
 	min_length: t.Union[MinLength, None] = None
 	max_length: t.Union[MaxLength, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 

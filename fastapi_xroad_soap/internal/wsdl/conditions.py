@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from ...envelope import BaseXmlModel, Attribute
+from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
 
 
 __all__ = [

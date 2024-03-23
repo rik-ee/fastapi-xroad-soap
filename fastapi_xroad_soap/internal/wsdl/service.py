@@ -18,8 +18,8 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from ...envelope import BaseXmlModel, Attribute
-from ...constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
+from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 
 
 __all__ = [

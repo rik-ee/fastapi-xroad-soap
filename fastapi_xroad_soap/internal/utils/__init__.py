@@ -8,12 +8,14 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .file_utils import (
+from fastapi_xroad_soap.internal.utils.file_utils import (
 	search_upwards,
 	read_cached_file
 )
-from .import_utils import LazyImport
-from .object_utils import (
+from fastapi_xroad_soap.internal.utils.import_utils import (
+	LazyImport
+)
+from fastapi_xroad_soap.internal.utils.object_utils import (
 	get_annotations,
 	validate_annotations,
 	extract_parameter_positions

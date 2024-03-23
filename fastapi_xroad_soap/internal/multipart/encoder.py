@@ -12,7 +12,7 @@ import io
 import os
 import contextlib
 from uuid import uuid4
-from . import fields
+from fastapi_xroad_soap.internal.multipart import fields
 
 
 class MultipartEncoder:

@@ -10,7 +10,7 @@
 #
 import typing as t
 from fastapi.types import DecoratedCallable
-from ..envelope import MessageBody, XroadHeader
+from fastapi_xroad_soap.internal.envelope import MessageBody, XroadHeader
 
 
 __all__ = [

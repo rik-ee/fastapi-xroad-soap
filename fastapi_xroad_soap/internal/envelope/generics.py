@@ -9,9 +9,9 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from ..constants import ENV_NSMAP
-from .header import XroadHeader
-from .base import Element, MessageBody, MessageBodyType
+from fastapi_xroad_soap.internal.constants import ENV_NSMAP
+from fastapi_xroad_soap.internal.envelope.header import XroadHeader
+from fastapi_xroad_soap.internal.envelope.base import Element, MessageBody, MessageBodyType
 
 
 __all__ = ["GenericBody", "GenericEnvelope", "GenericFault"]

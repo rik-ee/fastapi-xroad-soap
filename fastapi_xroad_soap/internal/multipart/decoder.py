@@ -10,9 +10,9 @@
 #
 import typing as t
 from email.parser import HeaderParser
-from .structures import CaseInsensitiveDict
-from .encoder import encode_with
-from .. import errors
+from fastapi_xroad_soap.internal.multipart.structures import CaseInsensitiveDict
+from fastapi_xroad_soap.internal.multipart.encoder import encode_with
+from fastapi_xroad_soap.internal import errors
 
 
 USB = t.Union[str, bytes]

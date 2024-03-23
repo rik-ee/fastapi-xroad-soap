@@ -9,12 +9,12 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from ...envelope import BaseXmlModel, Attribute, Element
-from ...constants import WSDL_NSMAP
-from .port_type import WSDLPortType
-from .binding import WSDLBinding
-from .service import WSDLService
-from .schema import Schema
+from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute, Element
+from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.wsdl.port_type import WSDLPortType
+from fastapi_xroad_soap.internal.wsdl.binding import WSDLBinding
+from fastapi_xroad_soap.internal.wsdl.service import WSDLService
+from fastapi_xroad_soap.internal.wsdl.schema import Schema
 
 
 __all__ = [

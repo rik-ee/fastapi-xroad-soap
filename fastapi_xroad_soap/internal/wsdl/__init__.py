@@ -8,7 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .binding import (
+from fastapi_xroad_soap.internal.wsdl.binding import (
 	SOAPFault,
 	SOAPBody,
 	SOAPHeader,
@@ -21,7 +21,7 @@ from .binding import (
 	SOAPBinding,
 	WSDLBinding
 )
-from .conditions import (
+from fastapi_xroad_soap.internal.wsdl.conditions import (
 	Enumeration,
 	RegexPattern,
 	MinInclusive,
@@ -35,13 +35,13 @@ from .conditions import (
 	MaxLength,
 	WhiteSpace
 )
-from .definitions import (
+from fastapi_xroad_soap.internal.wsdl.definitions import (
 	WSDLTypes,
 	WSDLPart,
 	WSDLMessage,
 	WSDLDefinitions
 )
-from .port_type import (
+from fastapi_xroad_soap.internal.wsdl.port_type import (
 	WSDLFaultPort,
 	WSDLOutputPort,
 	WSDLInputPort,
@@ -49,7 +49,7 @@ from .port_type import (
 	WSDLOperationPort,
 	WSDLPortType
 )
-from .restrictions import (
+from fastapi_xroad_soap.internal.wsdl.restrictions import (
 	StringRestriction,
 	IntegerRestriction,
 	DecimalRestriction,
@@ -61,7 +61,7 @@ from .restrictions import (
 	DurationRestriction,
 	AnyURIRestriction
 )
-from .schema import (
+from fastapi_xroad_soap.internal.wsdl.schema import (
 	SimpleType,
 	AnyXML,
 	Element,
@@ -71,7 +71,7 @@ from .schema import (
 	Include,
 	Schema
 )
-from .service import (
+from fastapi_xroad_soap.internal.wsdl.service import (
 	SOAPAddress,
 	WSDLPortBinding,
 	WSDLService

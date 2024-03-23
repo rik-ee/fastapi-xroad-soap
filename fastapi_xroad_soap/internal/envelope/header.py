@@ -9,8 +9,8 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from ..constants import ENV_NSMAP
-from .base import Element, Attribute, BaseXmlModel
+from fastapi_xroad_soap.internal.constants import ENV_NSMAP
+from fastapi_xroad_soap.internal.envelope.base import Element, Attribute, BaseXmlModel
 
 
 __all__ = ["XroadHeaderService", "XroadHeaderClient", "XroadHeader"]

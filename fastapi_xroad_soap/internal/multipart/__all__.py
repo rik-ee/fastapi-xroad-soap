@@ -8,9 +8,15 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .encoder import MultipartEncoder
-from .decoder import MultipartDecoder
-from .decoder import BodyPart
+from fastapi_xroad_soap.internal.multipart.encoder import (
+	MultipartEncoder
+)
+from fastapi_xroad_soap.internal.multipart.decoder import (
+	MultipartDecoder
+)
+from fastapi_xroad_soap.internal.multipart.decoder import (
+	BodyPart
+)
 
 
 __all__ = [
