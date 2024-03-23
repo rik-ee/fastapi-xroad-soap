@@ -8,8 +8,12 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from pydantic_xml import BaseXmlModel, element as Element, attr as Attribute
-from typing import TypeVar
+import typing as t
+from pydantic_xml import (
+	element as Element,
+	attr as Attribute,
+	BaseXmlModel
+)
 
 
 __all__ = [
@@ -22,4 +26,4 @@ __all__ = [
 
 
 MessageBody = type("MessageBody", (BaseXmlModel,), {})
-MessageBodyType = TypeVar("MessageBodyType", bound=MessageBody)
+MessageBodyType = t.TypeVar("MessageBodyType", bound=MessageBody)

@@ -8,7 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from typing import ClassVar, Type, Generic, Union, cast
+import typing as t
 from ..constants import ENV_NSMAP
 from .header import XroadHeader
 from .base import MessageBody, MessageBodyType
@@ -18,10 +18,10 @@ from .generics import GenericEnvelope, GenericBody
 __all__ = ["EnvelopeFactory"]
 
 
-class EnvelopeFactory(Generic[MessageBodyType]):
-	_type: ClassVar[Type[MessageBody]]
+class EnvelopeFactory(t.Generic[MessageBodyType]):
+	_type: t.ClassVar[t.Type[MessageBody]]
 
-	def __class_getitem__(cls, content_type: Type[MessageBody]):
+	def __class_getitem__(cls, content_type: t.Type[MessageBody]):
 		cls_name = f"{cls.__name__}[{content_type.__name__}]"
 		if content_type.__xml_tag__ is None:
 			content_type.__xml_tag__ = content_type.__name__
@@ -29,7 +29,7 @@ class EnvelopeFactory(Generic[MessageBodyType]):
 
 	def __init__(self) -> None:
 		nsmap = {**ENV_NSMAP, **(self._type.__xml_nsmap__ or {})}
-		self._factory = cast(GenericEnvelope, type(
+		self._factory = t.cast(GenericEnvelope, type(
 			'Factory', (GenericEnvelope,), {},
 			ns="soapenv", nsmap=nsmap
 		))
@@ -57,7 +57,7 @@ class EnvelopeFactory(Generic[MessageBodyType]):
 			skip_empty=skip_empty
 		)
 
-	def deserialize(self, content: Union[str, bytes]) -> MessageBodyType:
+	def deserialize(self, content: t.Union[str, bytes]) -> MessageBodyType:
 		if not isinstance(content, bytes):
 			content = content.encode("utf-8")
 

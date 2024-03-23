@@ -8,7 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from typing import Generic, Optional
+import typing as t
 from ..constants import ENV_NSMAP
 from .header import XroadHeader
 from .base import Element, MessageBody, MessageBodyType
@@ -17,16 +17,16 @@ from .base import Element, MessageBody, MessageBodyType
 __all__ = ["GenericBody", "GenericEnvelope", "GenericFault"]
 
 
-class GenericBody(MessageBody, Generic[MessageBodyType], tag='Body'):
+class GenericBody(MessageBody, t.Generic[MessageBodyType], tag='Body'):
 	content: MessageBodyType
 
 
-class GenericEnvelope(MessageBody, Generic[MessageBodyType], tag="Envelope"):
-	header: Optional[XroadHeader] = None
+class GenericEnvelope(MessageBody, t.Generic[MessageBodyType], tag="Envelope"):
+	header: t.Optional[XroadHeader] = None
 	body: MessageBodyType
 
 
-class GenericFault(MessageBody, Generic[MessageBodyType], tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
+class GenericFault(MessageBody, t.Generic[MessageBodyType], tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
 	faultcode: str = Element(tag="faultcode", ns='')
 	faultstring: str = Element(tag="faultstring", ns='')
 	faultactor: str = Element(tag="faultactor", ns='')
