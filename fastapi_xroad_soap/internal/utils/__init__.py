@@ -8,9 +8,11 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from fastapi_xroad_soap.internal.utils.file_utils import (
+from fastapi_xroad_soap.internal.utils.path_utils import (
 	search_upwards,
-	read_cached_file
+	resolve_relpath,
+	read_cached_file,
+	read_cached_xml_file
 )
 from fastapi_xroad_soap.internal.utils.import_utils import (
 	LazyImport
