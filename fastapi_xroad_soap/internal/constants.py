@@ -13,11 +13,11 @@ WSDL_NSMAP = {
     "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
     "enc": "http://schemas.xmlsoap.org/soap/encoding/",
     "wsi": "http://ws-i.org/profiles/basic/1.1/xsd/",
-    "xs": "http://www.w3.org/2001/XMLSchema",
+    "xsd": "http://www.w3.org/2001/XMLSchema",
     "xro": "http://x-road.eu/xsd/xroad.xsd",
 }
 ENV_NSMAP = {
     "soapenv": "http://schemas.xmlsoap.org/soap/envelope/",
-    "xroad": "http://x-road.eu/xsd/xroad.xsd",
-    "xid": "http://x-road.eu/xsd/identifiers"
+    "xro": "http://x-road.eu/xsd/xroad.xsd",
+    "iden": "http://x-road.eu/xsd/identifiers"
 }

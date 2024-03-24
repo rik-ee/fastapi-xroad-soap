@@ -17,13 +17,13 @@ from fastapi_xroad_soap.internal.envelope.base import Element, MessageBody, Mess
 __all__ = ["GenericBody", "GenericEnvelope", "GenericFault"]
 
 
-class GenericBody(MessageBody, t.Generic[MessageBodyType], tag='Body'):
+class GenericBody(MessageBody, t.Generic[MessageBodyType], tag="Body", nsmap=ENV_NSMAP):
 	content: MessageBodyType
 
 
-class GenericEnvelope(MessageBody, t.Generic[MessageBodyType], tag="Envelope"):
+class GenericEnvelope(MessageBody, t.Generic[MessageBodyType], tag="Envelope", nsmap=ENV_NSMAP):
 	header: t.Optional[XroadHeader] = None
-	body: MessageBodyType
+	body: MessageBodyType = Element(ns="soapenv")
 
 
 class GenericFault(MessageBody, t.Generic[MessageBodyType], tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):

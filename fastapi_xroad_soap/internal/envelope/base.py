@@ -25,7 +25,7 @@ __all__ = [
 ]
 
 
-class MessageBody(BaseXmlModel):
+class MessageBody(BaseXmlModel, search_mode='unordered', skip_empty=True):
 	pass
 
 
