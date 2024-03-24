@@ -70,6 +70,7 @@ class DecimalRestriction(BaseXmlModel, tag="restriction"):
 	total_digits: t.Union[TotalDigits, None] = None
 	fraction_digits: t.Union[FractionDigits, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 
@@ -80,6 +81,7 @@ class FloatRestriction(BaseXmlModel, tag="restriction"):
 	min_exclusive: t.Union[MinExclusive, None] = None
 	max_exclusive: t.Union[MaxExclusive, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 
@@ -90,6 +92,7 @@ class DoubleRestriction(BaseXmlModel, tag="restriction"):
 	min_exclusive: t.Union[MinExclusive, None] = None
 	max_exclusive: t.Union[MaxExclusive, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 
@@ -110,6 +113,7 @@ class TimeRestriction(BaseXmlModel, tag="restriction"):
 	min_exclusive: t.Union[MinExclusive, None] = None
 	max_exclusive: t.Union[MaxExclusive, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 
@@ -120,6 +124,7 @@ class DateTimeRestriction(BaseXmlModel, tag="restriction"):
 	min_exclusive: t.Union[MinExclusive, None] = None
 	max_exclusive: t.Union[MaxExclusive, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 
@@ -130,10 +135,15 @@ class DurationRestriction(BaseXmlModel, tag="restriction"):
 	min_exclusive: t.Union[MinExclusive, None] = None
 	max_exclusive: t.Union[MaxExclusive, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 
 class AnyURIRestriction(BaseXmlModel, tag="restriction"):
 	base: str = Attribute(default="anyURI")
-	enumerations: t.Union[t.List[Enumeration], None] = None
+	length: t.Union[Length, None] = None
+	min_length: t.Union[MinLength, None] = None
+	max_length: t.Union[MaxLength, None] = None
 	pattern: t.Union[RegexPattern, None] = None
+	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
