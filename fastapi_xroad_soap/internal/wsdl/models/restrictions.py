@@ -10,7 +10,7 @@
 #
 import typing as t
 from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
-from fastapi_xroad_soap.internal.wsdl.conditions import (
+from fastapi_xroad_soap.internal.wsdl.models.conditions import (
 	Enumeration,
 	RegexPattern,
 	MinInclusive,

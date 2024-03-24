@@ -11,10 +11,10 @@
 import typing as t
 from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute, Element
 from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
-from fastapi_xroad_soap.internal.wsdl.port_type import WSDLPortType
-from fastapi_xroad_soap.internal.wsdl.binding import WSDLBinding
-from fastapi_xroad_soap.internal.wsdl.service import WSDLService
-from fastapi_xroad_soap.internal.wsdl.schema import Schema
+from fastapi_xroad_soap.internal.wsdl.models.port_type import WSDLPortType
+from fastapi_xroad_soap.internal.wsdl.models.binding import WSDLBinding
+from fastapi_xroad_soap.internal.wsdl.models.service import WSDLService
+from fastapi_xroad_soap.internal.wsdl.models.schema import Schema
 
 
 __all__ = [

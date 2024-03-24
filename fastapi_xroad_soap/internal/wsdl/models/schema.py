@@ -11,7 +11,7 @@
 import typing as t
 from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
 from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
-from fastapi_xroad_soap.internal.wsdl.restrictions import (
+from fastapi_xroad_soap.internal.wsdl.models.restrictions import (
     StringRestriction,
     IntegerRestriction,
     DecimalRestriction,
