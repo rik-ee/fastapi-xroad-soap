@@ -17,7 +17,7 @@ from fastapi_xroad_soap.internal.utils.path_utils import (
 from fastapi_xroad_soap.internal.utils.import_utils import (
 	LazyImport
 )
-from fastapi_xroad_soap.internal.utils.object_utils import (
+from fastapi_xroad_soap.internal.utils.route_utils import (
 	get_annotations,
 	validate_annotations,
 	extract_parameter_positions
