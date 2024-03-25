@@ -9,14 +9,14 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.constants import ENV_NSMAP
+from fastapi_xroad_soap.internal.constants import HEADER_NSMAP
 from fastapi_xroad_soap.internal.envelope.base import Element, Attribute, BaseXmlModel
 
 
 __all__ = ["XroadHeaderService", "XroadHeaderClient", "XroadHeader"]
 
 
-class XroadHeaderService(BaseXmlModel, tag="service", ns="xro", nsmap=ENV_NSMAP, search_mode='unordered'):
+class XroadHeaderService(BaseXmlModel, tag="service", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
 	object_type: str = Attribute(tag="objectType", ns="iden", default="SERVICE")
 	xroad_instance: str = Element(tag="xRoadInstance", ns="iden")
 	member_class: str = Element(tag="memberClass", ns="iden")
@@ -26,7 +26,7 @@ class XroadHeaderService(BaseXmlModel, tag="service", ns="xro", nsmap=ENV_NSMAP,
 	service_version: t.Union[str, None] = Element(tag="serviceVersion", ns="iden", default=None)
 
 
-class XroadHeaderClient(BaseXmlModel, tag="client", ns="xro", nsmap=ENV_NSMAP, search_mode='unordered'):
+class XroadHeaderClient(BaseXmlModel, tag="client", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
 	object_type: str = Attribute(tag="objectType", ns="iden", default="SUBSYSTEM")
 	xroad_instance: str = Element(tag="xRoadInstance", ns="iden")
 	member_class: str = Element(tag="memberClass", ns="iden")
@@ -34,7 +34,7 @@ class XroadHeaderClient(BaseXmlModel, tag="client", ns="xro", nsmap=ENV_NSMAP, s
 	subsystem_code: t.Union[str, None] = Element(tag="subsystemCode", ns="iden", default=None)
 
 
-class XroadHeader(BaseXmlModel, tag="Header", ns="soapenv", nsmap=ENV_NSMAP, search_mode='unordered'):
+class XroadHeader(BaseXmlModel, tag="Header", ns="soapenv", nsmap=HEADER_NSMAP, search_mode='unordered'):
 	user_id: t.Union[str, None] = Element(tag="userId", ns="xro", default=None)
 	proto_ver: str = Element(tag="protocolVersion", ns="xro")
 	id: str = Element(tag="id", ns="xro")

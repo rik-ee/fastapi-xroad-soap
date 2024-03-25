@@ -9,10 +9,10 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.constants import ENV_NSMAP
 from fastapi_xroad_soap.internal.envelope.header import XroadHeader
+from fastapi_xroad_soap.internal.envelope.generics import GenericEnvelope, GenericBody, GenericFault
 from fastapi_xroad_soap.internal.envelope.base import MessageBody, MessageBodyType
-from fastapi_xroad_soap.internal.envelope.generics import GenericEnvelope, GenericBody
+from fastapi_xroad_soap.internal.constants import ENV_NSMAP, XRO_NSMAP, IDEN_NSMAP
 
 
 __all__ = ["EnvelopeFactory"]
@@ -28,7 +28,10 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 		return type(cls_name, (cls,), {"_type": content_type})
 
 	def __init__(self) -> None:
-		nsmap = {**ENV_NSMAP, **(self._type.__xml_nsmap__ or {})}
+		type_nsmap = self._type.__xml_nsmap__
+		nsmap = {**ENV_NSMAP, **(type_nsmap or {})}
+		if not issubclass(self._type, GenericFault):
+			nsmap.update({**XRO_NSMAP, **IDEN_NSMAP})
 		self._factory = t.cast(GenericEnvelope, type(
 			'Factory', (GenericEnvelope,), {},
 			ns="soapenv", nsmap=nsmap
