@@ -9,19 +9,14 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi import Response
-from dataclasses import dataclass
+from fastapi_xroad_soap.internal.soap.response import SoapResponse
 from fastapi_xroad_soap.internal.envelope import (
-	EnvelopeFactory,
 	GenericFault,
-	MessageBody,
-	XroadHeader,
+	MessageBody
 )
 
 
-class SoapFault(Response):
-	media_type = 'text/xml'
-
+class SoapFault(SoapResponse):
 	def __init__(
 			self,
 			code: str,
@@ -45,13 +40,6 @@ class SoapFault(Response):
 
 		super().__init__(
 			content=fault,
-			status_code=http_status_code
-		)
-
-	def render(self, content: MessageBody) -> bytes:
-		envelope = EnvelopeFactory[content.__class__]()
-		return envelope.serialize(
-			content,
-			pretty_print=False,
-			skip_empty=True
+			header=None,
+			http_status_code=http_status_code
 		)
