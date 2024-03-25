@@ -84,7 +84,7 @@ class Include(BaseXmlModel, tag="include"):
 
 class Schema(BaseXmlModel, tag="schema"):
     xmlns: str = Attribute(default=WSDL_NSMAP["xs"])
-    target_ns: str = Attribute(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
+    target_ns: str = Attribute(name="targetNamespace")
     imports: t.List[Import]
     includes: t.List[Include]
     elements: t.List[Element]

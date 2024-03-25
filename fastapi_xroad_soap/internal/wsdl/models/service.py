@@ -30,7 +30,7 @@ __all__ = [
 
 
 class SOAPAddress(BaseXmlModel, tag="address", ns="soap", nsmap=WSDL_NSMAP):
-	location: str = Attribute(default="__SERVICE_LOCATION_PLACEHOLDER__")
+	location: str = Attribute()
 
 
 class WSDLPortBinding(BaseXmlModel, tag="port", ns="wsdl", nsmap=WSDL_NSMAP):

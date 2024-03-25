@@ -40,7 +40,7 @@ class WSDLMessage(BaseXmlModel, tag="message", ns='wsdl', nsmap=WSDL_NSMAP):
 
 
 class WSDLDefinitions(BaseXmlModel, tag="definitions", ns="wsdl", nsmap=WSDL_NSMAP):
-    target_ns: str = Attribute(name="targetNamespace", default="__TARGET_NAMESPACE_PLACEHOLDER__")
+    target_ns: str = Attribute(name="targetNamespace")
     name: str = Attribute()
     types: WSDLTypes = Element()
     messages: t.List[WSDLMessage]

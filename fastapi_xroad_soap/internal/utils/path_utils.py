@@ -78,7 +78,7 @@ def read_cached_xml_file(
 		If the path is relative, it is evaluated from the current working directory of the active shell.
 	:param return_as_etree: If the file content should be returned as an instance of etree.Element.
 		By default, the XML content is returned as a string.
-	:raises etree.LxmlError: If lxml library fails to validate the content of the XML file.
+	:raises lxml.etree.LxmlError: If lxml library fails to validate the content of the XML file.
 		This error type is the superclass of lxml library errors.
 	:return: The XML file content as a string or an etree.Element.
 	"""
