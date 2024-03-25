@@ -29,5 +29,5 @@ class GenericEnvelope(MessageBody, t.Generic[MessageBodyType], tag="Envelope", n
 class GenericFault(MessageBody, t.Generic[MessageBodyType], tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
 	faultcode: str = Element(tag="faultcode", ns='')
 	faultstring: str = Element(tag="faultstring", ns='')
-	faultactor: str = Element(tag="faultactor", ns='')
+	faultactor: t.Optional[str] = Element(tag="faultactor", ns='', default=None)
 	detail: MessageBodyType = Element(tag="detail", ns='', default=None)
