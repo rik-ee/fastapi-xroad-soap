@@ -8,16 +8,23 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+__all__ = [
+    "ENV_NSMAP",
+    "XRO_NSMAP",
+    "IDEN_NSMAP",
+    "HEADER_NSMAP",
+    "WSDL_NSMAP"
+]
+
+ENV_NSMAP = {"soapenv": "http://schemas.xmlsoap.org/soap/envelope/"}
+XRO_NSMAP = {"xro": "http://x-road.eu/xsd/xroad.xsd"}
+IDEN_NSMAP = {"iden": "http://x-road.eu/xsd/identifiers"}
+HEADER_NSMAP = {**ENV_NSMAP, **XRO_NSMAP, **IDEN_NSMAP}
 WSDL_NSMAP = {
     "wsdl": "http://schemas.xmlsoap.org/wsdl/",
     "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
     "enc": "http://schemas.xmlsoap.org/soap/encoding/",
     "wsi": "http://ws-i.org/profiles/basic/1.1/xsd/",
     "xsd": "http://www.w3.org/2001/XMLSchema",
-    "xro": "http://x-road.eu/xsd/xroad.xsd",
-}
-ENV_NSMAP = {
-    "soapenv": "http://schemas.xmlsoap.org/soap/envelope/",
-    "xro": "http://x-road.eu/xsd/xroad.xsd",
-    "iden": "http://x-road.eu/xsd/identifiers"
+    **XRO_NSMAP
 }
