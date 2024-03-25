@@ -28,10 +28,11 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 		return type(cls_name, (cls,), {"_type": content_type})
 
 	def __init__(self) -> None:
-		type_nsmap = self._type.__xml_nsmap__
-		nsmap = {**ENV_NSMAP, **(type_nsmap or {})}
+		nsmap = {**ENV_NSMAP}
 		if not issubclass(self._type, GenericFault):
 			nsmap.update({**XRO_NSMAP, **IDEN_NSMAP})
+			if isinstance(self._type.__xml_nsmap__, dict):
+				nsmap.update(self._type.__xml_nsmap__)
 		self._factory = t.cast(GenericEnvelope, type(
 			'Factory', (GenericEnvelope,), {},
 			ns="soapenv", nsmap=nsmap
@@ -61,6 +62,14 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 		)
 
 	def deserialize(self, content: t.Union[str, bytes]) -> MessageBodyType:
+		"""
+		:param content: The XML string to be deserialized into an object.
+		:raises pydantic.ValidationError: When the input XML string does
+			not conform to the EnvelopeFactory subtype.
+		:raises lxml.etree.LxmlError: When the input XML string contains
+			syntax or structural errors.
+		:return: An instance of MessageBody
+		"""
 		if not isinstance(content, bytes):
 			content = content.encode("utf-8")
 
