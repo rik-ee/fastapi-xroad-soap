@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute, Element
+from pydantic_xml import BaseXmlModel, element, attr
 from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 from fastapi_xroad_soap.internal.wsdl.models.port_type import WSDLPortType
 from fastapi_xroad_soap.internal.wsdl.models.binding import WSDLBinding
@@ -30,19 +30,19 @@ class WSDLTypes(BaseXmlModel, tag="types", nsmap=WSDL_NSMAP):
 
 
 class WSDLPart(BaseXmlModel, tag="part", ns='wsdl', nsmap=WSDL_NSMAP):
-    element: str = Attribute()
-    name: str = Attribute(default="parameters")
+    element: str = attr()
+    name: str = attr(default="parameters")
 
 
 class WSDLMessage(BaseXmlModel, tag="message", ns='wsdl', nsmap=WSDL_NSMAP):
-    name: str = Attribute()
+    name: str = attr()
     parts: t.List[WSDLPart]
 
 
 class WSDLDefinitions(BaseXmlModel, tag="definitions", ns="wsdl", nsmap=WSDL_NSMAP):
-    target_ns: str = Attribute(name="targetNamespace")
-    name: str = Attribute()
-    types: WSDLTypes = Element()
+    target_ns: str = attr(name="targetNamespace")
+    name: str = attr()
+    types: WSDLTypes = element()
     messages: t.List[WSDLMessage]
     port_type: WSDLPortType
     binding: WSDLBinding

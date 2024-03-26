@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
+from pydantic_xml import BaseXmlModel, attr
 from fastapi_xroad_soap.internal.wsdl.models.conditions import (
 	Enumeration,
 	RegexPattern,
@@ -41,7 +41,7 @@ __all__ = [
 
 
 class StringRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="string")
+	base: str = attr(default="string")
 	length: t.Union[Length, None] = None
 	min_length: t.Union[MinLength, None] = None
 	max_length: t.Union[MaxLength, None] = None
@@ -51,7 +51,7 @@ class StringRestriction(BaseXmlModel, tag="restriction"):
 
 
 class IntegerRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="integer")
+	base: str = attr(default="integer")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -62,7 +62,7 @@ class IntegerRestriction(BaseXmlModel, tag="restriction"):
 
 
 class DecimalRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="decimal")
+	base: str = attr(default="decimal")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -75,7 +75,7 @@ class DecimalRestriction(BaseXmlModel, tag="restriction"):
 
 
 class FloatRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="float")
+	base: str = attr(default="float")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -86,7 +86,7 @@ class FloatRestriction(BaseXmlModel, tag="restriction"):
 
 
 class DoubleRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="double")
+	base: str = attr(default="double")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -97,7 +97,7 @@ class DoubleRestriction(BaseXmlModel, tag="restriction"):
 
 
 class DateRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="date")
+	base: str = attr(default="date")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -107,7 +107,7 @@ class DateRestriction(BaseXmlModel, tag="restriction"):
 
 
 class TimeRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="time")
+	base: str = attr(default="time")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -118,7 +118,7 @@ class TimeRestriction(BaseXmlModel, tag="restriction"):
 
 
 class DateTimeRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="dateTime")
+	base: str = attr(default="dateTime")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -129,7 +129,7 @@ class DateTimeRestriction(BaseXmlModel, tag="restriction"):
 
 
 class DurationRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="duration")
+	base: str = attr(default="duration")
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
 	min_exclusive: t.Union[MinExclusive, None] = None
@@ -140,7 +140,7 @@ class DurationRestriction(BaseXmlModel, tag="restriction"):
 
 
 class AnyURIRestriction(BaseXmlModel, tag="restriction"):
-	base: str = Attribute(default="anyURI")
+	base: str = attr(default="anyURI")
 	length: t.Union[Length, None] = None
 	min_length: t.Union[MinLength, None] = None
 	max_length: t.Union[MaxLength, None] = None

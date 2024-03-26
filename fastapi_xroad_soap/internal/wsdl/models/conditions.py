@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
+from pydantic_xml import BaseXmlModel, attr
 
 
 __all__ = [
@@ -29,48 +29,48 @@ __all__ = [
 
 
 class Enumeration(BaseXmlModel, tag="enumeration"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class RegexPattern(BaseXmlModel, tag="pattern"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class MinInclusive(BaseXmlModel, tag="minInclusive"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class MaxInclusive(BaseXmlModel, tag="maxInclusive"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class MinExclusive(BaseXmlModel, tag="minExclusive"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class MaxExclusive(BaseXmlModel, tag="maxExclusive"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class FractionDigits(BaseXmlModel, tag="fractionDigits"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class TotalDigits(BaseXmlModel, tag="totalDigits"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class Length(BaseXmlModel, tag="length"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class MinLength(BaseXmlModel, tag="minLength"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class MaxLength(BaseXmlModel, tag="maxLength"):
-	value: str = Attribute()
+	value: str = attr()
 
 
 class WhiteSpace(BaseXmlModel, tag="whiteSpace"):
-	value: t.Literal["preserve", "replace", "collapse"] = Attribute(default="preserve")
+	value: t.Literal["preserve", "replace", "collapse"] = attr(default="preserve")

@@ -9,9 +9,10 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
+from pydantic_xml import element
 from fastapi_xroad_soap.internal.constants import ENV_NSMAP
 from fastapi_xroad_soap.internal.envelope.header import XroadHeader
-from fastapi_xroad_soap.internal.envelope.base import Element, MessageBody, MessageBodyType
+from fastapi_xroad_soap.internal.envelope.base import MessageBody, MessageBodyType
 
 
 __all__ = ["GenericBody", "GenericEnvelope", "GenericFault"]
@@ -23,11 +24,11 @@ class GenericBody(MessageBody, t.Generic[MessageBodyType], tag="Body", nsmap=ENV
 
 class GenericEnvelope(MessageBody, t.Generic[MessageBodyType], tag="Envelope", nsmap=ENV_NSMAP):
 	header: t.Optional[XroadHeader] = None
-	body: MessageBodyType = Element(ns="soapenv")
+	body: MessageBodyType = element(ns="soapenv")
 
 
 class GenericFault(MessageBody, t.Generic[MessageBodyType], tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
-	faultcode: str = Element(tag="faultcode", ns='')
-	faultstring: str = Element(tag="faultstring", ns='')
-	faultactor: t.Optional[str] = Element(tag="faultactor", ns='', default=None)
-	detail: MessageBodyType = Element(tag="detail", ns='', default=None)
+	faultcode: str = element(tag="faultcode", ns='')
+	faultstring: str = element(tag="faultstring", ns='')
+	faultactor: t.Optional[str] = element(tag="faultactor", ns='', default=None)
+	detail: MessageBodyType = element(tag="detail", ns='', default=None)

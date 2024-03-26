@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
+from pydantic_xml import BaseXmlModel, attr
 from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 
 
@@ -29,22 +29,22 @@ __all__ = [
 
 
 class SOAPFault(BaseXmlModel, tag="fault", ns="soap", nsmap=WSDL_NSMAP):
-	name: str = Attribute(default="FaultResponse")
-	use: str = Attribute(default="literal")
+	name: str = attr(default="FaultResponse")
+	use: str = attr(default="literal")
 
 
 class SOAPBody(BaseXmlModel, tag="body", ns="soap", nsmap=WSDL_NSMAP):
-	use: str = Attribute(default="literal")
+	use: str = attr(default="literal")
 
 
 class SOAPHeader(BaseXmlModel, tag="header", ns="soap", nsmap=WSDL_NSMAP):
-	message: str = Attribute(default="tns:xroadHeader")
-	use: str = Attribute(default="literal")
-	part: str = Attribute()
+	message: str = attr(default="tns:xroadHeader")
+	use: str = attr(default="literal")
+	part: str = attr()
 
 
 class WSDLFaultBinding(BaseXmlModel, tag="fault", ns="wsdl", nsmap=WSDL_NSMAP):
-	name: str = Attribute(default="FaultResponse")
+	name: str = attr(default="FaultResponse")
 	fault: SOAPFault = SOAPFault()
 
 
@@ -75,11 +75,11 @@ class XROADVersion(BaseXmlModel, tag="version", ns="xroad", nsmap=WSDL_NSMAP):
 
 
 class SOAPOperationBinding(BaseXmlModel, tag="operation", ns="soap", nsmap=WSDL_NSMAP):
-	soap_action: str = Attribute(name="soapAction")
+	soap_action: str = attr(name="soapAction")
 
 
 class WSDLOperationBinding(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSMAP):
-	name: str = Attribute()
+	name: str = attr()
 	operation: SOAPOperationBinding
 	version: XROADVersion = XROADVersion()
 	input: WSDLInputBinding = WSDLInputBinding()
@@ -88,12 +88,12 @@ class WSDLOperationBinding(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_
 
 
 class SOAPBinding(BaseXmlModel, tag="binding", ns="soap", nsmap=WSDL_NSMAP):
-	style: str = Attribute(default="document")
-	transport: str = Attribute(default="http://schemas.xmlsoap.org/soap/http")
+	style: str = attr(default="document")
+	transport: str = attr(default="http://schemas.xmlsoap.org/soap/http")
 
 
 class WSDLBinding(BaseXmlModel, tag="binding", ns="wsdl", nsmap=WSDL_NSMAP):
-	name: str = Attribute(default="serviceBinding")
-	type: str = Attribute(default="tns:servicePortType")
+	name: str = attr(default="serviceBinding")
+	type: str = attr(default="tns:servicePortType")
 	binding: SOAPBinding
 	operations: t.List[WSDLOperationBinding]

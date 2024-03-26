@@ -18,7 +18,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute
+from pydantic_xml import BaseXmlModel, attr
 from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 
 
@@ -30,15 +30,15 @@ __all__ = [
 
 
 class SOAPAddress(BaseXmlModel, tag="address", ns="soap", nsmap=WSDL_NSMAP):
-	location: str = Attribute()
+	location: str = attr()
 
 
 class WSDLPortBinding(BaseXmlModel, tag="port", ns="wsdl", nsmap=WSDL_NSMAP):
-	binding: str = Attribute(default="tns:serviceBinding")
-	name: str = Attribute(default="servicePort")
+	binding: str = attr(default="tns:serviceBinding")
+	name: str = attr(default="servicePort")
 	address: SOAPAddress = SOAPAddress()
 
 
 class WSDLService(BaseXmlModel, tag="service", nsmap=WSDL_NSMAP):
-	name: str = Attribute(default="xroadService")
+	name: str = attr(default="xroadService")
 	port: WSDLPortBinding = WSDLPortBinding()

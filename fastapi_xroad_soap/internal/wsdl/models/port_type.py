@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.envelope import BaseXmlModel, Attribute, Element
+from pydantic_xml import BaseXmlModel, element, attr
 from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 
 
@@ -24,23 +24,23 @@ __all__ = [
 
 
 class WSDLFaultPort(BaseXmlModel, tag="fault", nsmap=WSDL_NSMAP):
-    message: str = Attribute()
-    name: str = Attribute()
+    message: str = attr()
+    name: str = attr()
 
 
 class WSDLOutputPort(BaseXmlModel, tag="output", nsmap=WSDL_NSMAP):
-    message: str = Attribute()
-    name: str = Attribute()
+    message: str = attr()
+    name: str = attr()
 
 
 class WSDLInputPort(BaseXmlModel, tag="input", nsmap=WSDL_NSMAP):
-    message: str = Attribute()
-    name: str = Attribute()
+    message: str = attr()
+    name: str = attr()
 
 
 class WSDLDocumentation(BaseXmlModel, tag="documentation", nsmap=WSDL_NSMAP):
-    title: str = Element(ns='xroad', nsmap=WSDL_NSMAP)
-    notes: str = Element(ns='xroad', nsmap=WSDL_NSMAP)
+    title: str = element(ns='xroad', nsmap=WSDL_NSMAP)
+    notes: str = element(ns='xroad', nsmap=WSDL_NSMAP)
 
 
 class WSDLOperationPort(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSMAP):
@@ -48,9 +48,9 @@ class WSDLOperationPort(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSM
     input: WSDLInputPort
     output: WSDLOutputPort
     fault: WSDLFaultPort
-    name: str = Attribute()
+    name: str = attr()
 
 
 class WSDLPortType(BaseXmlModel, tag="portType", ns="wsdl", nsmap=WSDL_NSMAP):
-    name: str = Attribute(default="servicePortType")
+    name: str = attr(default="servicePortType")
     operations: t.List[WSDLOperationPort]
