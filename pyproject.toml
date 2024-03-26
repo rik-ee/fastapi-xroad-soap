@@ -41,6 +41,7 @@ pydantic = "^2.6.4"
 pydantic-xml = "^2.9.0"
 fastapi = "^0.110.0"
 lxml = "^5.1.0"
+inflection = "^0.5.1"
 
 [tool.poetry.group.dev]
 optional = true
@@ -49,7 +50,7 @@ optional = true
 coverage = "^7.4.4"
 pyright = "^1.1.355"
 pytest = "^8.1.1"
-pytest-cov = "^4.1.0"
+pytest-cov = "^5.0.0"
 pytest-asyncio = "^0.23.6"
 pytest-pyright = "^0.0.6"
 devtools-cli = "^0.13.3"
