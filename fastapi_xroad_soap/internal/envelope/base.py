@@ -9,27 +9,44 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from pydantic_xml import (
-	element as Element,
-	attr as Attribute,
-	BaseXmlModel
-)
+from abc import ABC, abstractmethod
+from pydantic_xml import model, attr as Attribute
 
 
 __all__ = [
-	"Element",
 	"Attribute",
-	"BaseXmlModel",
+	"BaseElement",
+	"AnnotationsMixin",
+	"CompositeMeta",
 	"MessageBody",
 	"MessageBodyType"
 ]
 
 
-class MessageBody(BaseXmlModel, search_mode='unordered', skip_empty=True):
+class BaseElement(ABC):
+	@abstractmethod
+	def annotation(self) -> t.Any: ...
+
+	@abstractmethod
+	def element(self, field_name: str) -> model.XmlEntityInfo: ...
+
+
+class AnnotationsMixin(type):
+	def __new__(cls, name, bases, class_fields, **kwargs):
+		annotations = class_fields.get('__annotations__', {})
+		for attr, obj in class_fields.items():
+			if isinstance(obj, BaseElement):
+				class_fields[attr] = obj.element(attr)
+				annotations[attr] = obj.annotation()
+		return super().__new__(cls, name, bases, class_fields, **kwargs)
+
+
+class CompositeMeta(AnnotationsMixin, model.XmlModelMeta):
 	pass
 
 
-MessageBodyType = t.TypeVar(
-	"MessageBodyType",
-	bound=MessageBody
-)
+class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
+	pass
+
+
+MessageBodyType = t.TypeVar("MessageBodyType", bound=MessageBody)

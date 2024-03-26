@@ -9,9 +9,10 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from fastapi_xroad_soap.internal.envelope.base import (
-	Element,
 	Attribute,
-	BaseXmlModel,
+	BaseElement,
+	AnnotationsMixin,
+	CompositeMeta,
 	MessageBody,
 	MessageBodyType
 )
@@ -31,9 +32,10 @@ from fastapi_xroad_soap.internal.envelope.header import (
 
 
 __all__ = [
-	"Element",
 	"Attribute",
-	"BaseXmlModel",
+	"BaseElement",
+	"AnnotationsMixin",
+	"CompositeMeta",
 	"MessageBody",
 	"MessageBodyType",
 	"EnvelopeFactory",
