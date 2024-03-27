@@ -56,16 +56,14 @@ class SoapFault(Exception):
 
 class InvalidMethodFault(SoapFault):
 	def __init__(self, method: str) -> None:
-		super().__init__(
-			string=f"Service does not support {method} method for SOAP action requests"
-		)
+		msg = f"Service does not support {method} method for SOAP action requests"
+		super().__init__(string=msg)
 
 
 class InvalidActionFault(SoapFault):
 	def __init__(self, action: str) -> None:
-		super().__init__(
-			string=f"Service does not support SOAP action: '{action}'"
-		)
+		msg = f"Service does not support SOAP action: '{action}'"
+		super().__init__(string=msg)
 
 
 class ClientFault(SoapFault):

@@ -18,16 +18,19 @@ from fastapi_xroad_soap.internal.envelope.base import MessageBody, MessageBodyTy
 __all__ = ["GenericBody", "GenericEnvelope", "GenericFault"]
 
 
-class GenericBody(MessageBody, t.Generic[MessageBodyType], tag="Body", nsmap=ENV_NSMAP):
+bases = [MessageBody, t.Generic[MessageBodyType]]
+
+
+class GenericBody(*bases, tag="Body", nsmap=ENV_NSMAP):
 	content: MessageBodyType
 
 
-class GenericEnvelope(MessageBody, t.Generic[MessageBodyType], tag="Envelope", nsmap=ENV_NSMAP):
+class GenericEnvelope(*bases, tag="Envelope", nsmap=ENV_NSMAP, search_mode='unordered'):
 	header: t.Optional[XroadHeader] = None
 	body: MessageBodyType = element(ns="soapenv")
 
 
-class GenericFault(MessageBody, t.Generic[MessageBodyType], tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
+class GenericFault(*bases, tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
 	faultcode: str = element(tag="faultcode", ns='')
 	faultstring: str = element(tag="faultstring", ns='')
 	faultactor: t.Optional[str] = element(tag="faultactor", ns='', default=None)
