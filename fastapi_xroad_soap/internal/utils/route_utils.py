@@ -36,13 +36,13 @@ def validate_annotations(name: str, func: DecoratedCallable) -> dict:
 				f"Parameter name '{key}' not allowed for SOAP action '{name}'."
 				"\nOnly names 'body' and 'header' can be used for parameters."
 			)
-		if key == "return":
+		elif key == "return":
 			if value is None:
 				continue
 			elif not isinstance(value, type) or not issubclass(value, MessageBody):
 				raise TypeError(
 					f"Return type annotation of the '{name}' SOAP action "
-					"must be either 'None' or a subclass of 'MessageBody' ."
+					"must be either 'None' or a subclass of 'MessageBody'."
 				)
 		elif key == "body":
 			if value == XroadHeader:

@@ -70,12 +70,12 @@ class InvalidActionFault(SoapFault):
 
 
 class ClientFault(SoapFault):
-	def __init__(self, ex: Exception) -> None:
+	def __init__(self, ex: t.Union[str, Exception]) -> None:
 		super().__init__(string=str(ex))
 
 
 class ServerFault(SoapFault):
-	def __init__(self, ex: Exception) -> None:
+	def __init__(self, ex: t.Union[str, Exception]) -> None:
 		super().__init__(
 			http_status_code=500,
 			string=str(ex),
@@ -91,7 +91,7 @@ class ValidationFault(SoapFault):
 		super().__init__(
 			http_status_code=400,
 			detail=self.extract_details(error),
-			string=string + " for request",
+			string=string + " in SOAP envelope",
 			code="Client"
 		)
 
