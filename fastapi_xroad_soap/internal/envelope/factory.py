@@ -43,7 +43,9 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 			content: MessageBody,
 			header: XroadHeader = None,
 			pretty_print: bool = False,
-			skip_empty: bool = False
+			skip_empty: bool = False,
+			standalone: bool = False,
+			encoding: str = 'utf-8'
 	) -> bytes:
 		if content.__class__ != self._type:
 			raise TypeError(
@@ -58,7 +60,9 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 
 		return obj.to_xml(
 			pretty_print=pretty_print,
-			skip_empty=skip_empty
+			skip_empty=skip_empty,
+			standalone=standalone,
+			encoding=encoding
 		)
 
 	def deserialize(self, content: t.Union[str, bytes]) -> MessageBodyType:

@@ -11,12 +11,13 @@
 import typing as t
 from abc import ABC, abstractmethod
 from pydantic_xml import model, attr as Attribute
+from pydantic import PrivateAttr
 
 
 __all__ = [
 	"Attribute",
 	"BaseElement",
-	"AnnotationsMixin",
+	"ElementsMeta",
 	"CompositeMeta",
 	"MessageBody",
 	"MessageBodyType"
@@ -31,22 +32,25 @@ class BaseElement(ABC):
 	def element(self, field_name: str) -> model.XmlEntityInfo: ...
 
 
-class AnnotationsMixin(type):
+class ElementsMeta(type):
 	def __new__(cls, name, bases, class_fields, **kwargs):
-		annotations = class_fields.get('__annotations__', {})
+		annotations = class_fields.get("__annotations__", {})
+		elements = dict()
 		for attr, obj in class_fields.items():
 			if isinstance(obj, BaseElement):
 				class_fields[attr] = obj.element(attr)
 				annotations[attr] = obj.annotation()
+				elements[attr] = obj
+		class_fields["_elements"] = elements
 		return super().__new__(cls, name, bases, class_fields, **kwargs)
 
 
-class CompositeMeta(AnnotationsMixin, model.XmlModelMeta):
+class CompositeMeta(ElementsMeta, model.XmlModelMeta):
 	pass
 
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
-	pass
+	_elements: t.Dict[BaseElement] = PrivateAttr(default_factory=dict)
 
 
 MessageBodyType = t.TypeVar("MessageBodyType", bound=MessageBody)
