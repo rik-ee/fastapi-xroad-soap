@@ -37,7 +37,6 @@ class SoapService(FastAPI):
 			name: str = "SoapService",
 			path: str = "/service",
 			this_namespace: str = "https://example.org",
-			require_header: bool = True,
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None
 	) -> None:
@@ -76,10 +75,8 @@ class SoapService(FastAPI):
 
 				action = self._actions[action_name]
 				envelope = action.parse(http_body, content_type)
-				if envelope.header is None and require_header:
-					raise f.MissingHeaderFault(action_name)
+				args = action.arguments_from(envelope, action_name)
 
-				args = action.arguments_from(envelope)
 				if inspect.iscoroutinefunction(action.handler):
 					ret_obj = await action.handler(*args)
 				else:

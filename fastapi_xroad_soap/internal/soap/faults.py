@@ -22,6 +22,7 @@ __all__ = [
 	"SoapFault",
 	"InvalidMethodFault",
 	"InvalidActionFault",
+	"MissingBodyFault",
 	"MissingHeaderFault",
 	"ClientFault",
 	"ServerFault",
@@ -70,9 +71,15 @@ class InvalidActionFault(SoapFault):
 		super().__init__(string=msg)
 
 
+class MissingBodyFault(SoapFault):
+	def __init__(self, action_name: str) -> None:
+		msg = f"Body element missing from envelope for {action_name} SOAP action"
+		super().__init__(string=msg)
+
+
 class MissingHeaderFault(SoapFault):
 	def __init__(self, action_name: str) -> None:
-		msg = f"Missing X-Road header element for {action_name} SOAP action"
+		msg = f"X-Road header element missing from envelope for {action_name} SOAP action"
 		super().__init__(string=msg)
 
 
