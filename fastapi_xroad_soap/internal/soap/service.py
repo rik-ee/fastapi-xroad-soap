@@ -85,7 +85,9 @@ class SoapService(FastAPI):
 
 			except f.SoapFault as ex:
 				return ex.response
-			except (BaseMPError, LxmlError, ValidationError) as ex:
+			except ValidationError as ex:
+				return f.ValidationFault(ex).response
+			except (BaseMPError, LxmlError) as ex:
 				return f.ClientFault(ex).response
 			except Exception as ex:
 				return f.ServerFault(ex).response
