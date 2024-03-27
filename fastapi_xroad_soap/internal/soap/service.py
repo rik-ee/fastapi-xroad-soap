@@ -33,6 +33,7 @@ __all__ = ["SoapService"]
 class SoapService(FastAPI):
 	def __init__(
 			self,
+			*,
 			name: str = "SoapService",
 			path: str = "/service",
 			this_namespace: str = "https://example.org",
@@ -42,6 +43,7 @@ class SoapService(FastAPI):
 		self._wsdl = None
 		self._name = name
 		self._tns = this_namespace
+		self._wsdl_override = wsdl_override
 		if wsdl_override is not None:
 			self._wsdl = utils.read_cached_xml_file(wsdl_override)
 		self._actions: dict[str, SoapAction] = dict()
@@ -104,7 +106,12 @@ class SoapService(FastAPI):
 			return func
 		return closure
 
-	def regenerate_wsdl(self) -> None:
+	def regenerate_wsdl(self, *, force: bool = False) -> None:
+		if self._wsdl_override is not None and not force:
+			raise RuntimeError(
+				"WSDL regeneration must be explicitly forced when "
+				"SoapService has wsdl_override argument set."
+			)
 		self._wsdl = wsdl.generate(
 			self._actions,
 			self._name,
