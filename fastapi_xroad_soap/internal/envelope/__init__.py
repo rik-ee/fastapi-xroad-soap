@@ -11,7 +11,7 @@
 from fastapi_xroad_soap.internal.envelope.base import (
 	Attribute,
 	BaseElement,
-	AnnotationsMixin,
+	ElementsMeta,
 	CompositeMeta,
 	MessageBody,
 	MessageBodyType
@@ -34,7 +34,7 @@ from fastapi_xroad_soap.internal.envelope.header import (
 __all__ = [
 	"Attribute",
 	"BaseElement",
-	"AnnotationsMixin",
+	"ElementsMeta",
 	"CompositeMeta",
 	"MessageBody",
 	"MessageBodyType",

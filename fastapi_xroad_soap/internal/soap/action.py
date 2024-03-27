@@ -9,8 +9,11 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
+from fastapi import Response
 from dataclasses import dataclass
 from fastapi_xroad_soap.internal.envelope import (
+	EnvelopeFactory,
+	GenericEnvelope,
 	XroadHeader,
 	MessageBody
 )
@@ -28,3 +31,29 @@ class SoapAction:
 	header_type: t.Type[XroadHeader]
 	header_index: t.Optional[int]
 	return_type: t.Optional[t.Type[MessageBody]]
+
+	class ReturnTypeError(Exception):
+		def __init__(self, ret_obj: t.Any):
+			super().__init__(f"Unexpected return type: {ret_obj}")
+
+	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
+		return GenericEnvelope()  # TODO: parse request into xml model
+
+	def arguments_from(self, envelope: GenericEnvelope) -> t.List[t.Union[MessageBody, XroadHeader]]:
+		args = list()
+		if self.body_type is not None:
+			args.insert(self.body_index, envelope.body.content)
+		if self.header_type is not None:
+			args.insert(self.header_index, envelope.header)
+		return args
+
+	def response_from(self, ret_obj: t.Optional[MessageBody], header: XroadHeader) -> t.Optional[Response]:
+		if self.return_type is None and ret_obj is None:
+			return None
+		elif isinstance(ret_obj, MessageBody):
+			envelope = EnvelopeFactory[ret_obj.__class__]()
+			return Response(envelope.serialize(
+				content=ret_obj,
+				header=header
+			))
+		raise self.ReturnTypeError(ret_obj)

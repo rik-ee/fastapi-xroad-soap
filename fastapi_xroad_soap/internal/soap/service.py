@@ -57,7 +57,7 @@ class SoapService(FastAPI):
 		)
 
 		@self.middleware('http')
-		async def soap_middleware(http_request: Request, _: t.Callable) -> Response:
+		async def soap_middleware(http_request: Request, _: t.Callable) -> t.Optional[Response]:
 			try:
 				if "wsdl" in http_request.query_params:
 					if self._wsdl is None:
@@ -70,16 +70,19 @@ class SoapService(FastAPI):
 				if not action_name or action_name not in self._actions.keys():
 					raise f.InvalidActionFault(action_name)
 
-				body = await http_request.body()
-				action = self._actions[action_name]
+				http_body = await http_request.body()
 				content_type = http_request.headers.get("content-type")
 
-				args = action.arguments_from(body, content_type)
+				action = self._actions[action_name]
+				envelope = action.parse(http_body, content_type)
+				args = action.arguments_from(envelope)
+
 				if inspect.iscoroutinefunction(action.handler):
 					ret_obj = await action.handler(*args)
 				else:
 					ret_obj = action.handler(*args)
-				return action.response_from(ret_obj)
+				return action.response_from(ret_obj, envelope.header)
+
 			except f.SoapFault as ex:
 				return ex.response
 			except (BaseMPError, LxmlError, ValidationError) as ex:
