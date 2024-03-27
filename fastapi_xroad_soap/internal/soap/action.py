@@ -49,7 +49,7 @@ class SoapAction:
 		args = list()
 		if self.body_type is not None:
 			if envelope.body is None:
-				raise ClientFault(f"Body element missing from envelope for SOAP action '{self.name}'.")
+				raise ClientFault(f"Body element missing from envelope for {self.name} SOAP action.")
 			args.insert(self.body_index, envelope.body.content)
 		if self.header_type is not None:
 			args.insert(self.header_index, envelope.header)

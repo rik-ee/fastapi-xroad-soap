@@ -37,6 +37,7 @@ class SoapService(FastAPI):
 			name: str = "SoapService",
 			path: str = "/service",
 			this_namespace: str = "https://example.org",
+			require_header: bool = True,
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None
 	) -> None:
@@ -75,8 +76,10 @@ class SoapService(FastAPI):
 
 				action = self._actions[action_name]
 				envelope = action.parse(http_body, content_type)
-				args = action.arguments_from(envelope)
+				if envelope.header is None and require_header:
+					raise f.MissingHeaderFault(action_name)
 
+				args = action.arguments_from(envelope)
 				if inspect.iscoroutinefunction(action.handler):
 					ret_obj = await action.handler(*args)
 				else:
@@ -94,7 +97,7 @@ class SoapService(FastAPI):
 
 	def action(self, name: str) -> t.Callable[[DecoratedCallable], DecoratedCallable]:
 		if name in self._actions.keys():
-			raise ValueError(f"Cannot add duplicate SOAP action '{name}'.")
+			raise ValueError(f"Cannot add duplicate {name} SOAP action.")
 
 		def closure(func: DecoratedCallable) -> DecoratedCallable:
 			anno = utils.validate_annotations(name, func)

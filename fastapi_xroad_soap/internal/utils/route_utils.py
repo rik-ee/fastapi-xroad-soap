@@ -33,7 +33,7 @@ def validate_annotations(name: str, func: DecoratedCallable) -> dict:
 	for key, value in anno.items():
 		if key not in ["body", "header", "return"]:
 			raise ValueError(
-				f"Parameter name '{key}' not allowed for SOAP action '{name}'."
+				f"Parameter name '{key}' not allowed for SOAP action {name}."
 				"\nOnly names 'body' and 'header' can be used for parameters."
 			)
 		elif key == "return":
@@ -41,23 +41,23 @@ def validate_annotations(name: str, func: DecoratedCallable) -> dict:
 				continue
 			elif not isinstance(value, type) or not issubclass(value, MessageBody):
 				raise TypeError(
-					f"Return type annotation of the '{name}' SOAP action "
+					f"Return type annotation of the {name} SOAP action "
 					"must be either 'None' or a subclass of 'MessageBody'."
 				)
 		elif key == "body":
 			if value == XroadHeader:
 				raise TypeError(
 					f"Cannot set the 'XroadHeader' class as a type annotation "
-					f"to the 'body' parameter of the '{name}' SOAP action."
+					f"to the 'body' parameter of the {name} SOAP action."
 				)
 			elif not isinstance(value, type) or not issubclass(value, MessageBody):
 				raise TypeError(
-					f"The annotation of the '{key}' parameter of the '{name}' "
+					f"The annotation of the '{key}' parameter of the {name} "
 					f"SOAP action must be a subclass of 'MessageBody'."
 				)
 		elif key == "header" and value != XroadHeader:
 			raise ValueError(
-				f"The annotation of the 'headers' parameter of the '{name}' "
+				f"The annotation of the 'headers' parameter of the {name} "
 				f"SOAP action must be the 'XroadHeaders' class."
 			)
 	return anno

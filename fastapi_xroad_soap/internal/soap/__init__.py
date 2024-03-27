@@ -15,8 +15,10 @@ from fastapi_xroad_soap.internal.soap.faults import (
 	SoapFault,
 	InvalidMethodFault,
 	InvalidActionFault,
+	MissingHeaderFault,
 	ClientFault,
-	ServerFault
+	ServerFault,
+	ValidationFault
 )
 
 
@@ -27,6 +29,8 @@ __all__ = [
 	"SoapFault",
 	"InvalidMethodFault",
 	"InvalidActionFault",
+	"MissingHeaderFault",
 	"ClientFault",
-	"ServerFault"
+	"ServerFault",
+	"ValidationFault"
 ]
