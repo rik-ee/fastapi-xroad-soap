@@ -20,9 +20,10 @@ from fastapi_xroad_soap.internal.envelope.factory import (
 	EnvelopeFactory
 )
 from fastapi_xroad_soap.internal.envelope.generics import (
-	GenericBody,
 	GenericEnvelope,
-	GenericFault
+	GenericFault,
+	GenericBody,
+	AnyBody
 )
 from fastapi_xroad_soap.internal.envelope.header import (
 	XroadHeaderService,
@@ -39,9 +40,10 @@ __all__ = [
 	"MessageBody",
 	"MessageBodyType",
 	"EnvelopeFactory",
-	"GenericBody",
 	"GenericEnvelope",
 	"GenericFault",
+	"GenericBody",
+	"AnyBody",
 	"XroadHeaderService",
 	"XroadHeaderClient",
 	"XroadHeader"

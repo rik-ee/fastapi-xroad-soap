@@ -11,6 +11,7 @@
 import typing as t
 from fastapi import Response
 from dataclasses import dataclass
+from fastapi_xroad_soap.internal.soap.faults import ClientFault
 from fastapi_xroad_soap.internal.envelope import (
 	EnvelopeFactory,
 	GenericEnvelope,
@@ -37,11 +38,18 @@ class SoapAction:
 			super().__init__(f"Unexpected return type: {ret_obj}")
 
 	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
-		return GenericEnvelope()  # TODO: parse request into xml model
+		if "text/xml" in content_type:
+			factory = EnvelopeFactory
+			if self.body_type is not None:
+				factory = EnvelopeFactory[self.body_type]
+			return factory().deserialize(http_body)
+		return None  # TODO: parse multipart body into xml model
 
 	def arguments_from(self, envelope: GenericEnvelope) -> t.List[t.Union[MessageBody, XroadHeader]]:
 		args = list()
 		if self.body_type is not None:
+			if envelope.body is None:
+				raise ClientFault(f"Body element missing from envelope for SOAP action '{self.name}'.")
 			args.insert(self.body_index, envelope.body.content)
 		if self.header_type is not None:
 			args.insert(self.header_index, envelope.header)

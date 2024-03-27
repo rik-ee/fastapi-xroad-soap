@@ -15,19 +15,20 @@ from fastapi_xroad_soap.internal.envelope.header import XroadHeader
 from fastapi_xroad_soap.internal.envelope.base import MessageBody, MessageBodyType
 
 
-__all__ = ["GenericBody", "GenericEnvelope", "GenericFault"]
+__all__ = [
+	"GenericEnvelope",
+	"GenericFault",
+	"GenericBody",
+	"AnyBody"
+]
 
 
 bases = [MessageBody, t.Generic[MessageBodyType]]
 
 
-class GenericBody(*bases, tag="Body", nsmap=ENV_NSMAP):
-	content: MessageBodyType
-
-
 class GenericEnvelope(*bases, tag="Envelope", nsmap=ENV_NSMAP, search_mode='unordered'):
-	header: t.Optional[XroadHeader] = None
-	body: MessageBodyType = element(ns="soapenv")
+	header: t.Optional[XroadHeader] = element(tag="Header", default=None)
+	body: MessageBodyType = element(tag="Body", default=None)
 
 
 class GenericFault(*bases, tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
@@ -35,3 +36,11 @@ class GenericFault(*bases, tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
 	faultstring: str = element(tag="faultstring", ns='')
 	faultactor: t.Optional[str] = element(tag="faultactor", ns='', default=None)
 	detail: MessageBodyType = element(tag="detail", ns='', default=None)
+
+
+class GenericBody(*bases, tag="Body", nsmap=ENV_NSMAP):
+	content: MessageBodyType
+
+
+class AnyBody(MessageBody, tag="Body", nsmap=ENV_NSMAP):
+	content: t.Optional[MessageBody] = element(default_factory=MessageBody)

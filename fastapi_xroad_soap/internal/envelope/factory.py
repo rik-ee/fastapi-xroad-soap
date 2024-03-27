@@ -10,16 +10,28 @@
 #
 import typing as t
 from fastapi_xroad_soap.internal.envelope.header import XroadHeader
-from fastapi_xroad_soap.internal.envelope.generics import GenericEnvelope, GenericBody, GenericFault
-from fastapi_xroad_soap.internal.envelope.base import MessageBody, MessageBodyType
-from fastapi_xroad_soap.internal.constants import ENV_NSMAP, XRO_NSMAP, IDEN_NSMAP
+from fastapi_xroad_soap.internal.envelope.generics import (
+	GenericEnvelope,
+	GenericFault,
+	GenericBody,
+	AnyBody
+)
+from fastapi_xroad_soap.internal.envelope.base import (
+	MessageBodyType,
+	MessageBody
+)
+from fastapi_xroad_soap.internal.constants import (
+	ENV_NSMAP,
+	XRO_NSMAP,
+	IDEN_NSMAP
+)
 
 
 __all__ = ["EnvelopeFactory"]
 
 
 class EnvelopeFactory(t.Generic[MessageBodyType]):
-	_type: t.ClassVar[t.Type[MessageBody]]
+	_type: t.ClassVar[t.Type[MessageBody]] = None
 
 	def __class_getitem__(cls, content_type: t.Type[MessageBody]):
 		cls_name = f"{cls.__name__}[{content_type.__name__}]"
@@ -29,7 +41,7 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 
 	def __init__(self) -> None:
 		nsmap = {**ENV_NSMAP}
-		if not issubclass(self._type, GenericFault):
+		if self._type and not issubclass(self._type, GenericFault):
 			nsmap.update({**XRO_NSMAP, **IDEN_NSMAP})
 			if isinstance(self._type.__xml_nsmap__, dict):
 				nsmap.update(self._type.__xml_nsmap__)
@@ -65,7 +77,7 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 			encoding=encoding
 		)
 
-	def deserialize(self, content: t.Union[str, bytes]) -> MessageBodyType:
+	def deserialize(self, content: t.Union[str, bytes]) -> GenericEnvelope:
 		"""
 		:param content: The XML string to be deserialized into an object.
 		:raises pydantic.ValidationError: When the input XML string does
@@ -77,5 +89,8 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 		if not isinstance(content, bytes):
 			content = content.encode("utf-8")
 
-		model = self._factory[GenericBody[self._type]]
-		return model.from_xml(content)
+		model = AnyBody
+		if self._type is not None:
+			model = GenericBody[self._type]
+		factory = self._factory[model]
+		return factory.from_xml(content)
