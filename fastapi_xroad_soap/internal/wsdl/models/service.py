@@ -30,7 +30,7 @@ __all__ = [
 
 
 class SOAPAddress(BaseXmlModel, tag="address", ns="soap", nsmap=WSDL_NSMAP):
-	location: str = attr()
+	location: str = attr(default="http://example.org/xroad-endpoint")
 
 
 class WSDLPortBinding(BaseXmlModel, tag="port", ns="wsdl", nsmap=WSDL_NSMAP):

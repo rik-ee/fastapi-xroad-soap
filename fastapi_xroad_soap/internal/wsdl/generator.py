@@ -8,11 +8,12 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from fastapi_xroad_soap.internal.soap import SoapService
+import typing as t
+from fastapi_xroad_soap.internal.soap import SoapAction
 
 
 __all__ = ["generate"]
 
 
-def generate(svc: SoapService) -> bytes:
+def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 	return b"dynamically generated wsdl"  # TODO: Implement generator logic

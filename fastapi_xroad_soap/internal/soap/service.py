@@ -19,6 +19,7 @@ from starlette.types import Lifespan
 from fastapi_xroad_soap.internal import utils
 from fastapi_xroad_soap.internal.soap import faults as f
 from fastapi_xroad_soap.internal.soap.action import SoapAction
+from fastapi_xroad_soap.internal.multipart.errors import BaseMPError
 
 try:
 	from fastapi_xroad_soap.internal import wsdl
@@ -34,11 +35,17 @@ class SoapService(FastAPI):
 			self,
 			name: str = "SoapService",
 			path: str = "/service",
-			this_namespace: str = "http://localhost:8000/xroad/wsdl",
-			service_location: str = "http://localhost:8000/xroad/service",
+			this_namespace: str = "https://example.org",
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None
 	) -> None:
+		self._wsdl = None
+		self._name = name
+		self._tns = this_namespace
+		if wsdl_override is not None:
+			self._wsdl = utils.read_cached_xml_file(wsdl_override)
+		self._actions: dict[str, SoapAction] = dict()
+
 		super().__init__(
 			root_path=path,
 			lifespan=lifespan,
@@ -46,19 +53,14 @@ class SoapService(FastAPI):
 			redoc_url=None,
 			docs_url=None,
 		)
-		self._name = name
-		self._wsdl_override: t.Optional[str] = None
-		if wsdl_override is not None:
-			self._wsdl_override = utils.read_cached_xml_file(wsdl_override)
-		self._actions: dict[str, SoapAction] = dict()
 
 		@self.middleware('http')
 		async def soap_middleware(http_request: Request, _: t.Callable) -> Response:
 			try:
 				if "wsdl" in http_request.query_params:
-					if self._wsdl_override is not None:
-						return Response(self._wsdl_override)
-					return Response(wsdl.generate(self))
+					if self._wsdl is None:
+						self.regenerate_wsdl()
+					return Response(self._wsdl)
 				elif http_request.method != "POST":
 					raise f.InvalidMethodFault(http_request.method)
 
@@ -78,7 +80,7 @@ class SoapService(FastAPI):
 				return action.response_from(ret_obj)
 			except f.SoapFault as ex:
 				return ex.response
-			except (ValidationError, LxmlError) as ex:
+			except (BaseMPError, LxmlError, ValidationError) as ex:
 				return f.ClientFault(ex).response
 			except Exception as ex:
 				return f.ServerFault(ex).response
@@ -101,3 +103,10 @@ class SoapService(FastAPI):
 			)
 			return func
 		return closure
+
+	def regenerate_wsdl(self) -> None:
+		self._wsdl = wsdl.generate(
+			self._actions,
+			self._name,
+			self._tns
+		)
