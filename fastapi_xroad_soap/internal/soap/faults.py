@@ -9,7 +9,6 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.errors import BaseError
 from fastapi_xroad_soap.internal.soap.response import SoapResponse
 from fastapi_xroad_soap.internal.envelope import (
 	GenericFault,
@@ -26,7 +25,7 @@ __all__ = [
 ]
 
 
-class SoapFault(BaseError):
+class SoapFault(Exception):
 	def __init__(
 			self,
 			code: str = "Client",

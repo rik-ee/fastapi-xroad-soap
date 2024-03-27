@@ -10,15 +10,12 @@
 #
 import typing as t
 from email.parser import HeaderParser
+from fastapi_xroad_soap.internal.multipart.errors import CorruptMultipartError, NonMultipartError
 from fastapi_xroad_soap.internal.multipart.structures import CaseInsensitiveDict
 from fastapi_xroad_soap.internal.multipart.encoder import encode_with
-from fastapi_xroad_soap.internal import errors
 
 
-USB = t.Union[str, bytes]
-
-
-def _split_on_find(content: USB, bound: USB):
+def _split_on_find(content: t.Union[str, bytes], bound: t.Union[str, bytes]):
     point = content.find(bound)
     return content[:point], content[point + len(bound):]
 
@@ -41,9 +38,7 @@ class BodyPart:
             if first != b'':
                 headers = _header_parser(first.lstrip(), encoding)
         else:
-            raise errors.CorruptMultipartError(
-                'content does not contain CR-LF-CR-LF'
-            )
+            raise CorruptMultipartError()
         self.headers = CaseInsensitiveDict(headers)
 
     @property
@@ -63,9 +58,7 @@ class MultipartDecoder:
         ct_info = tuple(x.strip() for x in self.content_type.split(';'))
         mimetype = ct_info[0]
         if mimetype.split('/')[0].lower() != 'multipart':
-            raise errors.NonMultipartError(
-                "Unexpected mimetype in content-type: '{}'".format(mimetype)
-            )
+            raise NonMultipartError(mimetype)
         for item in ct_info[1:]:
             attr, value = _split_on_find(
                 item,
