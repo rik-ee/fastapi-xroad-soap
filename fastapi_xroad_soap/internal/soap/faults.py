@@ -8,7 +8,9 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import re
 import typing as t
+from pydantic_xml import element
 from fastapi_xroad_soap.internal.soap.response import SoapResponse
 from fastapi_xroad_soap.internal.envelope import (
 	GenericFault,
@@ -21,7 +23,8 @@ __all__ = [
 	"InvalidMethodFault",
 	"InvalidActionFault",
 	"ClientFault",
-	"ServerFault"
+	"ServerFault",
+	"ValidationFault"
 ]
 
 
@@ -78,3 +81,41 @@ class ServerFault(SoapFault):
 			string=str(ex),
 			code="Server"
 		)
+
+
+class ValidationFault(SoapFault):
+	def __init__(self, ex: Exception) -> None:
+		error = str(ex)
+		match = re.search(r"^(.*?)\sfor", error)
+		string = match.group(1) if match else "validation error"
+		super().__init__(
+			http_status_code=400,
+			detail=self.extract_details(error),
+			string=string + " for request",
+			code="Client"
+		)
+
+	@staticmethod
+	def extract_details(error: str) -> MessageBody:
+		class Detail(MessageBody):
+			location: str = element()
+			reason: str = element()
+			input_value: str = element()
+
+		class ErrorDetails(MessageBody):
+			details: t.List[Detail] = element(tag="validationError")
+
+		details = list()
+		pattern = r"(body\..+?)(?=\nbody\.|\Z)"
+		matches = re.findall(pattern, error, re.DOTALL)
+		for match in matches:
+			loc, msg = match.split('\n')
+			ln_match = re.search(r"(\[line \d+]: )", msg)
+			em_match = re.search(r"\[line \d+]: (.+?) \[type=", msg)
+			iv_match = re.search(r"\[type=.+?, input_value='(.+?)',", msg)
+			details.append(Detail(
+				location=(ln_match.group(1) + loc) if ln_match else "unknown",
+				reason=em_match.group(1) if em_match else "unknown",
+				input_value=iv_match.group(1) if iv_match else "unknown"
+			))
+		return ErrorDetails(details=details)
