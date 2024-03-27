@@ -50,7 +50,7 @@ class CompositeMeta(ElementsMeta, model.XmlModelMeta):
 
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
-	_elements: t.Dict[BaseElement] = PrivateAttr(default_factory=dict)
+	_elements: t.Dict[str, BaseElement] = PrivateAttr(default_factory=dict)
 
 
 MessageBodyType = t.TypeVar("MessageBodyType", bound=MessageBody)
