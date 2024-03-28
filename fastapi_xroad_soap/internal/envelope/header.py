@@ -13,10 +13,10 @@ from pydantic_xml import BaseXmlModel, element, attr
 from fastapi_xroad_soap.internal.constants import HEADER_NSMAP
 
 
-__all__ = ["XroadHeaderService", "XroadHeaderClient", "XroadHeader"]
+__all__ = ["XroadService", "XroadClient", "XroadHeader"]
 
 
-class XroadHeaderService(BaseXmlModel, tag="service", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
+class XroadService(BaseXmlModel, tag="service", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
 	object_type: str = attr(tag="objectType", ns="iden", default="SERVICE")
 	xroad_instance: str = element(tag="xRoadInstance", ns="iden")
 	member_class: str = element(tag="memberClass", ns="iden")
@@ -26,7 +26,7 @@ class XroadHeaderService(BaseXmlModel, tag="service", ns="xro", nsmap=HEADER_NSM
 	service_version: t.Union[str, None] = element(tag="serviceVersion", ns="iden", default=None)
 
 
-class XroadHeaderClient(BaseXmlModel, tag="client", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
+class XroadClient(BaseXmlModel, tag="client", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
 	object_type: str = attr(tag="objectType", ns="iden", default="SUBSYSTEM")
 	xroad_instance: str = element(tag="xRoadInstance", ns="iden")
 	member_class: str = element(tag="memberClass", ns="iden")
@@ -38,5 +38,5 @@ class XroadHeader(BaseXmlModel, tag="Header", ns="soapenv", nsmap=HEADER_NSMAP, 
 	user_id: t.Union[str, None] = element(tag="userId", ns="xro", default=None)
 	proto_ver: str = element(tag="protocolVersion", ns="xro")
 	id: str = element(tag="id", ns="xro")
-	service: t.Union[XroadHeaderService, None] = None
-	client: XroadHeaderClient
+	service: t.Union[XroadService, None] = None
+	client: XroadClient
