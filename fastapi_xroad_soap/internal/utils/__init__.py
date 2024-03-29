@@ -22,6 +22,10 @@ from fastapi_xroad_soap.internal.utils.route_utils import (
 	validate_annotations,
 	extract_parameter_positions
 )
+from fastapi_xroad_soap.internal.utils.content_utils import (
+	guess_content_type,
+	detect_decode
+)
 
 
 __all__ = [
@@ -30,5 +34,7 @@ __all__ = [
 	"LazyImport",
 	"get_annotations",
 	"validate_annotations",
-	"extract_parameter_positions"
+	"extract_parameter_positions",
+	"guess_content_type",
+	"detect_decode"
 ]
