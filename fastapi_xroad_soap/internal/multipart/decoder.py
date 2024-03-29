@@ -9,8 +9,6 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import quopri
-import chardet
-from charset_normalizer import from_bytes
 from email.parser import HeaderParser
 from fastapi_xroad_soap.internal.multipart.structures import CaseInsensitiveDict
 from fastapi_xroad_soap.internal.multipart import errors, helpers
