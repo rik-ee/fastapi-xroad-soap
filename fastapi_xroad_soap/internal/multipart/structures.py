@@ -12,6 +12,9 @@ import collections as c
 import typing as t
 
 
+__all__ = ["CaseInsensitiveDict"]
+
+
 class CaseInsensitiveDict(t.MutableMapping):
     def __init__(self, data=None, **kwargs):
         self._store = c.OrderedDict()

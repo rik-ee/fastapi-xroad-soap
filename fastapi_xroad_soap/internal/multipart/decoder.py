@@ -8,46 +8,44 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-import typing as t
+import quopri
+import chardet
+from charset_normalizer import from_bytes
 from email.parser import HeaderParser
-from fastapi_xroad_soap.internal.multipart.errors import CorruptMultipartError, NonMultipartError
 from fastapi_xroad_soap.internal.multipart.structures import CaseInsensitiveDict
-from fastapi_xroad_soap.internal.multipart.encoder import encode_with
+from fastapi_xroad_soap.internal.multipart import errors, helpers
+from fastapi_xroad_soap.internal.utils import content_utils
 
 
-def _split_on_find(content: t.Union[str, bytes], bound: t.Union[str, bytes]):
-    point = content.find(bound)
-    return content[:point], content[point + len(bound):]
-
-
-def _header_parser(string: bytes, encoding: str):
-    string = string.decode(encoding)
-    headers = HeaderParser().parsestr(string).items()
-    return ((
-        encode_with(k, encoding),
-        encode_with(v, encoding)
-    ) for k, v in headers)
+__all__ = ["BodyPart", "MultipartDecoder"]
 
 
 class BodyPart:
-    def __init__(self, content: bytes, encoding: str) -> None:
-        self.encoding = encoding
-        headers = {}
-        if b'\r\n\r\n' in content:
-            first, self.content = _split_on_find(content, b'\r\n\r\n')
-            if first != b'':
-                headers = _header_parser(first.lstrip(), encoding)
-        else:
-            raise CorruptMultipartError()
-        self.headers = CaseInsensitiveDict(headers)
+    def __init__(self, content: bytes) -> None:
+        separator = b'\r\n\r\n'
+        if separator not in content:
+            raise errors.CorruptMultipartError()
 
-    @property
-    def text(self) -> str:
-        return self.content.decode(self.encoding)
+        self.headers = CaseInsensitiveDict()
+        self.content, self.encoding = b'', ''
+
+        header, content = helpers.split_on_find(content, separator)
+        if header:
+            decoded_header = content_utils.detect_decode(header)[0]
+            header_msg = HeaderParser().parsestr(decoded_header)
+            self.headers = CaseInsensitiveDict(dict(header_msg))
+        if content:
+            ct_enc = self.headers.get("Content-Transfer-Encoding")
+            if ct_enc == "quoted-printable":
+                content = quopri.decodestring(content)
+            dec_content, self.encoding = content_utils.detect_decode(content)
+            if self.encoding not in [None, 'utf-8']:
+                content = dec_content.encode('utf-8')
+            self.content = content
 
 
 class MultipartDecoder:
-    def __init__(self, content, content_type, encoding='utf-8') -> None:
+    def __init__(self, content, content_type, encoding: str = None) -> None:
         self.content_type = content_type
         self.encoding = encoding
         self.parts = tuple()
@@ -58,14 +56,11 @@ class MultipartDecoder:
         ct_info = tuple(x.strip() for x in self.content_type.split(';'))
         mimetype = ct_info[0]
         if mimetype.split('/')[0].lower() != 'multipart':
-            raise NonMultipartError(mimetype)
+            raise errors.NonMultipartError(mimetype)
         for item in ct_info[1:]:
-            attr, value = _split_on_find(
-                item,
-                '='
-            )
+            attr, value = helpers.split_on_find(item, separator='=')
             if attr.lower() == 'boundary':
-                self.boundary = encode_with(value.strip('"'), self.encoding)
+                self.boundary = helpers.encode_with(value.strip('"'))
 
     @staticmethod
     def _fix_first_part(part, boundary_marker):
@@ -80,7 +75,7 @@ class MultipartDecoder:
 
         def body_part(part):
             fixed = MultipartDecoder._fix_first_part(part, boundary)
-            return BodyPart(fixed, self.encoding)
+            return BodyPart(fixed)
 
         def test_part(part):
             return (part != b'' and
@@ -90,9 +85,3 @@ class MultipartDecoder:
 
         parts = content.split(b''.join((b'\r\n', boundary)))
         self.parts = tuple(body_part(x) for x in parts if test_part(x))
-
-    @classmethod
-    def from_response(cls, response, encoding='utf-8'):
-        content = response.content
-        content_type = response.headers.get('content-type', None)
-        return cls(content, content_type, encoding)

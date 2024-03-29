@@ -9,10 +9,17 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import io
-import os
-import contextlib
 from uuid import uuid4
-from fastapi_xroad_soap.internal.multipart import fields
+from fastapi_xroad_soap.internal.multipart.fields import RequestField
+from fastapi_xroad_soap.internal.multipart import helpers
+
+
+__all__ = [
+    "MultipartEncoder",
+    "Part",
+    "CustomBytesIO",
+    "FileWrapper"
+]
 
 
 class MultipartEncoder:
@@ -28,8 +35,8 @@ class MultipartEncoder:
 
         # Pre-encoded boundary
         self._encoded_boundary = b''.join([
-            encode_with(self.boundary, self.encoding),
-            encode_with('\r\n', self.encoding)
+            helpers.encode_with(self.boundary, self.encoding),
+            helpers.encode_with('\r\n', self.encoding)
             ])
 
         #: Fields provided by the user
@@ -69,12 +76,12 @@ class MultipartEncoder:
     def _calculate_length(self):
         boundary_len = len(self.boundary)
         self._len = sum(
-            (boundary_len + total_len(p) + 4) for p in self.parts
+            (boundary_len + helpers.total_len(p) + 4) for p in self.parts
             ) + boundary_len + 4
         return self._len
 
     def _calculate_load_amount(self, read_size):
-        amount = read_size - total_len(self._buffer)
+        amount = read_size - helpers.total_len(self._buffer)
         return amount if amount > 0 else 0
 
     def _load(self, amount):
@@ -122,8 +129,9 @@ class MultipartEncoder:
             else:
                 file_pointer = v
 
-            field = fields.RequestField(
-                name=k, data=file_pointer,
+            field = RequestField(
+                name=k,
+                data=file_pointer,
                 filename=file_name,
                 headers=file_headers
             )
@@ -142,13 +150,13 @@ class MultipartEncoder:
         return self._write(self._encoded_boundary)
 
     def _write_closing_boundary(self):
-        with reset(self._buffer):
+        with helpers.reset(self._buffer):
             self._buffer.seek(-2, 2)
             self._buffer.write(b'--\r\n')
         return 2
 
     def _write_headers(self, headers):
-        return self._write(encode_with(headers, self.encoding))
+        return self._write(helpers.encode_with(headers, self.encoding))
 
     @property
     def content_type(self):
@@ -169,80 +177,38 @@ class MultipartEncoder:
         return self._buffer.read(size)
 
 
-def encode_with(string, encoding):
-    if not (string is None or isinstance(string, bytes)):
-        return string.encode(encoding)
-    return string
-
-
-def total_len(o):
-    if hasattr(o, '__len__'):
-        return len(o)
-
-    if hasattr(o, 'len'):
-        return o.len
-
-    if hasattr(o, 'fileno'):
-        try:
-            fileno = o.fileno()
-        except io.UnsupportedOperation:
-            pass
-        else:
-            return os.fstat(fileno).st_size
-
-    if hasattr(o, 'getvalue'):
-        # e.g. BytesIO, cStringIO.StringIO
-        return len(o.getvalue())
-
-
-@contextlib.contextmanager
-def reset(buffer):
-    original_position = buffer.tell()
-    buffer.seek(0, 2)
-    yield
-    buffer.seek(original_position, 0)
-
-
-def coerce_data(data, encoding):
-    if not isinstance(data, CustomBytesIO):
-        if hasattr(data, 'getvalue'):
-            return CustomBytesIO(data.getvalue(), encoding)
-
-        if hasattr(data, 'fileno'):
-            return FileWrapper(data)
-
-        if not hasattr(data, 'read'):
-            return CustomBytesIO(data, encoding)
-
-    return data
-
-
 class Part(object):
     def __init__(self, headers, body):
         self.headers = headers
         self.body = body
         self.headers_unread = True
-        self.len = len(self.headers) + total_len(self.body)
+        self.len = len(self.headers) + helpers.total_len(self.body)
 
     @classmethod
     def from_field(cls, field, encoding):
-        headers = encode_with(field.render_headers(), encoding)
-        body = coerce_data(field.data, encoding)
+        headers = helpers.encode_with(field.render_headers(), encoding)
+        body = field.data
+        if not isinstance(field.data, CustomBytesIO):
+            if hasattr(field.data, 'getvalue'):
+                body = CustomBytesIO(field.data.getvalue(), encoding)
+            if hasattr(field.data, 'fileno'):
+                body = FileWrapper(field.data)
+            if not hasattr(field.data, 'read'):
+                body = CustomBytesIO(field.data, encoding)
         return cls(headers, body)
 
     def bytes_left_to_write(self):
         to_read = 0
         if self.headers_unread:
             to_read += len(self.headers)
-
-        return (to_read + total_len(self.body)) > 0
+        return (to_read + helpers.total_len(self.body)) > 0
 
     def write_to(self, buffer, size):
         written = 0
         if self.headers_unread:
             written += buffer.append(self.headers)
             self.headers_unread = False
-        while total_len(self.body) > 0 and (size == -1 or written < size):
+        while helpers.total_len(self.body) > 0 and (size == -1 or written < size):
             amount_to_read = size
             if size != -1:
                 amount_to_read = size - written
@@ -252,7 +218,7 @@ class Part(object):
 
 class CustomBytesIO(io.BytesIO):
     def __init__(self, buffer=None, encoding='utf-8'):
-        buffer = encode_with(buffer, encoding)
+        buffer = helpers.encode_with(buffer, encoding)
         super(CustomBytesIO, self).__init__(buffer)
 
     def _get_end(self):
@@ -268,12 +234,12 @@ class CustomBytesIO(io.BytesIO):
         return length - self.tell()
 
     def append(self, bytes_):
-        with reset(self):
+        with helpers.reset(self):
             written = self.write(bytes_)
         return written
 
     def smart_truncate(self):
-        to_be_read = total_len(self)
+        to_be_read = helpers.total_len(self)
         already_read = self._get_end() - to_be_read
 
         if already_read >= to_be_read:
@@ -290,7 +256,7 @@ class FileWrapper(object):
 
     @property
     def len(self):
-        return total_len(self.fd) - self.fd.tell()
+        return helpers.total_len(self.fd) - self.fd.tell()
 
     def read(self, length=-1):
         return self.fd.read(length)
