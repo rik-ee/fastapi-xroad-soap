@@ -9,6 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import quopri
+import typing as t
 from email.parser import HeaderParser
 from fastapi_xroad_soap.internal.multipart.structures import CaseInsensitiveDict
 from fastapi_xroad_soap.internal.multipart import errors, helpers
@@ -24,29 +25,44 @@ class BodyPart:
         if separator not in content:
             raise errors.CorruptMultipartError()
 
-        self.headers = CaseInsensitiveDict()
-        self.content, self.encoding = b'', ''
+        self.headers: t.Optional[CaseInsensitiveDict] = None
+        self.content: t.Optional[bytes] = None
+        self.encoding: t.Optional[str] = None
+        self.is_mixed_multipart: bool = False
 
-        header, content = helpers.split_on_find(content, separator)
-        if header:
-            decoded_header = content_utils.detect_decode(header)[0]
-            header_msg = HeaderParser().parsestr(decoded_header)
+        headers, content = helpers.split_on_find(content, separator)
+
+        if headers:
+            dec_headers = content_utils.detect_decode(headers)[0]
+            header_msg = HeaderParser().parsestr(dec_headers)
             self.headers = CaseInsensitiveDict(dict(header_msg))
-        if content:
-            ct_enc = self.headers.get("Content-Transfer-Encoding")
-            if ct_enc == "quoted-printable":
-                content = quopri.decodestring(content)
-            dec_content, self.encoding = content_utils.detect_decode(content)
-            if self.encoding not in [None, 'utf-8']:
-                content = dec_content.encode('utf-8')
-            self.content = content
+
+            if content:
+                self.content = content
+
+                c_type = self.headers.get("Content-Type")
+                if "multipart/mixed" in c_type:
+                    self.is_mixed_multipart = True
+                    return  # skip processing if content is multipart
+
+                ct_enc = self.headers.get("Content-Transfer-Encoding")
+                if ct_enc == "binary" or "octet-stream" in c_type:
+                    self.encoding = "binary"
+                    return  # skip processing if content is binary
+
+                if ct_enc == "quoted-printable":
+                    content = quopri.decodestring(content)
+
+                dec_content, self.encoding = content_utils.detect_decode(content)
+                if self.encoding not in [None, 'utf-8']:
+                    content = dec_content.encode('utf-8')  # convert to utf-8
+                self.content = content
 
 
 class MultipartDecoder:
-    def __init__(self, content, content_type, encoding: str = None) -> None:
+    def __init__(self, content, content_type) -> None:
         self.content_type = content_type
-        self.encoding = encoding
-        self.parts = tuple()
+        self.parts: t.Tuple[BodyPart, ...] = tuple()
         self._find_boundary()
         self._parse_body(content)
 
