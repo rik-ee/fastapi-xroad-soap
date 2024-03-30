@@ -22,7 +22,10 @@ def guess_content_type(file_name: t.Union[str, None]) -> str:
     return guess or default
 
 
-def detect_decode(string: bytes, decode: bool = True) -> t.Tuple[t.Union[str, bytes], t.Union[str, None]]:
-    if encoding := chardet.detect(string, should_rename_legacy=True)["encoding"]:
-        return string.decode(encoding) if decode else string, encoding
+def detect_decode(string: bytes) -> t.Tuple[t.Union[str, bytes], t.Union[str, None]]:
+    try:
+        return string.decode('utf-8'), 'utf-8'
+    except UnicodeDecodeError:
+        if encoding := chardet.detect(string, should_rename_legacy=True)["encoding"]:
+            return string.decode(encoding), encoding
     return string, None
