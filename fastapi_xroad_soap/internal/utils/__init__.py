@@ -23,7 +23,7 @@ from fastapi_xroad_soap.internal.utils.route_utils import (
 	extract_parameter_positions
 )
 from fastapi_xroad_soap.internal.utils.content_utils import (
-	guess_content_type,
+	guess_mime_type,
 	detect_decode
 )
 
@@ -35,6 +35,6 @@ __all__ = [
 	"get_annotations",
 	"validate_annotations",
 	"extract_parameter_positions",
-	"guess_content_type",
+	"guess_mime_type",
 	"detect_decode"
 ]

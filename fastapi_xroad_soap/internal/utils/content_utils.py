@@ -13,18 +13,21 @@ import mimetypes
 import typing as t
 
 
-__all__ = ["guess_content_type", "detect_decode"]
+__all__ = ["guess_mime_type", "detect_decode"]
 
 
-def guess_content_type(file_name: t.Union[str, None]) -> str:
+def guess_mime_type(file_name: t.Union[str, None]) -> str:
     guess = mimetypes.guess_type(file_name)[0]
     default = "application/octet-stream"
     return guess or default
 
 
-def detect_decode(string: bytes) -> t.Tuple[t.Union[str, bytes], t.Union[str, None]]:
+def detect_decode(
+        string: bytes,
+        encoding: str = 'utf-8'
+) -> t.Tuple[t.Union[str, bytes], t.Union[str, None]]:
     try:
-        return string.decode('utf-8'), 'utf-8'
+        return string.decode(encoding), encoding
     except UnicodeDecodeError:
         if encoding := chardet.detect(string, should_rename_legacy=True)["encoding"]:
             return string.decode(encoding), encoding
