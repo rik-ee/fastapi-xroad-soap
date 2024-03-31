@@ -13,7 +13,6 @@ import base64
 import typing as t
 from email.parser import HeaderParser
 from email.message import Message
-from fastapi_xroad_soap.internal import utils
 from ..errors import CorruptMultipartError
 from .. import helpers
 
@@ -35,7 +34,7 @@ class DecodedBodyPart:
 
         headers, content = helpers.split_on_find(content, separator)
         if headers:
-            dec_headers = utils.detect_decode(headers)[0]
+            dec_headers = helpers.detect_decode(headers)[0]
             self.headers = HeaderParser().parsestr(dec_headers)
             if content:
                 self.content = content
@@ -54,7 +53,7 @@ class DecodedBodyPart:
             content = base64.b64decode(content)
         elif transfer_enc == "quoted-printable":
             content = quopri.decodestring(content)
-        dec_content, encoding = utils.detect_decode(content)
+        dec_content, encoding = helpers.detect_decode(content)
         if encoding not in [None, 'utf-8']:
             content = dec_content.encode('utf-8')
         self.content = content
@@ -69,4 +68,4 @@ class DecodedBodyPart:
                     header='content-disposition',
                     param='name'
                 )
-            self.mime_type = utils.guess_mime_type(self.file_name)
+            self.mime_type = helpers.guess_mime_type(self.file_name)
