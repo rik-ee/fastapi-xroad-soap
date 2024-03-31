@@ -16,15 +16,15 @@ from pydantic import PrivateAttr
 
 __all__ = [
 	"Attribute",
-	"BaseElement",
-	"ElementsMeta",
+	"BaseElementSpec",
+	"ElementSpecMeta",
 	"CompositeMeta",
 	"MessageBody",
 	"MessageBodyType"
 ]
 
 
-class BaseElement(ABC):
+class BaseElementSpec(ABC):
 	@abstractmethod
 	def annotation(self) -> t.Any: ...
 
@@ -32,25 +32,25 @@ class BaseElement(ABC):
 	def element(self, field_name: str) -> model.XmlEntityInfo: ...
 
 
-class ElementsMeta(type):
+class ElementSpecMeta(type):
 	def __new__(cls, name, bases, class_fields, **kwargs):
 		annotations = class_fields.get("__annotations__", {})
-		elements = dict()
+		element_specs = dict()
 		for attr, obj in class_fields.items():
-			if isinstance(obj, BaseElement):
+			if isinstance(obj, BaseElementSpec):
 				class_fields[attr] = obj.element(attr)
 				annotations[attr] = obj.annotation()
-				elements[attr] = obj
-		class_fields["_elements"] = elements
+				element_specs[attr] = obj
+		class_fields["_element_specs"] = element_specs
 		return super().__new__(cls, name, bases, class_fields, **kwargs)
 
 
-class CompositeMeta(ElementsMeta, model.XmlModelMeta):
+class CompositeMeta(ElementSpecMeta, model.XmlModelMeta):
 	pass
 
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
-	_elements: t.Dict[str, BaseElement] = PrivateAttr(default_factory=dict)
+	_element_specs: t.Dict[str, BaseElementSpec] = PrivateAttr(default_factory=dict)
 
 
 MessageBodyType = t.TypeVar("MessageBodyType", bound=MessageBody)

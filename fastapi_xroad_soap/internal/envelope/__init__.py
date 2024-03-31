@@ -10,8 +10,8 @@
 #
 from fastapi_xroad_soap.internal.envelope.base import (
 	Attribute,
-	BaseElement,
-	ElementsMeta,
+	BaseElementSpec,
+	ElementSpecMeta,
 	CompositeMeta,
 	MessageBody,
 	MessageBodyType
@@ -34,8 +34,8 @@ from fastapi_xroad_soap.internal.envelope.header import (
 
 __all__ = [
 	"Attribute",
-	"BaseElement",
-	"ElementsMeta",
+	"BaseElementSpec",
+	"ElementSpecMeta",
 	"CompositeMeta",
 	"MessageBody",
 	"MessageBodyType",
