@@ -10,7 +10,7 @@
 #
 from __future__ import annotations
 import typing as t
-from fastapi_xroad_soap.internal.utils import content_utils
+from fastapi_xroad_soap.internal import utils
 
 
 __all__ = ["RequestField"]
@@ -53,7 +53,7 @@ class RequestField:
                 filename, data, content_type = value
             else:
                 filename, data = value
-                content_type = content_utils.guess_content_type(filename)
+                content_type = utils.guess_mime_type(filename)
         else:
             filename = None
             content_type = None

@@ -8,20 +8,24 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-__all__ = ["BaseMPError", "NonMultipartError", "CorruptMultipartError"]
+__all__ = [
+    "MultipartError",
+    "NonMultipartError",
+    "CorruptMultipartError"
+]
 
 
-class BaseMPError(Exception):
+class MultipartError(Exception):
     pass
 
 
-class NonMultipartError(BaseMPError):
+class NonMultipartError(MultipartError):
     def __init__(self, mimetype: str):
         msg = f"Unexpected mimetype in content-type header: '{mimetype}'"
         super().__init__(msg)
 
 
-class CorruptMultipartError(BaseMPError):
+class CorruptMultipartError(MultipartError):
     def __init__(self):
         msg = 'Request body is not a valid multipart message.'
         super().__init__(msg)

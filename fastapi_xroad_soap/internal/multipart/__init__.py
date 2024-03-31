@@ -8,31 +8,31 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from fastapi_xroad_soap.internal.multipart.encoder import (
-	MultipartEncoder,
-	Part,
+from .decoder.decoder import MultipartDecoder
+from .decoder.bodypart import DecodedBodyPart
+from .encoder.encoder import MultipartEncoder
+from .encoder.field import RequestField
+from .encoder.bodypart import (
+	EncodedBodyPart,
 	CustomBytesIO,
 	FileWrapper
 )
-from fastapi_xroad_soap.internal.multipart.decoder import (
-	BodyPart,
-	MultipartDecoder
-)
-from fastapi_xroad_soap.internal.multipart.fields import (
-	RequestField
-)
-from fastapi_xroad_soap.internal.multipart.structures import (
-	CaseInsensitiveDict
+from .errors import (
+	MultipartError,
+	NonMultipartError,
+	CorruptMultipartError
 )
 
 
 __all__ = [
+	"MultipartDecoder",
+	"DecodedBodyPart",
 	"MultipartEncoder",
-	"Part",
+	"RequestField",
+	"EncodedBodyPart",
 	"CustomBytesIO",
 	"FileWrapper",
-	"BodyPart",
-	"MultipartDecoder",
-	"RequestField",
-	"CaseInsensitiveDict"
+	"MultipartError",
+	"NonMultipartError",
+	"CorruptMultipartError"
 ]
