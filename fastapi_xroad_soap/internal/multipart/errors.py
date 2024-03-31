@@ -8,10 +8,14 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import typing as t
+
+
 __all__ = [
     "MultipartError",
     "NonMultipartError",
-    "CorruptMultipartError"
+    "CorruptMultipartError",
+    "MissingContentIDError"
 ]
 
 
@@ -27,5 +31,11 @@ class NonMultipartError(MultipartError):
 
 class CorruptMultipartError(MultipartError):
     def __init__(self):
-        msg = 'Request body is not a valid multipart message.'
+        msg = "Request body is not a valid multipart message"
+        super().__init__(msg)
+
+
+class MissingContentIDError(MultipartError):
+    def __init__(self):
+        msg = f"All MIME file attachments must have Content-ID headers"
         super().__init__(msg)

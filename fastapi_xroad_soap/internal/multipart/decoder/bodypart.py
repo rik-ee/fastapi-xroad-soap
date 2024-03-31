@@ -13,7 +13,10 @@ import base64
 import typing as t
 from email.parser import HeaderParser
 from email.message import Message
-from ..errors import CorruptMultipartError
+from ..errors import (
+    CorruptMultipartError,
+    MissingContentIDError
+)
 from .. import helpers
 
 
@@ -22,6 +25,7 @@ __all__ = ["DecodedBodyPart"]
 
 class DecodedBodyPart:
     headers: t.Optional[Message] = None
+    content_id: t.Optional[str] = None
     content: t.Optional[bytes] = None
     mime_type: t.Optional[str] = None
     file_name: t.Optional[str] = None
@@ -36,14 +40,19 @@ class DecodedBodyPart:
         if headers:
             dec_headers = helpers.detect_decode(headers)[0]
             self.headers = HeaderParser().parsestr(dec_headers)
+
             if content:
                 self.content = content
+
                 content_type = self.headers.get_content_type()
+                content_disp = self.headers.get_content_disposition()
+                boundary = self.headers.get_boundary()
+
                 if content_type and "multipart/mixed" in content_type:
                     self.is_mixed_multipart = True
-                    return
-                self.set_decode_content(content)
-                self.set_file_metadata()
+                elif content_disp == "attachment" and boundary is None:
+                    self.set_decode_content(content)
+                    self.set_file_metadata()
 
     def set_decode_content(self, content: bytes) -> None:
         transfer_enc = self.headers.get("Content-Transfer-Encoding")
@@ -69,3 +78,8 @@ class DecodedBodyPart:
                     param='name'
                 )
             self.mime_type = helpers.guess_mime_type(self.file_name)
+            cid = self.headers.get("Content-ID")
+            if cid is None:
+                raise MissingContentIDError
+            cid = f"cid:{cid.lstrip('<').rstrip('>')}"
+            self.content_id = cid

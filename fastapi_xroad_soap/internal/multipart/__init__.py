@@ -20,7 +20,8 @@ from .encoder.bodypart import (
 from .errors import (
 	MultipartError,
 	NonMultipartError,
-	CorruptMultipartError
+	CorruptMultipartError,
+	MissingContentIDError
 )
 
 
@@ -34,5 +35,6 @@ __all__ = [
 	"FileWrapper",
 	"MultipartError",
 	"NonMultipartError",
-	"CorruptMultipartError"
+	"CorruptMultipartError",
+	"MissingContentIDError"
 ]
