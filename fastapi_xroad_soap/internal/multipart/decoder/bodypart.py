@@ -25,10 +25,10 @@ __all__ = ["DecodedBodyPart"]
 
 class DecodedBodyPart:
     headers: t.Optional[Message] = None
-    content_id: t.Optional[str] = None
-    content: t.Optional[bytes] = None
-    mime_type: t.Optional[str] = None
     file_name: t.Optional[str] = None
+    mime_type: t.Optional[str] = None
+    content: t.Optional[bytes] = None
+    content_id: t.Optional[str] = None
     is_mixed_multipart: bool = False
 
     def __init__(self, content: bytes) -> None:
@@ -43,7 +43,6 @@ class DecodedBodyPart:
 
             if content:
                 self.content = content
-
                 content_type = self.headers.get_content_type()
                 content_disp = self.headers.get_content_disposition()
                 boundary = self.headers.get_boundary()

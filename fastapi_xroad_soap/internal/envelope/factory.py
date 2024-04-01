@@ -9,21 +9,21 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.envelope.header import XroadHeader
-from fastapi_xroad_soap.internal.envelope.generics import (
+from fastapi_xroad_soap.internal.constants import (
+	ENV_NSMAP,
+	XRO_NSMAP,
+	IDEN_NSMAP
+)
+from .header import XroadHeader
+from .generics import (
 	GenericEnvelope,
 	GenericFault,
 	GenericBody,
 	AnyBody
 )
-from fastapi_xroad_soap.internal.envelope.base import (
+from .base import (
 	MessageBodyType,
 	MessageBody
-)
-from fastapi_xroad_soap.internal.constants import (
-	ENV_NSMAP,
-	XRO_NSMAP,
-	IDEN_NSMAP
 )
 
 

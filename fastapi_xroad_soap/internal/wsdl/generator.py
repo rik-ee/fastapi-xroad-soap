@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi_xroad_soap.internal.soap import SoapAction
+from fastapi_xroad_soap.internal.soap.action import SoapAction
 
 
 __all__ = ["generate"]

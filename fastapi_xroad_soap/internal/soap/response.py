@@ -10,10 +10,10 @@
 #
 import typing as t
 from fastapi import Response
-from fastapi_xroad_soap.internal.envelope import (
+from ..envelope import (
 	EnvelopeFactory,
-	MessageBody,
-	XroadHeader
+	XroadHeader,
+	MessageBody
 )
 
 

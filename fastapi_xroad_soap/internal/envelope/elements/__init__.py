@@ -11,12 +11,12 @@
 from fastapi_xroad_soap.internal.envelope.elements.swaref import (
 	SwaRefFile,
 	SwaRefSpec,
-	SwaRef
+	SwaRefList
 )
 
 
 __all__ = [
 	"SwaRefFile",
 	"SwaRefSpec",
-	"SwaRef"
+	"SwaRefList"
 ]

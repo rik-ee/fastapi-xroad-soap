@@ -11,8 +11,8 @@
 import typing as t
 from pydantic_xml import element
 from fastapi_xroad_soap.internal.constants import ENV_NSMAP
-from fastapi_xroad_soap.internal.envelope.header import XroadHeader
-from fastapi_xroad_soap.internal.envelope.base import MessageBody, MessageBodyType
+from .base import MessageBody, MessageBodyType
+from .header import XroadHeader
 
 
 __all__ = [
