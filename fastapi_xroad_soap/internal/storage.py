@@ -30,13 +30,13 @@ class GlobalWeakStorage:
 		cls._inst_counter += 1
 		return instance
 
-	def __init__(self):
+	def __init__(self) -> None:
 		self._objects = WeakValueDictionary()
 		self._obj_counter = 0
 
 	@staticmethod
 	def _unique_id(index: int) -> str:
-		clamped = index % 1000000000
+		clamped = index % 1_000_000_000
 		filled = str(clamped).zfill(9)
 		token = secrets.token_hex(24)
 		return f"{filled}..{token}"
@@ -50,11 +50,12 @@ class GlobalWeakStorage:
 	@classmethod
 	def retrieve_object(cls, fingerprint: str) -> t.Union[t.Any, None]:
 		inst_id, obj_id = fingerprint.split('-$$-')
-		instance = cls._instances[inst_id]
+		instance = cls._instances.get(inst_id) or {}
 		return instance.get(obj_id)
 
 	def get(self, fingerprint: str = None) -> t.Union[t.Any, None]:
-		if '-$$-' not in fingerprint:  # is obj_id
-			return self._objects[fingerprint]
-		obj_id = fingerprint.split('-$$-')[1]
-		return self._objects[obj_id]
+		if '-$$-' not in fingerprint:
+			obj_id = fingerprint  # assume obj_id
+		else:
+			obj_id = fingerprint.split('-$$-')[1]
+		return self._objects.get(obj_id)
