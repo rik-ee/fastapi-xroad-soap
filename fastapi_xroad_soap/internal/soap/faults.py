@@ -124,12 +124,16 @@ class ValidationFault(SoapFault):
 		matches = re.findall(pattern, error, re.DOTALL)
 		for match in matches:
 			loc, msg = match.split('\n')
-			ln_match = re.search(r"(\[line \d+]: )", msg)
-			em_match = re.search(r"\[line \d+]: (.+?) \[type=", msg)
-			iv_match = re.search(r"\[type=.+?, input_value='(.+?)',", msg)
+			iv_match = re.search(r"\$\$(.*?)\$\$", msg)
+			if iv_match:
+				msg = msg.replace(f"$${iv_match.group(1)}$$", '')
+			else:
+				iv_match = re.search(r"\[type=.+?, input_value=(.+?),", msg)
+			ln_match = re.search(r"(\[line -?\d+]: )", msg)
+			re_match = re.search(r"\[line -?\d+]: (.+?) \[type=", msg)
 			details.append(Detail(
 				location=(ln_match.group(1) + loc) if ln_match else "unknown",
-				reason=em_match.group(1) if em_match else "unknown",
-				input_value=iv_match.group(1) if iv_match else "unknown"
+				input_value=iv_match.group(1) if iv_match else "unknown",
+				reason=re_match.group(1) if re_match else "unknown"
 			))
 		return ErrorDetails(details=details)
