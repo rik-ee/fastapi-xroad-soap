@@ -1,0 +1,38 @@
+#
+#   European Union Public License 1.2
+#
+#   Copyright (c) 2024, Centre of Registers and Information Systems
+#
+#   The contents of this file are subject to the terms and conditions defined in the License.
+#   You may not use, modify, or distribute this file except in compliance with the License.
+#
+#   SPDX-License-Identifier: EUPL-1.2
+#
+import typing as t
+from pathlib import Path
+from fastapi import Request, Response
+from fastapi.types import DecoratedCallable
+from starlette.types import Scope, Receive, Send
+from .registry import FileRegistry
+from .action import SoapAction
+
+
+class FastAPI:
+	def __call__(self, scope: Scope, receive: Receive, send: Send) -> t.Awaitable[None]: ...
+
+
+class SoapService(FastAPI):
+	_name: str
+	_tns: str
+	_wsdl_response: t.Union[Response, None]
+	_wsdl_override: t.Optional[t.Union[str, Path]]
+	_registry: FileRegistry
+	_actions: dict[str, SoapAction]
+
+	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]: ...
+
+	def add_action(self, name: str, handler: t.Callable[..., t.Any]) -> None: ...
+
+	def action(self, name: str) -> t.Callable[[DecoratedCallable], DecoratedCallable]: ...
+
+	def regenerate_wsdl(self, *, force: bool = False) -> None: ...

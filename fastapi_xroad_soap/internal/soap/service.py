@@ -16,18 +16,18 @@ from pydantic import ValidationError
 from fastapi import FastAPI, Request, Response
 from fastapi.types import DecoratedCallable
 from starlette.types import Lifespan
-from fastapi_xroad_soap.internal import utils
-from fastapi_xroad_soap.internal.soap import faults as f
-from fastapi_xroad_soap.internal.soap.action import SoapAction
-from fastapi_xroad_soap.internal.multipart.errors import BaseMPError
-
-try:
-	from fastapi_xroad_soap.internal import wsdl
-except ImportError:
-	wsdl = utils.LazyImport("fastapi_xroad_soap.internal.wsdl")
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi_xroad_soap.internal.multipart import MultipartError
+from fastapi_xroad_soap.internal import utils, wsdl
+from .registry import FileRegistry
+from .action import SoapAction
+from . import faults as f
 
 
 __all__ = ["SoapService"]
+
+
+SoapMiddleware: t.TypeAlias = BaseHTTPMiddleware
 
 
 class SoapService(FastAPI):
@@ -40,14 +40,19 @@ class SoapService(FastAPI):
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None
 	) -> None:
-		self._wsdl = None
 		self._name = name
 		self._tns = this_namespace
+		self._wsdl_response = None
 		self._wsdl_override = wsdl_override
-		if wsdl_override is not None:
-			self._wsdl = utils.read_cached_xml_file(wsdl_override)
-		self._actions: dict[str, SoapAction] = dict()
+		self._registry = FileRegistry()
+		self._actions = dict()
 
+		if isinstance(wsdl_override, (str, Path)):
+			wsdl_file = utils.read_cached_xml_file(wsdl_override)
+			self._wsdl_response = Response(
+				media_type="text/xml",
+				content=wsdl_file
+			)
 		super().__init__(
 			root_path=path,
 			lifespan=lifespan,
@@ -55,59 +60,65 @@ class SoapService(FastAPI):
 			redoc_url=None,
 			docs_url=None,
 		)
+		self.add_middleware(
+			middleware_class=SoapMiddleware,
+			dispatch=self._soap_middleware
+		)
 
-		@self.middleware('http')
-		async def soap_middleware(http_request: Request, _: t.Callable) -> t.Optional[Response]:
-			try:
-				if "wsdl" in http_request.query_params:
-					if self._wsdl is None:
-						self.regenerate_wsdl()
-					return Response(self._wsdl)
-				elif http_request.method != "POST":
-					raise f.InvalidMethodFault(http_request.method)
+	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]:
+		try:
+			if "wsdl" in http_request.query_params:
+				if self._wsdl_response is None:
+					self.regenerate_wsdl()
+				return self._wsdl_response
+			elif http_request.method != "POST":
+				raise f.InvalidMethodFault(http_request.method)
 
-				action_name = http_request.headers.get("soapaction", '').strip('"')
-				if not action_name or action_name not in self._actions.keys():
-					raise f.InvalidActionFault(action_name)
+			action_name = http_request.headers.get("soapaction", '').strip('"')
+			if not action_name or action_name not in self._actions.keys():
+				raise f.InvalidActionFault(action_name)
 
-				http_body = await http_request.body()
-				content_type = http_request.headers.get("content-type")
+			http_body = await http_request.body()
+			content_type = http_request.headers.get("content-type")
 
-				action = self._actions[action_name]
-				envelope = action.parse(http_body, content_type)
-				args = action.arguments_from(envelope, action_name)
+			action = self._actions[action_name]
+			envelope = action.parse(http_body, content_type)
+			args = action.arguments_from(envelope, action_name)
 
-				if inspect.iscoroutinefunction(action.handler):
-					ret_obj = await action.handler(*args)
-				else:
-					ret_obj = action.handler(*args)
-				return action.response_from(ret_obj, envelope.header)
+			if inspect.iscoroutinefunction(action.handler):
+				ret = await action.handler(*args)
+			else:
+				ret = action.handler(*args)
+			return action.response_from(ret, envelope.header)
 
-			except f.SoapFault as ex:
-				return ex.response
-			except ValidationError as ex:
-				return f.ValidationFault(ex).response
-			except (BaseMPError, LxmlError) as ex:
-				return f.ClientFault(ex).response
-			except Exception as ex:
-				return f.ServerFault(ex).response
+		except f.SoapFault as ex:
+			return ex.response
+		except ValidationError as ex:
+			return f.ValidationFault(ex).response
+		except (MultipartError, LxmlError) as ex:
+			return f.ClientFault(ex).response
+		except Exception as ex:
+			return f.ServerFault(ex).response
 
-	def action(self, name: str) -> t.Callable[[DecoratedCallable], DecoratedCallable]:
+	def add_action(self, name: str, handler: t.Callable[..., t.Any]) -> None:
 		if name in self._actions.keys():
 			raise ValueError(f"Cannot add duplicate {name} SOAP action.")
+		anno = utils.validate_annotations(name, handler)
+		pos = utils.extract_parameter_positions(anno)
+		self._actions[name] = SoapAction(
+			name=name,
+			handler=handler,
+			body_type=anno.get("body"),
+			body_index=pos.get("body"),
+			header_type=anno.get("header"),
+			header_index=pos.get("header"),
+			return_type=anno.get("return"),
+			registry=self._registry
+		)
 
+	def action(self, name: str) -> t.Callable[[DecoratedCallable], DecoratedCallable]:
 		def closure(func: DecoratedCallable) -> DecoratedCallable:
-			anno = utils.validate_annotations(name, func)
-			pos = utils.extract_parameter_positions(anno)
-			self._actions[name] = SoapAction(
-				name=name,
-				handler=func,
-				body_type=anno.get("body"),
-				body_index=pos.get("body"),
-				header_type=anno.get("header"),
-				header_index=pos.get("header"),
-				return_type=anno.get("return")
-			)
+			self.add_action(name, func)
 			return func
 		return closure
 
@@ -117,8 +128,11 @@ class SoapService(FastAPI):
 				"WSDL regeneration must be explicitly forced when "
 				"SoapService has wsdl_override argument set."
 			)
-		self._wsdl = wsdl.generate(
-			self._actions,
-			self._name,
-			self._tns
+		self._wsdl_response = Response(
+			media_type="text/xml",
+			content=wsdl.generate(
+				self._actions,
+				self._name,
+				self._tns
+			)
 		)
