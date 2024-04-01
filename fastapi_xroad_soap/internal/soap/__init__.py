@@ -8,10 +8,11 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from fastapi_xroad_soap.internal.soap.response import SoapResponse
-from fastapi_xroad_soap.internal.soap.service import SoapService
-from fastapi_xroad_soap.internal.soap.action import SoapAction
-from fastapi_xroad_soap.internal.soap.faults import (
+from .registry import FileRegistry
+from .response import SoapResponse
+from .service import SoapService
+from .action import SoapAction
+from .faults import (
 	SoapFault,
 	InvalidMethodFault,
 	InvalidActionFault,
@@ -24,6 +25,7 @@ from fastapi_xroad_soap.internal.soap.faults import (
 
 
 __all__ = [
+	"FileRegistry",
 	"SoapResponse",
 	"SoapService",
 	"SoapAction",
