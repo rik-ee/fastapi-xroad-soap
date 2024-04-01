@@ -21,6 +21,10 @@ __all__ = [
 
 class FileSize(ABC):
 	def __init__(self, size: int = 1) -> None:
+		if size < 0:
+			raise ValueError("File size cannot be a negative number")
+		elif not isinstance(size, int):
+			raise TypeError("File size must be an integer")
 		self.size = size
 
 	@property
