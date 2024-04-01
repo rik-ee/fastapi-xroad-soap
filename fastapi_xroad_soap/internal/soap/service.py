@@ -18,8 +18,8 @@ from fastapi.types import DecoratedCallable
 from starlette.types import Lifespan
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi_xroad_soap.internal.multipart import MultipartError
+from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal import utils, wsdl
-from .registry import FileRegistry
 from .action import SoapAction
 from . import faults as f
 
@@ -44,7 +44,7 @@ class SoapService(FastAPI):
 		self._tns = this_namespace
 		self._wsdl_response = None
 		self._wsdl_override = wsdl_override
-		self._registry = FileRegistry()
+		self._storage = GlobalWeakStorage()
 		self._actions = dict()
 
 		if isinstance(wsdl_override, (str, Path)):
@@ -113,7 +113,7 @@ class SoapService(FastAPI):
 			header_type=anno.get("header"),
 			header_index=pos.get("header"),
 			return_type=anno.get("return"),
-			registry=self._registry
+			storage=self._storage
 		)
 
 	def action(self, name: str) -> t.Callable[[DecoratedCallable], DecoratedCallable]:

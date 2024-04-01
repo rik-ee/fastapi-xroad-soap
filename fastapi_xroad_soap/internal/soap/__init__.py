@@ -8,7 +8,6 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .registry import FileRegistry
 from .response import SoapResponse
 from .service import SoapService
 from .action import SoapAction
@@ -25,7 +24,6 @@ from .faults import (
 
 
 __all__ = [
-	"FileRegistry",
 	"SoapResponse",
 	"SoapService",
 	"SoapAction",

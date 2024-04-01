@@ -10,11 +10,11 @@
 #
 import typing as t
 from dataclasses import dataclass
+from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import (
 	MultipartDecoder,
 	DecodedBodyPart
 )
-from .registry import FileRegistry
 from .response import SoapResponse
 from . import faults as f
 from ..envelope import (
@@ -37,7 +37,7 @@ class SoapAction:
 	header_type: t.Type[XroadHeader]
 	header_index: t.Optional[int]
 	return_type: t.Optional[t.Type[MessageBody]]
-	registry: FileRegistry
+	storage: GlobalWeakStorage
 
 	def arguments_from(
 			self,
@@ -72,6 +72,7 @@ class SoapAction:
 
 	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
 		body_ct = content_type.split(';')[0]
+
 		if body_ct == "multipart/related":
 			files: t.List[DecodedBodyPart] = list()
 			decoder1 = MultipartDecoder(http_body, content_type)
@@ -90,7 +91,7 @@ class SoapAction:
 
 			xml_str = envelope.content
 			for file in files:
-				fingerprint = self.registry.register_file(file)
+				fingerprint = self.storage.insert_object(file)
 				xml_str = xml_str.replace(
 					file.content_id.encode(),
 					fingerprint.encode()

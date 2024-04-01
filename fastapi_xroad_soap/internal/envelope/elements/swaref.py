@@ -14,7 +14,7 @@ import typing as t
 import inflection
 from pydantic_xml import model, element
 from pydantic import PrivateAttr, Field, model_validator
-from fastapi_xroad_soap.internal.soap import FileRegistry
+from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
 from fastapi_xroad_soap.internal.file_size import FileSize
 from fastapi_xroad_soap.internal.envelope import (
@@ -50,7 +50,7 @@ class SwaRefFile(MessageBody):
 	@model_validator(mode="after")
 	def _init_data(self):
 		if self._file is None:
-			file = FileRegistry.retrieve_file(self.fingerprint)
+			file: DecodedBodyPart = GlobalWeakStorage.retrieve_object(self.fingerprint)
 			self.name = file.file_name
 			suffix = self.name.split(".")[-1]
 			self.mimetype = file.mime_type
@@ -95,7 +95,8 @@ class SwaRefSpec(BaseElementSpec):
 		return False
 
 	def annotation(self) -> t.Any:
-		return t.List[SwaRefFile.new(self)]
+		return SwaRefFile.new(self)
+		# return t.List[SwaRefFile.new(self)]
 
 	def element(self, attr_name: str) -> model.XmlEntityInfo:
 		is_inf = self.max_occurs == "unbounded"
@@ -103,8 +104,8 @@ class SwaRefSpec(BaseElementSpec):
 			ns=self.ns or '',
 			nsmap=self.nsmap or dict(),
 			tag=self.tag or inflection.camelize(attr_name),
-			max_length=None if is_inf else self.max_occurs,
-			min_length=self.min_occurs
+			# max_length=None if is_inf else self.max_occurs,
+			# min_length=self.min_occurs
 		)
 
 

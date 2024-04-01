@@ -13,7 +13,7 @@ from pathlib import Path
 from fastapi import Request, Response
 from fastapi.types import DecoratedCallable
 from starlette.types import Scope, Receive, Send
-from .registry import FileRegistry
+from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from .action import SoapAction
 
 
@@ -26,7 +26,7 @@ class SoapService(FastAPI):
 	_tns: str
 	_wsdl_response: t.Union[Response, None]
 	_wsdl_override: t.Optional[t.Union[str, Path]]
-	_registry: FileRegistry
+	_storage: GlobalWeakStorage
 	_actions: dict[str, SoapAction]
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]: ...
