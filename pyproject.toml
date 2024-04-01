@@ -63,17 +63,17 @@ httpx = "^0.27.0"
 asyncio_mode = "auto"
 console_output_style = "count"
 filterwarnings = ["ignore::DeprecationWarning"]
-pythonpath = [".", "src"]
+pythonpath = [".", "fastapi_xroad_soap"]
 testpaths = ["tests"]
 addopts = [
-    "--cov=src",
+    "--cov=fastapi_xroad_soap",
     "--cov-report=html",
     "--no-cov-on-fail",
     "--import-mode=append"
 ]
 
 [tool.coverage.run]
-source = ["src/*"]
+source = ["fastapi_xroad_soap/*"]
 branch = true
 
 [tool.coverage.report]
