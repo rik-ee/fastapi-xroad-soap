@@ -9,10 +9,15 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from fastapi import Response
 from dataclasses import dataclass
-from fastapi_xroad_soap.internal.soap import faults as f
-from fastapi_xroad_soap.internal.envelope import (
+from fastapi_xroad_soap.internal.multipart import (
+	MultipartDecoder,
+	DecodedBodyPart
+)
+from .registry import FileRegistry
+from .response import SoapResponse
+from . import faults as f
+from ..envelope import (
 	EnvelopeFactory,
 	GenericEnvelope,
 	XroadHeader,
@@ -32,18 +37,7 @@ class SoapAction:
 	header_type: t.Type[XroadHeader]
 	header_index: t.Optional[int]
 	return_type: t.Optional[t.Type[MessageBody]]
-
-	class ReturnTypeError(Exception):
-		def __init__(self, ret_obj: t.Any):
-			super().__init__(f"Unexpected return type: {ret_obj}")
-
-	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
-		if "text/xml" in content_type:
-			factory = EnvelopeFactory
-			if self.body_type is not None:
-				factory = EnvelopeFactory[self.body_type]
-			return factory().deserialize(http_body)
-		return None  # TODO: parse multipart body into xml model
+	registry: FileRegistry
 
 	def arguments_from(
 			self,
@@ -65,13 +59,48 @@ class SoapAction:
 			self,
 			ret_obj: t.Optional[MessageBody],
 			header: XroadHeader
-	) -> t.Optional[Response]:
-		if self.return_type is None and ret_obj is None:
+	) -> t.Optional[SoapResponse]:
+		has_return = self.return_type is not None
+		if not has_return and ret_obj is None:
 			return None
-		elif isinstance(ret_obj, MessageBody):
-			envelope = EnvelopeFactory[ret_obj.__class__]()
-			return Response(envelope.serialize(
-				content=ret_obj,
-				header=header
-			))
-		raise self.ReturnTypeError(ret_obj)
+		elif has_return and isinstance(ret_obj, self.return_type):
+			return SoapResponse(content=ret_obj, header=header)
+		raise TypeError(
+			f"Expected return type {self.return_type}, "
+			f"but received {ret_obj}"
+		)
+
+	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
+		body_ct = content_type.split(';')[0]
+		if body_ct == "multipart/related":
+			files: t.List[DecodedBodyPart] = list()
+			decoder1 = MultipartDecoder(http_body, content_type)
+			envelope = None
+
+			for index, part1 in enumerate(decoder1.parts):
+				if index == 0:
+					envelope = part1
+				elif part1.is_mixed_multipart:
+					content_type = part1.headers.get('content-type')
+					decoder2 = MultipartDecoder(part1.content, content_type)
+					for part2 in decoder2.parts:
+						files.append(part2)
+				else:
+					files.append(part1)
+
+			xml_str = envelope.content
+			for file in files:
+				fingerprint = self.registry.register_file(file)
+				xml_str = xml_str.replace(
+					file.content_id.encode(),
+					fingerprint.encode()
+				)
+			http_body = xml_str
+
+		elif body_ct not in ["text/xml", "application/xml", "application/soap+xml"]:
+			raise f.ClientFault(f"Invalid content type: {body_ct}")
+
+		factory = EnvelopeFactory
+		if self.body_type is not None:
+			factory = EnvelopeFactory[self.body_type]
+		return factory().deserialize(http_body)
