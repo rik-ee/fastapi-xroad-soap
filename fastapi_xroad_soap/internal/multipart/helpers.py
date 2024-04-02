@@ -14,6 +14,7 @@ import chardet
 import mimetypes
 import contextlib
 import typing as t
+import charset_normalizer as charset
 
 
 __all__ = [
@@ -78,6 +79,11 @@ def detect_decode(
 	try:
 		return string.decode(encoding), encoding
 	except UnicodeDecodeError:
-		if encoding := chardet.detect(string, should_rename_legacy=True)["encoding"]:
-			return string.decode(encoding), encoding
+		if charset.is_binary(string):
+			return string, None
+		kwargs = dict(should_rename_legacy=True)
+		match = chardet.detect(string, **kwargs)
+		if match and match["confidence"] >= 0.7:
+			enc = match["encoding"]
+			return string.decode(enc), enc
 	return string, None
