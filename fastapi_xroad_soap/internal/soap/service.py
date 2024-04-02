@@ -28,6 +28,7 @@ __all__ = ["SoapService"]
 
 
 SoapMiddleware: t.TypeAlias = BaseHTTPMiddleware
+FuncOrCoro = t.Union[t.Callable[..., t.Any], t.Awaitable[t.Any]]
 
 
 class SoapService(FastAPI):
@@ -38,12 +39,16 @@ class SoapService(FastAPI):
 			path: str = "/service",
 			this_namespace: str = "https://example.org",
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
-			lifespan: t.Optional[Lifespan[FastAPI]] = None
+			lifespan: t.Optional[Lifespan[FastAPI]] = None,
+			fault_callback: t.Optional[t.Callable[[Request, Exception], None]] = None,
+			hide_ise_cause: bool = False
 	) -> None:
 		self._name = name
 		self._tns = this_namespace
 		self._wsdl_response = None
 		self._wsdl_override = wsdl_override
+		self._fault_callback = fault_callback
+		self._hide_ise_cause = hide_ise_cause
 		self._storage = GlobalWeakStorage()
 		self._actions = dict()
 
@@ -60,12 +65,12 @@ class SoapService(FastAPI):
 			redoc_url=None,
 			docs_url=None,
 		)
-		self._as_asgi().add_middleware(
+		self._as_fastapi().add_middleware(
 			middleware_class=SoapMiddleware,
 			dispatch=self._soap_middleware
 		)
 
-	def _as_asgi(self) -> FastAPI:
+	def _as_fastapi(self) -> FastAPI:
 		return t.cast(FastAPI, self)
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]:
@@ -87,21 +92,32 @@ class SoapService(FastAPI):
 			action = self._actions[action_name]
 			envelope = action.parse(http_body, content_type)
 			args = action.arguments_from(envelope, action_name)
-
-			if inspect.iscoroutinefunction(action.handler):
-				ret = await action.handler(*args)
-			else:
-				ret = action.handler(*args)
+			ret = await self._await_or_call(action.handler, *args)
 			return action.response_from(ret, envelope.header)
 
 		except f.SoapFault as ex:
-			return ex.response
+			err, resp = ex, ex.response
 		except ValidationError as ex:
-			return f.ValidationFault(ex).response
+			err, resp = ex, f.ValidationFault(ex).response
 		except (MultipartError, LxmlError) as ex:
-			return f.ClientFault(ex).response
+			err, resp = ex, f.ClientFault(ex).response
 		except Exception as ex:
-			return f.ServerFault(ex).response
+			if self._hide_ise_cause:
+				ex = "Internal Server Error"
+			err, resp = ex, f.ServerFault(ex).response
+
+		if self._fault_callback is not None:
+			await self._await_or_call(
+				self._fault_callback,
+				http_request, err
+			)
+		return resp
+
+	@staticmethod
+	async def _await_or_call(func: FuncOrCoro, *args, **kwargs) -> t.Any:
+		if inspect.iscoroutinefunction(func):
+			return await func(*args, **kwargs)
+		return func(*args, **kwargs)
 
 	def add_action(self, name: str, handler: t.Callable[..., t.Any]) -> None:
 		if name in self._actions.keys():
