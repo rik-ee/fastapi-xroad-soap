@@ -8,8 +8,11 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import re
 import typing as t
 from dataclasses import dataclass
+from pydantic import ValidationError
+from fastapi_xroad_soap.internal.constants import HEADER_NSMAP
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import (
 	MultipartDecoder,
@@ -72,12 +75,10 @@ class SoapAction:
 
 	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
 		body_ct = content_type.split(';')[0]
-
 		if body_ct == "multipart/related":
 			files: t.List[DecodedBodyPart] = list()
 			decoder1 = MultipartDecoder(http_body, content_type)
 			envelope = None
-
 			for index, part1 in enumerate(decoder1.parts):
 				if index == 0:
 					envelope = part1
@@ -88,7 +89,6 @@ class SoapAction:
 						files.append(part2)
 				else:
 					files.append(part1)
-
 			xml_str = envelope.content
 			for file in files:
 				fingerprint = self.storage.insert_object(file)
@@ -97,11 +97,40 @@ class SoapAction:
 					fingerprint.encode()
 				)
 			http_body = xml_str
-
 		elif body_ct not in ["text/xml", "application/xml", "application/soap+xml"]:
 			raise f.ClientFault(f"Invalid content type: {body_ct}")
+		return self.deserialize(http_body)
 
-		factory = EnvelopeFactory
-		if self.body_type is not None:
+	def deserialize(self, http_body: bytes) -> GenericEnvelope:
+		if self.body_type is None:
+			return EnvelopeFactory().deserialize(http_body)
+		try:
 			factory = EnvelopeFactory[self.body_type]
-		return factory().deserialize(http_body)
+			return factory().deserialize(http_body)
+		except ValidationError:
+			extra_nsmap = self.extract_extra_nsmap(http_body)
+			name = f"Namespaced{type(self.body_type).__name__}"
+			for ns in extra_nsmap.keys():
+				new = t.cast(t.Type[MessageBody], type(
+					name, (self.body_type,), {},
+					ns=ns, nsmap=extra_nsmap
+				))
+				try:
+					factory = EnvelopeFactory[new]
+					return factory().deserialize(http_body)
+				except ValidationError:
+					pass
+			raise f.ClientFault(f"Invalid namespace for Body element")
+
+	@staticmethod
+	def extract_extra_nsmap(http_body: bytes) -> t.Dict[str, str]:
+		pattern = r'<.*?Envelope\s*([^>]*)>'
+		match = re.search(pattern, http_body.decode(), re.IGNORECASE)
+		if match is None:
+			raise f.ClientFault(f"Unexpected envelope structure")
+		nsmap = dict()
+		for raw_ns in match.group(1).split(' '):
+			key, value = raw_ns[len('xmlns:'):].split('=')  # type: str, str
+			if key not in HEADER_NSMAP:
+				nsmap[key] = value.strip('"')
+		return nsmap
