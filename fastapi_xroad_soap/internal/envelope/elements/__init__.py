@@ -8,15 +8,17 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from fastapi_xroad_soap.internal.envelope.elements.swaref import (
+from .swaref import (
 	SwaRefFile,
+	SwaRefFileInternal,
 	SwaRefSpec,
-	SwaRefList
+	SwaRef
 )
 
 
 __all__ = [
 	"SwaRefFile",
+	"SwaRefFileInternal",
 	"SwaRefSpec",
-	"SwaRefList"
+	"SwaRef"
 ]

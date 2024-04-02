@@ -8,7 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from fastapi_xroad_soap.internal.envelope.base import (
+from .base import (
 	Attribute,
 	BaseElementSpec,
 	ElementSpecMeta,
@@ -16,16 +16,16 @@ from fastapi_xroad_soap.internal.envelope.base import (
 	MessageBody,
 	MessageBodyType
 )
-from fastapi_xroad_soap.internal.envelope.factory import (
+from .factory import (
 	EnvelopeFactory
 )
-from fastapi_xroad_soap.internal.envelope.generics import (
+from .generics import (
 	GenericEnvelope,
 	GenericFault,
 	GenericBody,
 	AnyBody
 )
-from fastapi_xroad_soap.internal.envelope.header import (
+from .header import (
 	XroadService,
 	XroadClient,
 	XroadHeader

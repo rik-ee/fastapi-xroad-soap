@@ -25,21 +25,28 @@ __all__ = [
 
 
 class BaseElementSpec(ABC):
-	@abstractmethod
-	def annotation(self) -> t.Any: ...
+	anno_is_list: bool = False
 
 	@abstractmethod
-	def element(self, field_name: str) -> model.XmlEntityInfo: ...
+	def annotation(self, anno: t.Any) -> t.Any: ...
+
+	@abstractmethod
+	def element(self, attr_name: str, anno: t.Any) -> model.XmlEntityInfo: ...
+
+	def is_list(self, anno: t.Any) -> bool:
+		self.anno_is_list = t.get_origin(anno) == list
+		return self.anno_is_list
 
 
 class ElementSpecMeta(type):
 	def __new__(cls, name, bases, class_fields, **kwargs):
-		annotations = class_fields.get("__annotations__", {})
+		annotations: dict = class_fields.get("__annotations__", {})
 		element_specs = dict()
 		for attr, obj in class_fields.items():
 			if isinstance(obj, BaseElementSpec):
-				class_fields[attr] = obj.element(attr)
-				annotations[attr] = obj.annotation()
+				anno = annotations.get(attr)
+				annotations[attr] = obj.annotation(anno)
+				class_fields[attr] = obj.element(attr, anno)
 				element_specs[attr] = obj
 		class_fields["_element_specs"] = element_specs
 		return super().__new__(cls, name, bases, class_fields, **kwargs)
