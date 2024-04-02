@@ -115,7 +115,7 @@ class SwaRefList:
 			*,
 			tag: str = None,
 			ns: str = None,
-			nsmap: str = None,
+			nsmap: t.Dict[str, str] = None,
 			min_occurs: int = 1,
 			max_occurs: _MaxOccursType = 1,
 			max_filesize: _FileSizeType = None,

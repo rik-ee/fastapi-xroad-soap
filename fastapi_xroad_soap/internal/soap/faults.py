@@ -11,11 +11,11 @@
 import re
 import typing as t
 from pydantic_xml import element
-from fastapi_xroad_soap.internal.soap.response import SoapResponse
 from fastapi_xroad_soap.internal.envelope import (
 	GenericFault,
 	MessageBody
 )
+from .response import SoapResponse
 
 
 __all__ = [
