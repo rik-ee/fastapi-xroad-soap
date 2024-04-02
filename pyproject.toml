@@ -40,9 +40,10 @@ python = "^3.8"
 pydantic = "^2.6.4"
 pydantic-xml = "^2.9.0"
 fastapi = "^0.110.0"
-lxml = "^5.1.1"
+lxml = "^5.2.1"
 chardet = "^5.2.0"
 inflection = "^0.5.1"
+charset-normalizer = "^3.3.2"
 
 [tool.poetry.group.dev]
 optional = true
