@@ -110,6 +110,7 @@ class SoapAction:
 		except ValidationError:
 			extra_nsmap = self.extract_extra_nsmap(http_body)
 			name = f"Namespaced{type(self.body_type).__name__}"
+			last_err = None
 			for ns in extra_nsmap.keys():
 				new = t.cast(t.Type[MessageBody], type(
 					name, (self.body_type,), {},
@@ -118,9 +119,9 @@ class SoapAction:
 				try:
 					factory = EnvelopeFactory[new]
 					return factory().deserialize(http_body)
-				except ValidationError:
-					pass
-			raise f.ClientFault(f"Invalid namespace for Body element")
+				except ValidationError as ex:
+					last_err = ex
+			raise last_err
 
 	@staticmethod
 	def extract_extra_nsmap(http_body: bytes) -> t.Dict[str, str]:
