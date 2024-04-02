@@ -60,10 +60,13 @@ class SoapService(FastAPI):
 			redoc_url=None,
 			docs_url=None,
 		)
-		self.add_middleware(
+		self._as_asgi().add_middleware(
 			middleware_class=SoapMiddleware,
 			dispatch=self._soap_middleware
 		)
+
+	def _as_asgi(self) -> FastAPI:
+		return t.cast(FastAPI, self)
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]:
 		try:

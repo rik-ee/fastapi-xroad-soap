@@ -10,9 +10,9 @@
 #
 import typing as t
 from pathlib import Path
-from fastapi import Request, Response
 from fastapi.types import DecoratedCallable
-from starlette.types import Scope, Receive, Send
+from starlette.types import Scope, Receive, Send, Lifespan
+from fastapi import Request, Response, FastAPI as ASGIApp
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from .action import SoapAction
 
@@ -28,6 +28,18 @@ class SoapService(FastAPI):
 	_wsdl_override: t.Optional[t.Union[str, Path]]
 	_storage: GlobalWeakStorage
 	_actions: dict[str, SoapAction]
+
+	def __init__(
+			self,
+			*,
+			name: str = "SoapService",
+			path: str = "/service",
+			this_namespace: str = "https://example.org",
+			wsdl_override: t.Optional[t.Union[str, Path]] = None,
+			lifespan: t.Optional[Lifespan[FastAPI]] = None
+	) -> None: ...
+
+	def _as_asgi(self) -> ASGIApp: ...
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]: ...
 
