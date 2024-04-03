@@ -109,13 +109,15 @@ class SoapAction:
 			return factory().deserialize(http_body)
 		except ValidationError:
 			extra_nsmap = self.extract_extra_nsmap(http_body)
-			name = f"Namespaced{type(self.body_type).__name__}"
+			name = f"Namespaced{self.body_type.__name__}"
 			last_err = None
 			for ns in extra_nsmap.keys():
 				new = t.cast(t.Type[MessageBody], type(
 					name, (self.body_type,), {},
 					ns=ns, nsmap=extra_nsmap
 				))
+				attrs = self.body_type.__private_attributes__
+				new.__private_attributes__ = attrs
 				try:
 					factory = EnvelopeFactory[new]
 					return factory().deserialize(http_body)

@@ -128,7 +128,7 @@ class ValidationFault(SoapFault):
 			if iv_match:
 				msg = msg.replace(f"$${iv_match.group(1)}$$", '')
 			else:
-				iv_match = re.search(r"\[type=.+?, input_value=(.+?),", msg)
+				iv_match = re.search(r"\[type=.+?, input_value=\[(.+?)],", msg)
 			ln_match = re.search(r"(\[line -?\d+]: )", msg)
 			re_match = re.search(r"\[line -?\d+]: (.+?) \[type=", msg)
 			details.append(Detail(
