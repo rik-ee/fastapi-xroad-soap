@@ -59,3 +59,15 @@ def test_attributes():
 	assert getattr(FileSize, "KB") == FileSizeKB
 	assert getattr(FileSize, "MB") == FileSizeMB
 	assert getattr(FileSize, "GB") == FileSizeGB
+
+
+def test_comparison():
+	assert FileSize.KB(15) == 15_360.00
+	assert FileSize.KB(15) == FileSize.KB(15)
+	assert FileSize.KB(15) != FileSize.KB(20)
+	assert FileSize.KB(15) <= FileSize.KB(16)
+	assert FileSize.KB(15) <= FileSize.KB(15)
+	assert FileSize.KB(15) >= FileSize.KB(15)
+	assert FileSize.KB(15) >= FileSize.KB(14)
+	assert FileSize.KB(15) < FileSize.KB(16)
+	assert FileSize.KB(15) > FileSize.KB(14)

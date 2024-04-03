@@ -8,6 +8,9 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from __future__ import annotations
+import operator
+import typing as t
 from abc import ABC, abstractmethod
 
 
@@ -20,6 +23,10 @@ __all__ = [
 
 
 class FileSize(ABC):
+	KB: t.Type[FileSizeKB]
+	MB: t.Type[FileSizeMB]
+	GB: t.Type[FileSizeGB]
+
 	def __init__(self, size: int = 1) -> None:
 		if size < 0:
 			raise ValueError("File size cannot be a negative number")
@@ -37,6 +44,31 @@ class FileSize(ABC):
 
 	def __int__(self) -> int:
 		return self.value
+
+	def _compare(self, other: t.Any, op: t.Callable[..., t.Any]) -> bool:
+		if isinstance(other, self.__class__):
+			return op(self.value, other.value)
+		elif isinstance(other, (int, float)):
+			return op(self.value, other)
+		return False
+
+	def __eq__(self, other):
+		return self._compare(other, operator.eq)
+
+	def __ne__(self, other):
+		return self._compare(other, operator.ne)
+
+	def __lt__(self, other):
+		return self._compare(other, operator.lt)
+
+	def __le__(self, other):
+		return self._compare(other, operator.le)
+
+	def __gt__(self, other):
+		return self._compare(other, operator.gt)
+
+	def __ge__(self, other):
+		return self._compare(other, operator.ge)
 
 
 class FileSizeKB(FileSize):
