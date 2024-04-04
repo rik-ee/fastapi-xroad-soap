@@ -10,14 +10,14 @@
 #
 from __future__ import annotations
 import hashlib
-import typing as t
 import inflection
+import typing as t
 from pydantic_xml import model, element
-from pydantic import PrivateAttr, Field, model_validator
+from pydantic import PrivateAttr, model_validator
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
 from fastapi_xroad_soap.internal.file_size import FileSize
-from .. import BaseElementSpec, MessageBody
+from .. import BaseElementModel, BaseElementSpec, MessageBody
 
 
 __all__ = [
@@ -34,7 +34,7 @@ _MimeTypes = t.Union[t.List[str], t.Literal["all"]]
 _HashFuncType = t.Literal["sha256", "sha512", "sha3_256", "sha3_384", "sha3_512"]
 
 
-class SwaRef(MessageBody):
+class SwaRef(MessageBody, BaseElementModel):
 	name: str = element(default='')
 	mimetype: str = element(default='')
 	size: int = element(default=0)
@@ -47,8 +47,8 @@ class SwaRef(MessageBody):
 			tag: t.Optional[str] = None,
 			ns: t.Optional[str] = None,
 			nsmap: _NSMap = None,
-			min_occurs: int = 1,
-			max_occurs: t.Union[int, t.Literal["unbounded"]] = 1,
+			min_occurs: int = 0,
+			max_occurs: t.Union[int, t.Literal["unbounded"]] = "unbounded",
 			max_filesize: _FileSizeType = None,
 			allow_mimetypes: _MimeTypes = "all",
 			hash_func: _HashFuncType = "sha3_512"
@@ -70,30 +70,23 @@ class SwaRefSpec(BaseElementSpec):
 		self.allow_mimetypes = kwargs["allow_mimetypes"]
 		self.hash_func = kwargs["hash_func"]
 		self.min_occurs = kwargs["min_occurs"]
-		self.max_occurs = {
-			True: None, False: kwargs["max_occurs"]
-		}["unbounded" == kwargs["max_occurs"]]
+		self.max_occurs = kwargs["max_occurs"]
+		self.element_type = SwaRef
 
-	def annotation(self, anno: t.Any) -> t.Any:
-		self.anno_is_list = t.get_origin(anno) == list
-		new = SwaRefInternal.new(self)
-		if self.min_occurs == 0:
-			return t.Optional[t.List[new]]
+	def get_a8n(self, anno: t.Any) -> t.Any:
+		new = type("SwaRef", (SwaRefInternal,), {})
 		return t.List[new]
 
-	def element(self, attr: str) -> model.XmlEntityInfo:
+	def get_element(self, attr: str) -> model.XmlEntityInfo:
 		return element(
 			ns=self.ns or '',
 			nsmap=self.nsmap or dict(),
 			tag=self.tag or inflection.camelize(attr),
-			max_length=self.max_occurs,
-			min_length=self.min_occurs,
 			default_factory=list
 		)
 
 
 class SwaRefInternal(SwaRef):
-	fingerprint: str = Field(exclude=True)
 
 	_file: _FileType = PrivateAttr(default=None)
 	_max_filesize: _FileSizeType = PrivateAttr(default=None)
@@ -102,16 +95,6 @@ class SwaRefInternal(SwaRef):
 
 	def __new__(cls, *args, **kwargs):
 		return super()._real_new_()
-
-	@classmethod
-	def new(cls, spec: SwaRefSpec) -> t.Type[SwaRef]:
-		kwargs = dict(
-			_max_filesize=spec.max_filesize,
-			_allow_mimetypes=spec.allow_mimetypes,
-			_hash_func=spec.hash_func
-		)
-		new_cls = type("SwaRef", (cls,), kwargs)
-		return t.cast(t.Type[SwaRef], new_cls)
 
 	@model_validator(mode="after")
 	def init_values(self):
@@ -131,4 +114,5 @@ class SwaRefInternal(SwaRef):
 			self.digest = h_obj.hexdigest()
 			self.content = file.content
 			self._file = file
+			delattr(self, "fingerprint")
 		return self
