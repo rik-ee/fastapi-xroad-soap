@@ -10,6 +10,7 @@
 #
 import typing as t
 from abc import ABC, abstractmethod
+from pydantic import model_validator
 from pydantic_xml import model, attr as Attribute
 from pydantic import PrivateAttr
 
@@ -25,17 +26,15 @@ __all__ = [
 
 
 class BaseElementSpec(ABC):
-	anno_is_list: bool = False
+	anno_is_list: bool
+	min_occurs: int
+	max_occurs: int
 
 	@abstractmethod
 	def annotation(self, anno: t.Any) -> t.Any: ...
 
 	@abstractmethod
-	def element(self, attr_name: str, anno: t.Any) -> model.XmlEntityInfo: ...
-
-	def is_list(self, anno: t.Any) -> bool:
-		self.anno_is_list = t.get_origin(anno) == list
-		return self.anno_is_list
+	def element(self, attr: str) -> model.XmlEntityInfo: ...
 
 
 class ElementSpecMeta(type):
@@ -46,7 +45,7 @@ class ElementSpecMeta(type):
 			if isinstance(obj, BaseElementSpec):
 				anno = annotations.get(attr)
 				annotations[attr] = obj.annotation(anno)
-				class_fields[attr] = obj.element(attr, anno)
+				class_fields[attr] = obj.element(attr)
 				element_specs[attr] = obj
 		class_fields["_element_specs"] = element_specs
 		return super().__new__(cls, name, bases, class_fields, **kwargs)
@@ -58,6 +57,22 @@ class CompositeMeta(ElementSpecMeta, model.XmlModelMeta):
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
 	_element_specs: t.Dict[str, BaseElementSpec] = PrivateAttr(default_factory=dict)
+
+	@model_validator(mode="after")
+	def validate(self):
+		if not self._element_specs:
+			return self
+		for k, v in vars(self).items():
+			spec = self._element_specs.get(k)
+			if spec is None:
+				continue
+			if not spec.anno_is_list:
+				count = len(v)
+				if count > 1:
+					raise ValueError("cannot provide more than one file")
+				setattr(self, k, v[0] if count == 1 else None)
+		self._element_specs.clear()
+		return self
 
 
 MessageBodyType = t.TypeVar("MessageBodyType", bound=MessageBody)
