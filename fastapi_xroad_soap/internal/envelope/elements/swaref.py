@@ -21,10 +21,9 @@ from .. import BaseElementSpec, MessageBody
 
 
 __all__ = [
-	"SwaRefFile",
-	"SwaRefFileInternal",
+	"SwaRef",
 	"SwaRefSpec",
-	"SwaRef"
+	"SwaRefInternal"
 ]
 
 
@@ -33,18 +32,67 @@ _FileType = t.Union[DecodedBodyPart, None]
 _FileSizeType = t.Union[int, FileSize, None]
 _MimeTypes = t.Union[t.List[str], t.Literal["all"]]
 _HashFuncType = t.Literal["sha256", "sha512", "sha3_256", "sha3_384", "sha3_512"]
-_MaxOccursType = t.Union[int, t.Literal["unbounded"]]
 
 
-class SwaRefFile(MessageBody):
+class SwaRef(MessageBody):
 	name: str = element(default='')
 	mimetype: str = element(default='')
 	size: int = element(default=0)
 	digest: str = element(default='')
 	content: bytes = element(default=b'')
 
+	def __new__(
+			cls,
+			*,
+			tag: t.Optional[str] = None,
+			ns: t.Optional[str] = None,
+			nsmap: _NSMap = None,
+			min_occurs: int = 1,
+			max_occurs: t.Union[int, t.Literal["unbounded"]] = 1,
+			max_filesize: _FileSizeType = None,
+			allow_mimetypes: _MimeTypes = "all",
+			hash_func: _HashFuncType = "sha3_512"
+	) -> SwaRef:
+		kwargs = {k: v for k, v in locals().items()}
+		return t.cast(SwaRef, SwaRefSpec(**kwargs))
 
-class SwaRefFileInternal(SwaRefFile):
+	@classmethod
+	def _real_new_(cls):
+		return super().__new__(cls)
+
+
+class SwaRefSpec(BaseElementSpec):
+	def __init__(self, **kwargs) -> None:
+		self.tag = kwargs["tag"]
+		self.ns = kwargs["ns"]
+		self.nsmap = kwargs["nsmap"]
+		self.max_filesize = kwargs["max_filesize"]
+		self.allow_mimetypes = kwargs["allow_mimetypes"]
+		self.hash_func = kwargs["hash_func"]
+		self.min_occurs = kwargs["min_occurs"]
+		self.max_occurs = {
+			True: None, False: kwargs["max_occurs"]
+		}["unbounded" == kwargs["max_occurs"]]
+
+	def annotation(self, anno: t.Any) -> t.Any:
+		self.anno_is_list = t.get_origin(anno) == list
+		new = SwaRefInternal.new(self)
+		if self.min_occurs == 0:
+			return t.Optional[t.List[new]]
+		return t.List[new]
+
+	def element(self, attr: str) -> model.XmlEntityInfo:
+		return element(
+			ns=self.ns or '',
+			nsmap=self.nsmap or dict(),
+			tag=self.tag or inflection.camelize(attr),
+			max_length=self.max_occurs,
+			min_length=self.min_occurs,
+			default_factory=list
+		)
+
+
+class SwaRefInternal(SwaRef):
 	fingerprint: str = Field(exclude=True)
 
 	_file: _FileType = PrivateAttr(default=None)
@@ -52,8 +100,22 @@ class SwaRefFileInternal(SwaRefFile):
 	_allow_mimetypes: _MimeTypes = PrivateAttr(default="all")
 	_hash_func: _HashFuncType = PrivateAttr(default="sha3_512")
 
+	def __new__(cls, *args, **kwargs):
+		return super()._real_new_()
+
+	@classmethod
+	def new(cls, spec: SwaRefSpec) -> t.Type[SwaRef]:
+		kwargs = dict(
+			_max_filesize=spec.max_filesize,
+			_allow_mimetypes=spec.allow_mimetypes,
+			_hash_func=spec.hash_func
+		)
+		new_cls = type("SwaRef", (cls,), kwargs)
+		return t.cast(t.Type[SwaRef], new_cls)
+
 	@model_validator(mode="after")
-	def _init_data(self):
+	def init_values(self):
+		# TODO: Refactor this awful code
 		if self._file is None:
 			file: DecodedBodyPart = GlobalWeakStorage.retrieve_object(self.fingerprint)
 			self.name = file.file_name
@@ -68,67 +130,5 @@ class SwaRefFileInternal(SwaRefFile):
 			h_obj = hash_func(file.content)
 			self.digest = h_obj.hexdigest()
 			self.content = file.content
+			self._file = file
 		return self
-
-	@classmethod
-	def new(cls, spec: SwaRefSpec) -> t.Type[SwaRefFile]:
-		kwargs = dict(
-			_max_filesize=spec.max_filesize,
-			_allow_mimetypes=spec.allow_mimetypes,
-			_hash_func=spec.hash_func
-		)
-		new_cls = type("CustomSwaRefFileInternal", (cls,), kwargs)
-		return t.cast(t.Type[SwaRefFile], new_cls)
-
-
-class SwaRefSpec(BaseElementSpec):
-	def __init__(self, **kwargs) -> None:
-		self.tag = kwargs["tag"]
-		self.ns = kwargs["ns"]
-		self.nsmap = kwargs["nsmap"]
-		self.min_occurs = kwargs["min_occurs"]
-		self.max_occurs = kwargs["max_occurs"]
-		self.max_filesize = kwargs["max_filesize"]
-		self.allow_mimetypes = kwargs["allow_mimetypes"]
-		self.hash_func = kwargs["hash_func"]
-
-	def annotation(self, anno: t.Any) -> t.Any:
-		new = SwaRefFileInternal.new(self)
-		return t.List[new] if self.is_list(anno) else new
-
-	def element(self, attr_name: str, anno: t.Any) -> model.XmlEntityInfo:
-		extra = dict()
-		if self.is_list(anno):
-			is_inf = self.max_occurs == "unbounded"
-			extra["max_length"] = None if is_inf else self.max_occurs
-			extra["min_length"] = self.min_occurs
-		return element(
-			ns=self.ns or '',
-			nsmap=self.nsmap or dict(),
-			tag=self.tag or inflection.camelize(attr_name),
-			**extra
-		)
-
-
-class SwaRef:
-	# For IDE code completion
-	name: str
-	mimetype: str
-	size: int
-	digest: str
-	content: bytes
-
-	def __new__(
-			cls,
-			*,
-			tag: t.Optional[str] = None,
-			ns: t.Optional[str] = None,
-			nsmap: _NSMap = None,
-			min_occurs: int = 0,
-			max_occurs: _MaxOccursType = "unbounded",
-			max_filesize: _FileSizeType = None,
-			allow_mimetypes: _MimeTypes = "all",
-			hash_func: _HashFuncType = "sha3_512"
-	) -> SwaRefFile:
-		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(SwaRefFile, SwaRefSpec(**kwargs))
