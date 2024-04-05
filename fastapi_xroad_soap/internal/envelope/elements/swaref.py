@@ -74,7 +74,11 @@ class SwaRefSpec(BaseElementSpec):
 		self.element_type = SwaRef
 
 	def get_a8n(self, anno: t.Any) -> t.Any:
-		new = type("SwaRef", (SwaRefInternal,), {})
+		new = type("SwaRef", (SwaRefInternal,), dict(
+			_max_filesize=self.max_filesize,
+			_allow_mimetypes=self.allow_mimetypes,
+			_hash_func=self.hash_func
+		))
 		return t.List[new]
 
 	def get_element(self, attr: str) -> model.XmlEntityInfo:
@@ -99,21 +103,32 @@ class SwaRefInternal(SwaRef):
 
 	@model_validator(mode="after")
 	def init_values(self):
-		# TODO: Refactor this awful code
-		if self._file is None:
-			file: DecodedBodyPart = GlobalWeakStorage.retrieve_object(self.fingerprint)
-			self.name = file.file_name
-			suffix = self.name.split(".")[-1]
-			self.mimetype = file.mime_type
-			if self._allow_mimetypes != "all" and suffix not in self._allow_mimetypes:
-				raise ValueError(f"file type not allowed: {suffix} (allowed: {self._allow_mimetypes})$${file.content_id}$$")
-			self.size = len(file.content)
-			if self._max_filesize and self.size > self._max_filesize:
-				raise ValueError(f"file size too large: {round(self.size / 1000, 2)}kB (max: {round(self._max_filesize / 1000, 2)}kB) $${file.content_id}$$")
-			hash_func = getattr(hashlib, self._hash_func)
-			h_obj = hash_func(file.content)
-			self.digest = h_obj.hexdigest()
-			self.content = file.content
-			self._file = file
-			delattr(self, "fingerprint")
+		if self._file is not None:
+			return self
+		file: DecodedBodyPart = GlobalWeakStorage.retrieve_object(
+			self.fingerprint, raise_on_miss=False
+		)
+		if file is None:
+			raise ValueError(f"no file attachment found by Content-ID: {self.fingerprint}")
+		elif '.' not in file.file_name:
+			raise ValueError(f"invalid file name: {file.file_name}")
+
+		suffix = '.' + file.file_name.split('.')[-1]
+		if self._allow_mimetypes != "all" and suffix not in self._allow_mimetypes:
+			extra = f"(allowed: {self._allow_mimetypes})$${file.content_id}$$"
+			raise ValueError(f"file type not allowed: {suffix} {extra}")
+
+		self.size = len(file.content)
+		if self._max_filesize and self.size > self._max_filesize:
+			extra = f"(max: {self._max_filesize.size}kB)$${file.content_id}$$"
+			raise ValueError(f"file size too large: {self.size // 1000}kB {extra}")
+
+		hash_func = getattr(hashlib, self._hash_func)
+		self.digest = hash_func(file.content).hexdigest()
+		self.mimetype = file.mime_type
+		self.content = file.content
+		self.name = file.file_name
+		self._file = file
+
+		delattr(self, "fingerprint")
 		return self
