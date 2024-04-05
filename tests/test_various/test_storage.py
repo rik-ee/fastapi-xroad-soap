@@ -11,6 +11,7 @@
 import gc
 import pytest
 import weakref
+import typing as t
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 
 
@@ -19,54 +20,107 @@ def storage():
     return GlobalWeakStorage()
 
 
-def test_instance_creation(storage):
-    assert storage is not None
-    assert hasattr(storage, '_uid')
-    assert storage._uid != '', "Instance should have a non-empty unique identifier"
+def test_class_attributes():
+    assert hasattr(GlobalWeakStorage, "_unique_id")
+    assert hasattr(GlobalWeakStorage, "_validate_fingerprint")
+    assert hasattr(GlobalWeakStorage, "retrieve_object")
+    assert hasattr(GlobalWeakStorage, "_instances")
+    assert hasattr(GlobalWeakStorage, "_inst_counter")
+    assert hasattr(GlobalWeakStorage, "_uid")
+
+    assert len(GlobalWeakStorage._instances) == 0
+    assert GlobalWeakStorage._inst_counter == 0
+    assert GlobalWeakStorage._uid == ''
+
+
+def test_instance_attributes(storage):
+    assert hasattr(storage, "_objects")
+    assert hasattr(storage, "_obj_counter")
+    assert hasattr(storage, "retrieve_object")
+    assert hasattr(storage, "insert_object")
+    assert hasattr(storage, "get")
+
+    assert len(storage._objects) == 0
+    assert storage._obj_counter == 0
+    assert storage._uid != ''
 
 
 def test_unique_id_generation():
-    first_id = GlobalWeakStorage._unique_id(0)
-    second_id = GlobalWeakStorage._unique_id(1)
+    uid = GlobalWeakStorage._unique_id(123)
 
-    assert isinstance(first_id, str)
-    assert '..' in first_id, "ID should contain '..'"
-    assert first_id.split('..')[0].isdigit(), "The part before '..' should be digits"
-    assert len(first_id.split('..')[1]) == 48, "The part after '..' should be 24 hex chars (48 chars)"
-    assert first_id != second_id, "IDs should be unique"
+    assert isinstance(uid, str)
+    assert len(uid) == 59
+    assert '..' in uid
+
+    counter, token = uid.split('..')  # type: str, str
+    assert len(counter) == 9
+    assert len(token) == 48
+
+    assert counter.isdigit()
+    for char in token:
+        assert char in "0123456789ABCDEF"
+
+    uid2 = GlobalWeakStorage._unique_id(124)
+    assert uid != uid2
 
 
-def test_insert_object(storage):
+def test_validate_fingerprint(storage):
+    uid = storage._unique_id(123)
+    good_fp = f"{uid}-$$-{uid}"
+
+    bad_fingerprints = [
+        t.cast(str, 123),  # bad type
+        good_fp[:-1],  # too short
+        good_fp + 'a',  # too long
+        good_fp.replace('-$$-', '~%%~'),  # bad separator
+        f"{uid[:-1]}-$$-{uid}",  # partial too short
+        f"{uid}-$$-{uid + 'a'}",  # partial too long
+    ]
+    for bad_fp in bad_fingerprints:
+        with pytest.raises(ValueError):
+            storage._validate_fingerprint(bad_fp)
+
+    counter, token = uid.split('..')  # type: str, str
+    bad_unique_ids = [
+        f"{counter + '0'}..{token}",  # counter too long
+        f"{counter}..{token + 'a'}",  # token too long
+        f"{counter[:-1] + 'a'}..{token}",  # not a digit in counter
+        f"{counter}..{token[:-1] + '@'}"  # not a hex char in token
+    ]
+    for bad_uid in bad_unique_ids:
+        with pytest.raises(ValueError):
+            bad_fp = f"{bad_uid}-$$-{bad_uid}"
+            storage._validate_fingerprint(bad_fp)
+
+
+def test_get_object_from_class(storage):
     test_obj = {1, 2, 3}
     fingerprint = storage.insert_object(test_obj)
-
-    assert isinstance(fingerprint, str), "Fingerprint must be a string"
-    assert '-$$-' in fingerprint, "Fingerprint format is incorrect"
-
-    retrieved_obj = storage.retrieve_object(fingerprint)
-    assert retrieved_obj == test_obj, "The retrieved object does not match the inserted object"
+    returned_obj = GlobalWeakStorage.retrieve_object(fingerprint)
+    assert returned_obj == test_obj
 
 
-def test_retrieve_object_with_valid_fingerprint(storage):
+def test_get_object_from_instance(storage):
     test_obj = {1, 2, 3}
     fingerprint = storage.insert_object(test_obj)
-    retrieved_obj = GlobalWeakStorage.retrieve_object(fingerprint)
-    assert retrieved_obj == test_obj, "The retrieved object should match the inserted object"
+    returned_obj = storage.get(fingerprint)
+    assert returned_obj == test_obj
 
 
-def test_retrieve_object_with_invalid_fingerprint(storage):
-    invalid_fingerprint = "invalid-$$-fingerprint"
-    retrieved_obj = GlobalWeakStorage.retrieve_object(invalid_fingerprint)
-    assert retrieved_obj is None, "Retrieving with an invalid fingerprint should return None"
+def test_get_object_with_bad_fingerprint(storage):
+    bad_fp = "invalid-$$-fingerprint"
+    with pytest.raises(ValueError):
+        GlobalWeakStorage.retrieve_object(bad_fp)
+    with pytest.raises(ValueError):
+        storage.get(bad_fp)
 
 
 def test_object_persistence(storage):
     test_obj = {1, 2, 3}
-    obj_fingerprint = storage.insert_object(test_obj)
-
-    retrieved_obj = storage.retrieve_object(obj_fingerprint)
-    assert retrieved_obj is test_obj, "The object should persist in the storage while referenced."
-    assert weakref.getweakrefcount(test_obj) > 0, "Object should have weak references."
+    fingerprint = storage.insert_object(test_obj)
+    returned_obj = storage.retrieve_object(fingerprint)
+    assert returned_obj is test_obj
+    assert weakref.getweakrefcount(test_obj) > 0
 
 
 def test_object_removal_on_reference_loss(storage):
@@ -76,47 +130,37 @@ def test_object_removal_on_reference_loss(storage):
 
     fingerprint = insert_obj()
     gc.collect()
-
     retrieved_obj = storage.retrieve_object(fingerprint)
-    assert retrieved_obj is None, \
-        "The object should be removed from storage after losing all external references"
+    assert retrieved_obj is None
 
 
 def test_multiple_instances():
     storage1 = GlobalWeakStorage()
     storage2 = GlobalWeakStorage()
 
-    assert storage1._uid != storage2._uid, "Each instance should have a unique UID"
+    assert storage1._uid != storage2._uid
 
     test_obj1 = {1, 2, 3}
     test_obj2 = {4, 5, 6}
     fingerprint1 = storage1.insert_object(test_obj1)
     fingerprint2 = storage2.insert_object(test_obj2)
+    assert fingerprint1 != fingerprint2
 
-    assert storage1.get(fingerprint1) == test_obj1, \
-        "Instance 1 should retrieve the correct object using its fingerprint"
-    assert storage2.get(fingerprint2) == test_obj2, \
-        "Instance 2 should retrieve the correct object using its fingerprint"
+    assert storage1.get(fingerprint1) == test_obj1
+    assert storage2.get(fingerprint2) == test_obj2
 
-    assert fingerprint1 != fingerprint2, "Fingerprints should be unique across instances"
+    assert storage1.get(fingerprint2) is None
+    assert storage2.get(fingerprint1) is None
 
-    assert storage1.get(fingerprint2) is None, \
-        "Must not be able to retrieve storage2 file from storage1"
-    assert storage2.get(fingerprint1) is None, \
-        "Must not be able to retrieve storage1 file from storage2"
-
-    assert GlobalWeakStorage._instances.get(storage1._uid) is not None, \
-        "Instance 1 should be retrievable from the class-wide instance store"
-    assert GlobalWeakStorage._instances.get(storage2._uid) is not None, \
-        "Instance 2 should be retrievable from the class-wide instance store"
+    assert GlobalWeakStorage._instances.get(storage1._uid) is not None
+    assert GlobalWeakStorage._instances.get(storage2._uid) is not None
 
 
 def test_object_counter_increment(storage):
     initial_counter = storage._obj_counter
     test_obj = {1, 2, 3}
     storage.insert_object(test_obj)
-    assert storage._obj_counter == initial_counter + 1, \
-        "Object counter should increment by 1 after insertion."
+    assert storage._obj_counter == initial_counter + 1
 
 
 def test_instance_counter_wrap():
@@ -126,30 +170,3 @@ def test_instance_counter_wrap():
     uid = storage._uid.split('..')[0]
     assert all(c == '0' for c in uid)
     GlobalWeakStorage._inst_counter = 0
-
-
-def test_get_method_with_object_id():
-    storage = GlobalWeakStorage()
-    test_obj = {1, 2, 3}
-    fingerprint = storage.insert_object(test_obj)
-    obj_id = fingerprint.split('-$$-')[1]
-    retrieved_obj = storage.get(obj_id)
-    assert retrieved_obj == test_obj, \
-        "Object should be retrievable with its object ID."
-
-
-def test_get_method_with_full_fingerprint():
-    storage = GlobalWeakStorage()
-    test_obj = {1, 2, 3}
-    fingerprint = storage.insert_object(test_obj)
-    retrieved_obj = storage.get(fingerprint)
-    assert retrieved_obj == test_obj, \
-        "Object should be retrievable with its full fingerprint."
-
-
-def test_get_method_with_invalid_id():
-    storage = GlobalWeakStorage()
-    invalid_fingerprint = '123-$$-456'
-    result = storage.get(invalid_fingerprint)
-    assert result is None, \
-        "Method should return None for an invalid ID."
