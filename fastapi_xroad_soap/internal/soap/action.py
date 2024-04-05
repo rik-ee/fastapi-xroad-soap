@@ -90,16 +90,29 @@ class SoapAction:
 				else:
 					files.append(part1)
 			xml_str = envelope.content
+			self.validate_files(xml_str, files)
 			for file in files:
-				fingerprint = self.storage.insert_object(file)
-				xml_str = xml_str.replace(
-					file.content_id.encode(),
-					fingerprint.encode()
-				)
+				cid = file.content_id.encode()
+				uid = self.storage.insert_object(file).encode()
+				xml_str = xml_str.replace(cid, uid)
 			http_body = xml_str
 		elif body_ct not in ["text/xml", "application/xml", "application/soap+xml"]:
 			raise f.ClientFault(f"Invalid content type: {body_ct}")
 		return self.deserialize(http_body)
+
+	@staticmethod
+	def validate_files(xml_str: bytes, files: t.List[DecodedBodyPart]) -> None:
+		ids = [file.content_id for file in files]
+		for cid in ids:
+			if ids.count(cid) > 1:
+				raise f.DuplicateCIDFault(cid)
+		for file in files:
+			cid = file.content_id
+			count = xml_str.count(cid.encode())
+			if count == 0:
+				raise f. MissingCIDFault(cid)
+			elif count > 1:
+				raise f.DuplicateCIDFault(cid)
 
 	def deserialize(self, http_body: bytes) -> GenericEnvelope:
 		if self.body_type is None:

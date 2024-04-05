@@ -17,6 +17,8 @@ from .faults import (
 	InvalidActionFault,
 	MissingBodyFault,
 	MissingHeaderFault,
+	MissingCIDFault,
+	DuplicateCIDFault,
 	ClientFault,
 	ServerFault,
 	ValidationFault
@@ -32,6 +34,8 @@ __all__ = [
 	"InvalidActionFault",
 	"MissingBodyFault",
 	"MissingHeaderFault",
+	"MissingCIDFault",
+	"DuplicateCIDFault",
 	"ClientFault",
 	"ServerFault",
 	"ValidationFault"

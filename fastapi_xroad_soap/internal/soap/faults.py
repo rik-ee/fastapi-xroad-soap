@@ -24,6 +24,8 @@ __all__ = [
 	"InvalidActionFault",
 	"MissingBodyFault",
 	"MissingHeaderFault",
+	"MissingCIDFault",
+	"DuplicateCIDFault",
 	"ClientFault",
 	"ServerFault",
 	"ValidationFault"
@@ -80,6 +82,18 @@ class MissingBodyFault(SoapFault):
 class MissingHeaderFault(SoapFault):
 	def __init__(self, action_name: str) -> None:
 		msg = f"X-Road header element missing from envelope for {action_name} SOAP action"
+		super().__init__(string=msg)
+
+
+class MissingCIDFault(SoapFault):
+	def __init__(self, cid: str) -> None:
+		msg = f"Content-ID missing from envelope: {cid}"
+		super().__init__(string=msg)
+
+
+class DuplicateCIDFault(SoapFault):
+	def __init__(self, cid: str) -> None:
+		msg = f"Duplicate Content-ID not allowed: {cid[4:]}"
 		super().__init__(string=msg)
 
 
