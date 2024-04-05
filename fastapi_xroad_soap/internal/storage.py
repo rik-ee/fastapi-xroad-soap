@@ -76,25 +76,10 @@ class GlobalWeakStorage:
 				if char not in "0123456789ABCDEF":
 					raise error
 
-	@classmethod
-	def retrieve_object(cls, fingerprint: str) -> t.Union[t.Any, None]:
-		"""
-		Retrieves an object from a specific instance of GlobalWeakStorage
-		identified by the provided fingerprint.
-
-		:param fingerprint: The unique identifier of the object.
-		:raises ValueError: If the fingerprint has invalid format.
-		:returns: The object associated with the given fingerprint if it exists, otherwise None.
-		"""
-		cls._validate_fingerprint(fingerprint)
-		inst_id, obj_id = fingerprint.split('-$$-')
-		instance = cls._instances.get(inst_id) or {}
-		store: WeakValueDictionary = getattr(instance, '_objects', {})
-		return store.get(obj_id, None)
-
 	def insert_object(self, obj: t.Any) -> str:
 		"""
 		Inserts an object into the GlobalWeakStorage, generating a unique identifier for it.
+
 		:param obj: The object to be stored in this GlobalWeakStorage instance.
 		:returns: A unique identifier for the object, which can be used to access the
 			object from any instance of the GlobalWeakStorage class or the class itself.
@@ -104,15 +89,39 @@ class GlobalWeakStorage:
 		self._objects[uid] = obj
 		return f"{self._uid}-$$-{uid}"
 
-	def get(self, fingerprint: str) -> t.Union[t.Any, None]:
+	@classmethod
+	def retrieve_object(cls, fingerprint: str, *, raise_on_miss: bool = True) -> t.Union[t.Any, None]:
 		"""
-		Retrieves an object from this instance of GlobalWeakStorage
-		identified by the provided fingerprint.
+		Retrieves an object from an instance of GlobalWeakStorage identified by the provided fingerprint.
 
 		:param fingerprint: The unique identifier of the object.
+		:param raise_on_miss: Whether a KeyError should be raised if the
+			fingerprint does not relate to any object. Defaults to True.
 		:raises ValueError: If the fingerprint has invalid format.
+		:raises KeyError: if `raise_on_miss` is True and the fingerprint does not relate to any object.
+		:returns: The object associated with the given fingerprint if it exists, otherwise None.
+		"""
+		cls._validate_fingerprint(fingerprint)
+		inst_id, obj_id = fingerprint.split('-$$-')
+		instance = cls._instances.get(inst_id) or {}
+		store: WeakValueDictionary = getattr(instance, '_objects', {})
+		if raise_on_miss:
+			return store[obj_id]
+		return store.get(obj_id, None)
+
+	def get(self, fingerprint: str, *, raise_on_miss: bool = True) -> t.Union[t.Any, None]:
+		"""
+		Retrieves an object from this instance of GlobalWeakStorage identified by the provided fingerprint.
+
+		:param fingerprint: The unique identifier of the object.
+		:param raise_on_miss: Whether a KeyError should be raised if the
+			fingerprint does not relate to any object. Defaults to True.
+		:raises ValueError: If the fingerprint has invalid format.
+		:raises KeyError: if `raise_on_miss` is True and the fingerprint does not relate to any object.
 		:returns: The object associated with the given fingerprint if it exists, otherwise None.
 		"""
 		self._validate_fingerprint(fingerprint)
 		obj_id = fingerprint.split('-$$-')[1]
-		return self._objects.get(obj_id)
+		if raise_on_miss:
+			return self._objects[obj_id]
+		return self._objects.get(obj_id, None)

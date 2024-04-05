@@ -130,8 +130,11 @@ def test_object_removal_on_reference_loss(storage):
 
     fingerprint = insert_obj()
     gc.collect()
-    retrieved_obj = storage.retrieve_object(fingerprint)
+    retrieved_obj = storage.retrieve_object(fingerprint, raise_on_miss=False)
     assert retrieved_obj is None
+
+    with pytest.raises(KeyError):
+        storage.retrieve_object(fingerprint, raise_on_miss=True)
 
 
 def test_multiple_instances():
@@ -149,8 +152,13 @@ def test_multiple_instances():
     assert storage1.get(fingerprint1) == test_obj1
     assert storage2.get(fingerprint2) == test_obj2
 
-    assert storage1.get(fingerprint2) is None
-    assert storage2.get(fingerprint1) is None
+    assert storage1.get(fingerprint2, raise_on_miss=False) is None
+    assert storage2.get(fingerprint1, raise_on_miss=False) is None
+
+    with pytest.raises(KeyError):
+        storage1.get(fingerprint2, raise_on_miss=True)
+    with pytest.raises(KeyError):
+        storage2.get(fingerprint1, raise_on_miss=True)
 
     assert GlobalWeakStorage._instances.get(storage1._uid) is not None
     assert GlobalWeakStorage._instances.get(storage2._uid) is not None
