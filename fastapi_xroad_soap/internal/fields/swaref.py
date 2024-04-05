@@ -25,7 +25,7 @@ __all__ = ["SwaRef", "SwaRefSpec", "SwaRefInternal"]
 
 _NSMap = t.Optional[t.Dict[str, str]]
 _FileType = t.Union[DecodedBodyPart, None]
-_FileSizeType = t.Union[int, FileSize, None]
+_FileSizeType = t.Union[FileSize, None]
 _MimeTypes = t.Union[t.List[str], t.Literal["all"]]
 _HashFuncType = t.Literal["sha256", "sha512", "sha3_256", "sha3_384", "sha3_512"]
 
@@ -115,9 +115,10 @@ class SwaRefInternal(SwaRef):
 			raise ValueError(f"file type not allowed: {suffix} {extra}")
 
 		self.size = len(file.content)
-		if self._max_filesize and self.size > self._max_filesize:
-			extra = f"(max: {self._max_filesize}kB)$${file.content_id}$$"
-			raise ValueError(f"file size too large: {self.size // 1000}kB {extra}")
+		if self._max_filesize and self.size > self._max_filesize.value:
+			size = FileSize.bytes_to_iec_str(self.size)
+			extra = f"(max: {self._max_filesize})$${file.content_id}$$"
+			raise ValueError(f"file size too large: {size} {extra}")
 
 		hash_func = getattr(hashlib, self._hash_func)
 		self.digest = hash_func(file.content).hexdigest()
