@@ -14,6 +14,16 @@ from fastapi_xroad_soap.internal.file_size import (
 )
 
 
+def test_attributes():
+	assert hasattr(FileSize, "KB")
+	assert hasattr(FileSize, "MB")
+	assert hasattr(FileSize, "GB")
+
+	assert getattr(FileSize, "KB") == FileSizeKB
+	assert getattr(FileSize, "MB") == FileSizeMB
+	assert getattr(FileSize, "GB") == FileSizeGB
+
+
 def test_inheritance():
 	assert issubclass(FileSizeKB, FileSize)
 	assert issubclass(FileSizeMB, FileSize)
@@ -21,23 +31,15 @@ def test_inheritance():
 
 
 def test_multipliers():
-	assert FileSizeKB()._multiplier == 1_024
-	assert FileSizeMB()._multiplier == 1_048_576
-	assert FileSizeGB()._multiplier == 1_073_741_824
+	assert FileSizeKB._multiplier() == 1_024
+	assert FileSizeMB._multiplier() == 1_048_576
+	assert FileSizeGB._multiplier() == 1_073_741_824
 
 
 def test_values():
-	kb = FileSizeKB(2)
-	mb = FileSizeMB(2)
-	gb = FileSizeGB(2)
-
-	assert kb.value == 2_048
-	assert mb.value == 2_097_152
-	assert gb.value == 2_147_483_648
-
-	assert kb.value == int(kb)
-	assert mb.value == int(mb)
-	assert gb.value == int(gb)
+	assert FileSizeKB(2) == 2_048
+	assert FileSizeMB(2) == 2_097_152
+	assert FileSizeGB(2) == 2_147_483_648
 
 
 def test_invalid_size():
@@ -51,23 +53,13 @@ def test_invalid_size():
 		FileSizeGB(-1)
 
 
-def test_attributes():
-	assert hasattr(FileSize, "KB")
-	assert hasattr(FileSize, "MB")
-	assert hasattr(FileSize, "GB")
-
-	assert getattr(FileSize, "KB") == FileSizeKB
-	assert getattr(FileSize, "MB") == FileSizeMB
-	assert getattr(FileSize, "GB") == FileSizeGB
-
-
 def test_comparison():
-	assert FileSize.KB(15) == 15_360.00
-	assert FileSize.KB(15) == FileSize.KB(15)
-	assert FileSize.KB(15) != FileSize.KB(20)
-	assert FileSize.KB(15) <= FileSize.KB(16)
-	assert FileSize.KB(15) <= FileSize.KB(15)
-	assert FileSize.KB(15) >= FileSize.KB(15)
-	assert FileSize.KB(15) >= FileSize.KB(14)
-	assert FileSize.KB(15) < FileSize.KB(16)
-	assert FileSize.KB(15) > FileSize.KB(14)
+	for cls in [FileSizeKB, FileSizeMB, FileSizeGB]:
+		assert cls(15) == cls(15)
+		assert cls(15) != cls(20)
+		assert cls(15) <= cls(16)
+		assert cls(15) <= cls(15)
+		assert cls(15) >= cls(15)
+		assert cls(15) >= cls(14)
+		assert cls(15) < cls(16)
+		assert cls(15) > cls(14)
