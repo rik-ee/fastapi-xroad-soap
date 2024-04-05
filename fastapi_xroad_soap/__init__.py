@@ -8,11 +8,12 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .internal.envelope import MessageBody
+from .internal.envelope import MessageBody, XroadHeader
 from .internal.soap import SoapService
 
 
 __all__ = [
 	"MessageBody",
+	"XroadHeader",
 	"SoapService"
 ]

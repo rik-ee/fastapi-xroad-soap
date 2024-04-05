@@ -11,7 +11,7 @@
 import re
 import typing as t
 from pydantic_xml import element
-from fastapi_xroad_soap.internal.envelope import (
+from ..envelope import (
 	GenericFault,
 	MessageBody
 )

@@ -12,20 +12,20 @@ import re
 import typing as t
 from dataclasses import dataclass
 from pydantic import ValidationError
-from fastapi_xroad_soap.internal.constants import HEADER_NSMAP
-from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
-from fastapi_xroad_soap.internal.multipart import (
+from ..storage import GlobalWeakStorage
+from ..constants import HEADER_NSMAP
+from ..multipart import (
 	MultipartDecoder,
 	DecodedBodyPart
 )
-from .response import SoapResponse
-from . import faults as f
 from ..envelope import (
 	EnvelopeFactory,
 	GenericEnvelope,
 	XroadHeader,
 	MessageBody
 )
+from .response import SoapResponse
+from . import faults as f
 
 
 __all__ = ["SoapAction"]

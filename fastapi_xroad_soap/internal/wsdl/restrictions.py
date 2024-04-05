@@ -10,7 +10,7 @@
 #
 import typing as t
 from pydantic_xml import BaseXmlModel, attr
-from fastapi_xroad_soap.internal.wsdl.models.conditions import (
+from .conditions import (
 	Enumeration,
 	RegexPattern,
 	MinInclusive,

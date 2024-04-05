@@ -8,9 +8,6 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-import typing as t
-
-
 __all__ = [
     "MultipartError",
     "NonMultipartError",

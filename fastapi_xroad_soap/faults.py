@@ -11,4 +11,8 @@
 from .internal.soap import SoapFault, ClientFault, ServerFault
 
 
-__all__ = ["SoapFault", "ClientFault", "ServerFault"]
+__all__ = [
+	"SoapFault",
+	"ClientFault",
+	"ServerFault"
+]

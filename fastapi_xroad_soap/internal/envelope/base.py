@@ -12,13 +12,11 @@ from __future__ import annotations
 import typing as t
 from enum import Enum
 from abc import ABC, abstractmethod
-from pydantic import model_validator
-from pydantic_xml import model, attr as Attribute
-from pydantic import PrivateAttr
+from pydantic import PrivateAttr, model_validator
+from pydantic_xml import model
 
 
 __all__ = [
-	"Attribute",
 	"A8nType",
 	"BaseElementSpec",
 	"ElementSpecMeta",

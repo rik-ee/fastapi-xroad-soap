@@ -9,7 +9,6 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from .base import (
-	Attribute,
 	A8nType,
 	BaseElementSpec,
 	ElementSpecMeta,
@@ -34,7 +33,6 @@ from .header import (
 
 
 __all__ = [
-	"Attribute",
 	"A8nType",
 	"BaseElementSpec",
 	"ElementSpecMeta",

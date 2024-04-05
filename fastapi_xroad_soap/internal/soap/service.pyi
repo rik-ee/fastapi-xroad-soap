@@ -13,7 +13,7 @@ from pathlib import Path
 from fastapi.types import DecoratedCallable
 from starlette.types import Scope, Receive, Send, Lifespan
 from fastapi import Request, Response, FastAPI as ASGIApp
-from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
+from ..storage import GlobalWeakStorage
 from .action import SoapAction
 
 
@@ -51,7 +51,7 @@ class SoapService(FastAPI):
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]: ...
 
 	@staticmethod
-	async def _await_or_call(func: FuncOrCoro, *args, **kwargs) -> t.Any:
+	async def _await_or_call(func: FuncOrCoro, *args, **kwargs) -> t.Any: ...
 
 	def add_action(self, name: str, handler: t.Callable[..., t.Any]) -> None: ...
 

@@ -14,17 +14,13 @@ import inflection
 import typing as t
 from pydantic_xml import model, element
 from pydantic import Field, PrivateAttr, model_validator
-from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
-from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
-from fastapi_xroad_soap.internal.file_size import FileSize
-from .. import BaseElementSpec, MessageBody
+from ..envelope import BaseElementSpec, MessageBody
+from ..storage import GlobalWeakStorage
+from ..multipart import DecodedBodyPart
+from ..file_size import FileSize
 
 
-__all__ = [
-	"SwaRef",
-	"SwaRefSpec",
-	"SwaRefInternal"
-]
+__all__ = ["SwaRef", "SwaRefSpec", "SwaRefInternal"]
 
 
 _NSMap = t.Optional[t.Dict[str, str]]
@@ -120,7 +116,7 @@ class SwaRefInternal(SwaRef):
 
 		self.size = len(file.content)
 		if self._max_filesize and self.size > self._max_filesize:
-			extra = f"(max: {self._max_filesize.size}kB)$${file.content_id}$$"
+			extra = f"(max: {self._max_filesize}kB)$${file.content_id}$$"
 			raise ValueError(f"file size too large: {self.size // 1000}kB {extra}")
 
 		hash_func = getattr(hashlib, self._hash_func)

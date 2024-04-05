@@ -17,9 +17,9 @@ from fastapi import FastAPI, Request, Response
 from fastapi.types import DecoratedCallable
 from starlette.types import Lifespan
 from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi_xroad_soap.internal.multipart import MultipartError
-from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
-from fastapi_xroad_soap.internal import utils, wsdl
+from ..multipart import MultipartError
+from ..storage import GlobalWeakStorage
+from .. import utils, wsdl
 from .action import SoapAction
 from . import faults as f
 
