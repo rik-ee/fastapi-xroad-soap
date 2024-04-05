@@ -12,7 +12,7 @@ import gc
 import pytest
 import weakref
 import typing as t
-from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
+from fastapi_xroad_soap.utils import GlobalWeakStorage
 
 
 @pytest.fixture(scope="function")

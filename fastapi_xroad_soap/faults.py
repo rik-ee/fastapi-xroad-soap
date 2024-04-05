@@ -8,11 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .internal.envelope import MessageBody
-from .internal.soap import SoapService
+from .internal.soap import SoapFault, ClientFault, ServerFault
 
 
-__all__ = [
-	"MessageBody",
-	"SoapService"
-]
+__all__ = ["SoapFault", "ClientFault", "ServerFault"]

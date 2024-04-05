@@ -8,11 +8,11 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .internal.envelope import MessageBody
-from .internal.soap import SoapService
+from .internal.envelope.elements import (
+	SwaRef
+)
 
 
 __all__ = [
-	"MessageBody",
-	"SoapService"
+	"SwaRef"
 ]

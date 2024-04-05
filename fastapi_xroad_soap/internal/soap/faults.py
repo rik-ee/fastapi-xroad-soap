@@ -20,14 +20,14 @@ from .response import SoapResponse
 
 __all__ = [
 	"SoapFault",
+	"ClientFault",
+	"ServerFault",
 	"InvalidMethodFault",
 	"InvalidActionFault",
 	"MissingBodyFault",
 	"MissingHeaderFault",
 	"MissingCIDFault",
 	"DuplicateCIDFault",
-	"ClientFault",
-	"ServerFault",
 	"ValidationFault"
 ]
 
@@ -58,6 +58,20 @@ class SoapFault(Exception):
 			http_status_code=http_status_code,
 			content=fault,
 			header=None
+		)
+
+
+class ClientFault(SoapFault):
+	def __init__(self, ex: t.Union[str, Exception]) -> None:
+		super().__init__(string=str(ex))
+
+
+class ServerFault(SoapFault):
+	def __init__(self, ex: t.Union[str, Exception]) -> None:
+		super().__init__(
+			http_status_code=500,
+			string=str(ex),
+			code="Server"
 		)
 
 
@@ -95,20 +109,6 @@ class DuplicateCIDFault(SoapFault):
 	def __init__(self, cid: str) -> None:
 		msg = f"Duplicate Content-ID not allowed: {cid[4:]}"
 		super().__init__(string=msg)
-
-
-class ClientFault(SoapFault):
-	def __init__(self, ex: t.Union[str, Exception]) -> None:
-		super().__init__(string=str(ex))
-
-
-class ServerFault(SoapFault):
-	def __init__(self, ex: t.Union[str, Exception]) -> None:
-		super().__init__(
-			http_status_code=500,
-			string=str(ex),
-			code="Server"
-		)
 
 
 class ValidationFault(SoapFault):

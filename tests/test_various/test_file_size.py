@@ -9,8 +9,9 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import pytest
+from fastapi_xroad_soap.utils import FileSize
 from fastapi_xroad_soap.internal.file_size import (
-	FileSize, FileSizeKB, FileSizeMB, FileSizeGB
+	FileSizeKB, FileSizeMB, FileSizeGB
 )
 
 

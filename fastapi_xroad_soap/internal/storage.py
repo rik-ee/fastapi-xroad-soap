@@ -14,7 +14,10 @@ import typing as t
 from weakref import WeakValueDictionary
 
 
-__all__ = ["GlobalWeakStorage"]
+__all__ = [
+	"GlobalWeakStorage",
+	"ExportableGlobalWeakStorage"
+]
 
 
 class GlobalWeakStorage:
@@ -125,3 +128,6 @@ class GlobalWeakStorage:
 		if raise_on_miss:
 			return self._objects[obj_id]
 		return self._objects.get(obj_id, None)
+
+
+ExportableGlobalWeakStorage = type('GlobalWeakStorage', (GlobalWeakStorage,), {})

@@ -13,14 +13,14 @@ from .service import SoapService
 from .action import SoapAction
 from .faults import (
 	SoapFault,
+	ClientFault,
+	ServerFault,
 	InvalidMethodFault,
 	InvalidActionFault,
 	MissingBodyFault,
 	MissingHeaderFault,
 	MissingCIDFault,
 	DuplicateCIDFault,
-	ClientFault,
-	ServerFault,
 	ValidationFault
 )
 
@@ -30,13 +30,13 @@ __all__ = [
 	"SoapService",
 	"SoapAction",
 	"SoapFault",
+	"ClientFault",
+	"ServerFault",
 	"InvalidMethodFault",
 	"InvalidActionFault",
 	"MissingBodyFault",
 	"MissingHeaderFault",
 	"MissingCIDFault",
 	"DuplicateCIDFault",
-	"ClientFault",
-	"ServerFault",
 	"ValidationFault"
 ]

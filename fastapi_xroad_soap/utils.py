@@ -8,11 +8,8 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .internal.envelope import MessageBody
-from .internal.soap import SoapService
+from .internal.file_size import FileSize
+from .internal.storage import ExportableGlobalWeakStorage as GlobalWeakStorage
 
 
-__all__ = [
-	"MessageBody",
-	"SoapService"
-]
+__all__ = ["FileSize", "GlobalWeakStorage"]
