@@ -14,9 +14,6 @@ from fastapi_xroad_soap.internal.utils.path_utils import (
 	read_cached_file,
 	read_cached_xml_file
 )
-from fastapi_xroad_soap.internal.utils.import_utils import (
-	LazyImport
-)
 from fastapi_xroad_soap.internal.utils.route_utils import (
 	get_annotations,
 	validate_annotations,
@@ -27,7 +24,6 @@ from fastapi_xroad_soap.internal.utils.route_utils import (
 __all__ = [
 	"search_upwards",
 	"read_cached_file",
-	"LazyImport",
 	"get_annotations",
 	"validate_annotations",
 	"extract_parameter_positions"
