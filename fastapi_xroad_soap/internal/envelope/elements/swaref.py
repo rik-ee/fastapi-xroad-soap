@@ -13,11 +13,11 @@ import hashlib
 import inflection
 import typing as t
 from pydantic_xml import model, element
-from pydantic import PrivateAttr, model_validator
+from pydantic import Field, PrivateAttr, model_validator
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
 from fastapi_xroad_soap.internal.file_size import FileSize
-from .. import BaseElementModel, BaseElementSpec, MessageBody
+from .. import BaseElementSpec, MessageBody
 
 
 __all__ = [
@@ -34,7 +34,7 @@ _MimeTypes = t.Union[t.List[str], t.Literal["all"]]
 _HashFuncType = t.Literal["sha256", "sha512", "sha3_256", "sha3_384", "sha3_512"]
 
 
-class SwaRef(MessageBody, BaseElementModel):
+class SwaRef(MessageBody):
 	name: str = element(default='')
 	mimetype: str = element(default='')
 	size: int = element(default=0)
@@ -87,6 +87,7 @@ class SwaRefSpec(BaseElementSpec):
 
 
 class SwaRefInternal(SwaRef):
+	fingerprint: str = Field(exclude=True)
 
 	_file: _FileType = PrivateAttr(default=None)
 	_max_filesize: _FileSizeType = PrivateAttr(default=None)

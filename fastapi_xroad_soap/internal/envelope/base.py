@@ -12,7 +12,7 @@ from __future__ import annotations
 import typing as t
 from enum import Enum
 from abc import ABC, abstractmethod
-from pydantic import BaseModel, Field, model_validator
+from pydantic import model_validator
 from pydantic_xml import model, attr as Attribute
 from pydantic import PrivateAttr
 
@@ -20,7 +20,6 @@ from pydantic import PrivateAttr
 __all__ = [
 	"Attribute",
 	"A8nType",
-	"BaseElementModel",
 	"BaseElementSpec",
 	"ElementSpecMeta",
 	"CompositeMeta",
@@ -34,10 +33,6 @@ class A8nType(Enum):
 	OPT = "optional"
 	MAND = "mandatory"
 	ABSENT = "absent"
-
-
-class BaseElementModel(BaseModel):
-	fingerprint: str = Field(exclude=True)
 
 
 class BaseElementSpec(ABC):

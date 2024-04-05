@@ -11,7 +11,6 @@
 from .base import (
 	Attribute,
 	A8nType,
-	BaseElementModel,
 	BaseElementSpec,
 	ElementSpecMeta,
 	CompositeMeta,
@@ -37,7 +36,6 @@ from .header import (
 __all__ = [
 	"Attribute",
 	"A8nType",
-	"BaseElementModel",
 	"BaseElementSpec",
 	"ElementSpecMeta",
 	"CompositeMeta",
