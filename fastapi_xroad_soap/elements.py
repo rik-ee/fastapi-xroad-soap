@@ -8,7 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from internal.fields import (
+from .internal.elements import (
 	SwaRef
 )
 
