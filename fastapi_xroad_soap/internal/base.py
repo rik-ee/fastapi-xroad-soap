@@ -112,6 +112,7 @@ class ElementSpecMeta(type):
 				class_fields[attr] = obj.get_element(attr)
 				class_a8ns[attr] = obj.get_a8n()
 				element_specs[attr] = obj
+		class_fields["__annotations__"] = class_a8ns
 		class_fields["_element_specs"] = element_specs
 		return super().__new__(cls, name, bases, class_fields, **kwargs)
 
