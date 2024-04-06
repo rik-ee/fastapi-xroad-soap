@@ -11,7 +11,7 @@
 import typing as t
 from pydantic_xml import element
 from ..constants import ENV_NSMAP
-from .base import MessageBody, MessageBodyType
+from ..base import MessageBody, MessageBodyType
 from .header import XroadHeader
 
 

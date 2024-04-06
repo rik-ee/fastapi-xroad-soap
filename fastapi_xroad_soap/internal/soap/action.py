@@ -12,6 +12,7 @@ import re
 import typing as t
 from dataclasses import dataclass
 from pydantic import ValidationError
+from ..base import MessageBody
 from ..storage import GlobalWeakStorage
 from ..constants import HEADER_NSMAP
 from ..multipart import (
@@ -21,8 +22,7 @@ from ..multipart import (
 from ..envelope import (
 	EnvelopeFactory,
 	GenericEnvelope,
-	XroadHeader,
-	MessageBody
+	XroadHeader
 )
 from .response import SoapResponse
 from . import faults as f

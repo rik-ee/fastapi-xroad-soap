@@ -10,7 +10,8 @@
 #
 import typing as t
 from fastapi.types import DecoratedCallable
-from ..envelope import MessageBody, XroadHeader
+from ..envelope import XroadHeader
+from ..base import MessageBody
 
 
 __all__ = [

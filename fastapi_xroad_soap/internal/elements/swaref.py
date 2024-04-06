@@ -14,7 +14,7 @@ import inflection
 import typing as t
 from pydantic_xml import model, element
 from pydantic import Field, PrivateAttr, model_validator
-from ..envelope import BaseElementSpec, MessageBody
+from ..base import BaseElementSpec, MessageBody
 from ..storage import GlobalWeakStorage
 from ..multipart import DecodedBodyPart
 from ..file_size import FileSize

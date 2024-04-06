@@ -11,10 +11,8 @@
 import re
 import typing as t
 from pydantic_xml import element
-from ..envelope import (
-	GenericFault,
-	MessageBody
-)
+from ..base import MessageBody
+from ..envelope import GenericFault
 from .response import SoapResponse
 
 

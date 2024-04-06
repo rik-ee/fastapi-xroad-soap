@@ -20,7 +20,7 @@ from .generics import (
 	GenericBody,
 	AnyBody
 )
-from .base import (
+from ..base import (
 	MessageBodyType,
 	MessageBody
 )

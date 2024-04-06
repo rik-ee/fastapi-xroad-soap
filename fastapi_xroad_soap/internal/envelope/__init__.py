@@ -8,14 +8,6 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .base import (
-	A8nType,
-	BaseElementSpec,
-	ElementSpecMeta,
-	CompositeMeta,
-	MessageBody,
-	MessageBodyType
-)
 from .factory import (
 	EnvelopeFactory
 )
@@ -33,12 +25,6 @@ from .header import (
 
 
 __all__ = [
-	"A8nType",
-	"BaseElementSpec",
-	"ElementSpecMeta",
-	"CompositeMeta",
-	"MessageBody",
-	"MessageBodyType",
 	"EnvelopeFactory",
 	"GenericEnvelope",
 	"GenericFault",
