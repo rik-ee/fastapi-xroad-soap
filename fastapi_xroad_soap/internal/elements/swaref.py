@@ -10,9 +10,8 @@
 #
 from __future__ import annotations
 import hashlib
-import inflection
 import typing as t
-from pydantic_xml import model, element
+from pydantic_xml import element
 from pydantic import Field, PrivateAttr, model_validator
 from ..base import BaseElementSpec, MessageBody
 from ..storage import GlobalWeakStorage
@@ -43,10 +42,10 @@ class SwaRef(MessageBody):
 			tag: t.Optional[str] = None,
 			ns: t.Optional[str] = None,
 			nsmap: _NSMap = None,
-			min_occurs: int = 0,
-			max_occurs: t.Union[int, t.Literal["unbounded"]] = "unbounded",
-			max_filesize: _FileSizeType = None,
+			min_occurs: int = None,
+			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
 			allow_mimetypes: _MimeTypes = "all",
+			max_filesize: _FileSizeType = None,
 			hash_func: _HashFuncType = "sha3_512"
 	) -> SwaRef:
 		kwargs = {k: v for k, v in locals().items()}
@@ -59,42 +58,28 @@ class SwaRef(MessageBody):
 
 class SwaRefSpec(BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
-		self.tag = kwargs["tag"]
-		self.ns = kwargs["ns"]
-		self.nsmap = kwargs["nsmap"]
-		self.max_filesize = kwargs["max_filesize"]
-		self.allow_mimetypes = kwargs["allow_mimetypes"]
-		self.hash_func = kwargs["hash_func"]
-		self.min_occurs = kwargs["min_occurs"]
-		self.max_occurs = kwargs["max_occurs"]
-		self.element_type = SwaRef
+		self.allow_mimetypes = kwargs.pop("allow_mimetypes")
+		self.max_filesize = kwargs.pop("max_filesize")
+		self.hash_func = kwargs.pop("hash_func")
+		super().__init__(element_type=SwaRef, **kwargs)
 
-	def get_a8n(self, anno: t.Any) -> t.Any:
+	def get_a8n(self) -> t.Type[t.List[t.Any]]:
 		new = type("SwaRef", (SwaRefInternal,), dict(
-			_max_filesize=self.max_filesize,
 			_allow_mimetypes=self.allow_mimetypes,
+			_max_filesize=self.max_filesize,
 			_hash_func=self.hash_func
 		))
 		return t.List[new]
 
-	def get_element(self, attr: str) -> model.XmlEntityInfo:
-		return element(
-			ns=self.ns or '',
-			nsmap=self.nsmap or dict(),
-			tag=self.tag or inflection.camelize(attr),
-			default_factory=list
-		)
-
 
 class SwaRefInternal(SwaRef):
 	fingerprint: str = Field(exclude=True)
-
 	_file: _FileType = PrivateAttr(default=None)
 	_max_filesize: _FileSizeType = PrivateAttr(default=None)
 	_allow_mimetypes: _MimeTypes = PrivateAttr(default="all")
 	_hash_func: _HashFuncType = PrivateAttr(default="sha3_512")
 
-	def __new__(cls, *args, **kwargs):
+	def __new__(cls, *_, **__):
 		return super()._real_new_()
 
 	@model_validator(mode="after")

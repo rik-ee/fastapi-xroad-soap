@@ -10,10 +10,11 @@
 #
 from __future__ import annotations
 import typing as t
+import inflection
 from enum import Enum
 from abc import ABC, abstractmethod
 from pydantic import PrivateAttr, model_validator
-from pydantic_xml import model
+from pydantic_xml import model, element
 
 
 __all__ = [
@@ -37,16 +38,30 @@ class BaseElementSpec(ABC):
 	tag: t.Optional[str]
 	ns: t.Optional[str]
 	nsmap: t.Optional[t.Dict[str, str]]
-	element_type: t.Type[MessageBody]
-	a8n_type: A8nType
 	min_occurs: int
-	max_occurs: int
+	max_occurs: t.Union[int, t.Literal["unbounded"]]
+	element_type: t.Type[MessageBody]
+	a8n_type: t.Union[A8nType, None]
+
+	def __init__(self, **kwargs):
+		self.tag = kwargs.get("tag")
+		self.ns = kwargs.get("ns")
+		self.nsmap = kwargs.get("nsmap")
+		self.min_occurs = kwargs.get("min_occurs") or 0
+		self.max_occurs = kwargs.get("max_occurs") or "unbounded"
+		self.element_type = kwargs.get("element_type")
+		self.a8n_type = None
 
 	@abstractmethod
-	def get_element(self, attr: str) -> model.XmlEntityInfo: ...
+	def get_a8n(self) -> t.Type[t.List[t.Any]]: ...
 
-	@abstractmethod
-	def get_a8n(self, anno: t.Any) -> t.Any: ...
+	def get_element(self, attr: str) -> model.XmlEntityInfo:
+		return element(
+			tag=self.tag or inflection.camelize(attr),
+			ns=self.ns or '',
+			nsmap=self.nsmap or dict(),
+			default_factory=list
+		)
 
 	def store_user_defined_a8n(self, a8n: t.Any, attr: str, name: str) -> None:
 		if a8n in [A8nType.ABSENT, self.element_type]:
@@ -68,8 +83,9 @@ class BaseElementSpec(ABC):
 					continue
 				elif arg == self.element_type:
 					continue
+				arg_name = "None" if arg is type(None) else arg.__name__
 				raise TypeError(
-					f"Invalid annotation argument '{arg.__name__}' "
+					f"Invalid annotation argument '{arg_name}' "
 					f"for '{name}' class attribute '{attr}'."
 				)
 		if origin := t.get_origin(a8n):
@@ -94,7 +110,7 @@ class ElementSpecMeta(type):
 				a8n = class_a8ns.get(attr, A8nType.ABSENT)
 				obj.store_user_defined_a8n(a8n, attr, name)
 				class_fields[attr] = obj.get_element(attr)
-				class_a8ns[attr] = obj.get_a8n(a8n)
+				class_a8ns[attr] = obj.get_a8n()
 				element_specs[attr] = obj
 		class_fields["_element_specs"] = element_specs
 		return super().__new__(cls, name, bases, class_fields, **kwargs)
