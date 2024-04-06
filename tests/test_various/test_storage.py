@@ -81,10 +81,14 @@ def test_validate_fingerprint(storage):
             storage._validate_fingerprint(bad_fp)
 
     counter, token = uid.split('..')  # type: str, str
+    with pytest.raises(ValueError):
+        bad_uid = f"{counter}..{token + 'A'}"  # uid too long
+        bad_fp = f"{bad_uid}-$$-{bad_uid[:-2]}"
+        storage._validate_fingerprint(bad_fp)
     bad_unique_ids = [
-        f"{counter + '0'}..{token}",  # counter too long
-        f"{counter}..{token + 'a'}",  # token too long
-        f"{counter[:-1] + 'a'}..{token}",  # not a digit in counter
+        f"{counter}##{token}",  # bad separator
+        f"{counter + '0'}..{token[:-1]}",  # counter too long
+        f"{counter[:-1] + 'A'}..{token}",  # not a digit in counter
         f"{counter}..{token[:-1] + '@'}"  # not a hex char in token
     ]
     for bad_uid in bad_unique_ids:
@@ -174,7 +178,7 @@ def test_object_counter_increment(storage):
 def test_instance_counter_wrap():
     GlobalWeakStorage._inst_counter = 999999999
     GlobalWeakStorage()
-    storage = GlobalWeakStorage()
-    uid = storage._uid.split('..')[0]
+    _storage = GlobalWeakStorage()
+    uid = _storage._uid.split('..')[0]
     assert all(c == '0' for c in uid)
     GlobalWeakStorage._inst_counter = 0

@@ -71,8 +71,6 @@ class GlobalWeakStorage:
 			counter, token = uid.split('..')  # type: str, str
 			if len(counter) != 9:
 				raise error
-			elif len(token) != 48:
-				raise error
 			elif not counter.isdigit():
 				raise error
 			for char in token:

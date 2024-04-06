@@ -8,6 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import typing
 import pytest
 from fastapi_xroad_soap.utils import FileSize
 from fastapi_xroad_soap.internal.file_size import (
@@ -50,14 +51,11 @@ def test_size_and_value():
 
 
 def test_invalid_size():
-	with pytest.raises(ValueError):
-		FileSizeKB(-1)
-
-	with pytest.raises(ValueError):
-		FileSizeMB(-1)
-
-	with pytest.raises(ValueError):
-		FileSizeGB(-1)
+	for cls in [FileSizeKB, FileSizeMB, FileSizeGB]:
+		with pytest.raises(ValueError):
+			cls(-1)
+		with pytest.raises(TypeError):
+			cls(typing.cast(int, 1.0))
 
 
 def test_class_str_method():
