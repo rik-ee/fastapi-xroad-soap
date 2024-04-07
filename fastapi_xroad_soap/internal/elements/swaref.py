@@ -25,7 +25,7 @@ __all__ = ["SwaRef", "SwaRefSpec", "SwaRefInternal"]
 _NSMap = t.Optional[t.Dict[str, str]]
 _FileType = t.Union[DecodedBodyPart, None]
 _FileSizeType = t.Union[FileSize, None]
-_MimeTypes = t.Union[t.List[str], t.Literal["all"]]
+_Filetypes = t.Union[t.List[str], t.Literal["all"]]
 _HashFuncType = t.Literal["sha256", "sha512", "sha3_256", "sha3_384", "sha3_512"]
 
 
@@ -44,7 +44,7 @@ class SwaRef(MessageBody):
 			nsmap: _NSMap = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			allow_mimetypes: _MimeTypes = "all",
+			allowed_filetypes: _Filetypes = "all",
 			max_filesize: _FileSizeType = None,
 			hash_func: _HashFuncType = "sha3_512"
 	) -> SwaRef:
@@ -58,14 +58,14 @@ class SwaRef(MessageBody):
 
 class SwaRefSpec(BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
-		self.allow_mimetypes = kwargs.pop("allow_mimetypes")
+		self.allowed_filetypes = kwargs.pop("allowed_filetypes")
 		self.max_filesize = kwargs.pop("max_filesize")
 		self.hash_func = kwargs.pop("hash_func")
 		super().__init__(element_type=SwaRef, **kwargs)
 
 	def get_a8n(self) -> t.Type[t.List[t.Any]]:
 		new = type("SwaRef", (SwaRefInternal,), dict(
-			_allow_mimetypes=self.allow_mimetypes,
+			_allowed_filetypes=self.allowed_filetypes,
 			_max_filesize=self.max_filesize,
 			_hash_func=self.hash_func
 		))
@@ -74,10 +74,11 @@ class SwaRefSpec(BaseElementSpec):
 
 class SwaRefInternal(SwaRef):
 	fingerprint: str = Field(exclude=True)
-	_file: _FileType = PrivateAttr(default=None)
+
+	_allowed_filetypes: _Filetypes = PrivateAttr(default="all")
 	_max_filesize: _FileSizeType = PrivateAttr(default=None)
-	_allow_mimetypes: _MimeTypes = PrivateAttr(default="all")
 	_hash_func: _HashFuncType = PrivateAttr(default="sha3_512")
+	_file: _FileType = PrivateAttr(default=None)
 
 	def __new__(cls, *_, **__):
 		return super()._real_new_()
@@ -94,22 +95,25 @@ class SwaRefInternal(SwaRef):
 		elif '.' not in file.file_name:
 			raise ValueError(f"invalid file name: {file.file_name}")
 
-		suffix = '.' + file.file_name.split('.')[-1]
-		if self._allow_mimetypes != "all" and suffix not in self._allow_mimetypes:
-			extra = f"(allowed: {self._allow_mimetypes})$${file.content_id}$$"
-			raise ValueError(f"file type not allowed: {suffix} {extra}")
+		file_ext = '.' + file.file_name.split('.')[-1]
+		if self._allowed_filetypes != "all" and file_ext not in self._allowed_filetypes:
+			extra = f"(allowed: {self._allowed_filetypes})$${file.content_id}$$"
+			raise ValueError(f"file type not allowed: {file_ext} {extra}")
 
-		self.size = len(file.content)
-		if self._max_filesize and self.size > self._max_filesize.value:
-			size = FileSize.bytes_to_iec_str(self.size)
+		file_size = len(file.content)
+		if self._max_filesize and file_size > self._max_filesize.value:
+			size = FileSize.bytes_to_iec_str(file_size)
 			extra = f"(max: {self._max_filesize})$${file.content_id}$$"
 			raise ValueError(f"file size too large: {size} {extra}")
 
 		hash_func = getattr(hashlib, self._hash_func)
-		self.digest = hash_func(file.content).hexdigest()
-		self.mimetype = file.mime_type
-		self.content = file.content
+		file_digest = hash_func(file.content).hexdigest()
+		
 		self.name = file.file_name
+		self.mimetype = file.mime_type
+		self.size = file_size
+		self.digest = file_digest
+		self.content = file.content
 		self._file = file
 
 		delattr(self, "fingerprint")
