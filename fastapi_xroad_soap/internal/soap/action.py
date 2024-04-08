@@ -12,6 +12,7 @@ import re
 import typing as t
 from dataclasses import dataclass
 from pydantic import ValidationError
+from fastapi import Response
 from ..base import MessageBody
 from ..storage import GlobalWeakStorage
 from ..constants import HEADER_NSMAP
@@ -62,10 +63,10 @@ class SoapAction:
 			self,
 			ret_obj: t.Optional[MessageBody],
 			header: XroadHeader
-	) -> t.Optional[SoapResponse]:
+	) -> t.Union[Response, SoapResponse]:
 		has_return = self.return_type is not None
 		if not has_return and ret_obj is None:
-			return None
+			return Response()
 		elif has_return and isinstance(ret_obj, self.return_type):
 			return SoapResponse(content=ret_obj, header=header)
 		raise TypeError(
