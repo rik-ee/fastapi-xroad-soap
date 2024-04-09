@@ -35,6 +35,7 @@ class MultipartDecoder:
                 string = value.strip('"')
                 if not (string is None or isinstance(string, bytes)):
                     self.boundary = string.encode('utf-8')
+                    continue
                 self.boundary = string
 
     @staticmethod
