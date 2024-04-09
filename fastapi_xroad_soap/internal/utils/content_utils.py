@@ -8,62 +8,27 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-import io
-import os
 import chardet
 import mimetypes
-import contextlib
 import typing as t
 import charset_normalizer as charset
 
 
 __all__ = [
 	"split_on_find",
-	"encode_with",
-	"reset",
-	"total_len",
 	"guess_mime_type",
 	"detect_decode"
 ]
 
 
-_USBType = t.Union[str, bytes]
+_USB = t.Union[str, bytes]
+_USN = t.Union[str, None]
 
 
-def split_on_find(content: _USBType, separator: _USBType) -> t.Tuple[_USBType, _USBType]:
+def split_on_find(content: _USB, separator: _USB) -> t.Tuple[_USB, _USB]:
 	point, sep_len = content.find(separator), len(separator)
 	first, second = content[:point], content[point + sep_len:]
 	return first.strip(), second.strip()
-
-
-def encode_with(string: t.Union[str, bytes, t.Any], encoding: str = 'utf-8') -> t.Union[bytes, t.Any]:
-	if not (string is None or isinstance(string, bytes)):
-		return string.encode(encoding)
-	return string
-
-
-@contextlib.contextmanager
-def reset(buffer) -> None:
-	original_position = buffer.tell()
-	buffer.seek(0, 2)
-	yield
-	buffer.seek(original_position, 0)
-
-
-def total_len(o: t.Any) -> int:
-	if hasattr(o, '__len__'):
-		return len(o)
-	if hasattr(o, 'len'):
-		return o.len
-	if hasattr(o, 'fileno'):
-		try:
-			file_no = o.fileno()
-		except io.UnsupportedOperation:
-			pass
-		else:
-			return os.fstat(file_no).st_size
-	if hasattr(o, 'getvalue'):
-		return len(o.getvalue())
 
 
 def guess_mime_type(file_name: t.Union[str, None]) -> str:
@@ -72,10 +37,7 @@ def guess_mime_type(file_name: t.Union[str, None]) -> str:
 	return guess or default
 
 
-def detect_decode(
-		string: bytes,
-		encoding: str = 'utf-8'
-) -> t.Tuple[t.Union[str, bytes], t.Union[str, None]]:
+def detect_decode(string: bytes, encoding: str = 'utf-8') -> t.Tuple[_USB, _USN]:
 	try:
 		return string.decode(encoding), encoding
 	except UnicodeDecodeError:

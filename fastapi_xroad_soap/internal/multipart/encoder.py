@@ -8,21 +8,3 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .bodypart import DecodedBodyPart
-from .decoder import MultipartDecoder
-from .errors import (
-	MultipartError,
-	NonMultipartError,
-	CorruptMultipartError,
-	MissingContentIDError
-)
-
-
-__all__ = [
-	"DecodedBodyPart",
-	"MultipartDecoder",
-	"MultipartError",
-	"NonMultipartError",
-	"CorruptMultipartError",
-	"MissingContentIDError"
-]

@@ -10,8 +10,8 @@
 #
 import typing as t
 from .bodypart import DecodedBodyPart
-from ..errors import NonMultipartError
-from .. import helpers
+from .errors import NonMultipartError
+from .. import utils
 
 
 __all__ = ["MultipartDecoder"]
@@ -30,9 +30,12 @@ class MultipartDecoder:
         if mimetype.split('/')[0].lower() != 'multipart':
             raise NonMultipartError(mimetype)
         for item in ct_info[1:]:
-            attr, value = helpers.split_on_find(item, separator='=')
+            attr, value = utils.split_on_find(item, separator='=')
             if attr.lower() == 'boundary':
-                self.boundary = helpers.encode_with(value.strip('"'))
+                string = value.strip('"')
+                if not (string is None or isinstance(string, bytes)):
+                    self.boundary = string.encode('utf-8')
+                self.boundary = string
 
     @staticmethod
     def _fix_first_part(part, boundary_marker):
