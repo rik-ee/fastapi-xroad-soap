@@ -10,6 +10,7 @@
 #
 import gc
 import pytest
+import string
 import weakref
 import typing as t
 from fastapi_xroad_soap.utils import GlobalWeakStorage
@@ -22,7 +23,7 @@ def storage():
 
 def test_class_attributes():
     assert hasattr(GlobalWeakStorage, "_unique_id")
-    assert hasattr(GlobalWeakStorage, "_validate_fingerprint")
+    assert hasattr(GlobalWeakStorage, "validate_fingerprint")
     assert hasattr(GlobalWeakStorage, "retrieve_object")
     assert hasattr(GlobalWeakStorage, "_instances")
     assert hasattr(GlobalWeakStorage, "_inst_counter")
@@ -55,10 +56,11 @@ def test_unique_id_generation():
     counter, token = uid.split('..')  # type: str, str
     assert len(counter) == 9
     assert len(token) == 48
-
     assert counter.isdigit()
+
+    valid_b64_chars = string.ascii_letters + string.digits + '+/='
     for char in token:
-        assert char in "0123456789ABCDEF"
+        assert char in valid_b64_chars
 
     uid2 = GlobalWeakStorage._unique_id(124)
     assert uid != uid2
@@ -78,13 +80,13 @@ def test_validate_fingerprint(storage):
     ]
     for bad_fp in bad_fingerprints:
         with pytest.raises(ValueError):
-            storage._validate_fingerprint(bad_fp)
+            storage.validate_fingerprint(bad_fp)
 
     counter, token = uid.split('..')  # type: str, str
     with pytest.raises(ValueError):
         bad_uid = f"{counter}..{token + 'A'}"  # uid too long
         bad_fp = f"{bad_uid}-$$-{bad_uid[:-2]}"
-        storage._validate_fingerprint(bad_fp)
+        storage.validate_fingerprint(bad_fp)
     bad_unique_ids = [
         f"{counter}##{token}",  # bad separator
         f"{counter + '0'}..{token[:-1]}",  # counter too long
@@ -94,7 +96,7 @@ def test_validate_fingerprint(storage):
     for bad_uid in bad_unique_ids:
         with pytest.raises(ValueError):
             bad_fp = f"{bad_uid}-$$-{bad_uid}"
-            storage._validate_fingerprint(bad_fp)
+            storage.validate_fingerprint(bad_fp)
 
 
 def test_get_object_from_class(storage):

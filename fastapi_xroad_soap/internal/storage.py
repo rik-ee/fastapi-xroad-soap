@@ -9,6 +9,8 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from __future__ import annotations
+import base64
+import string
 import secrets
 import typing as t
 from weakref import WeakValueDictionary
@@ -50,32 +52,38 @@ class GlobalWeakStorage:
 		"""Generates a unique identifier."""
 		clamped = index % 1_000_000_000
 		filled = str(clamped).zfill(9)
-		token = secrets.token_hex(24).upper()
-		return f"{filled}..{token}"
+		token = secrets.token_bytes(36)
+		b64_token = base64.b64encode(token)
+		return f"{filled}..{b64_token.decode()}"
 
 	@staticmethod
-	def _validate_fingerprint(fingerprint: str) -> None:
+	def validate_fingerprint(fingerprint: str, raise_on_invalid: bool = True) -> bool:
 		"""Validates the format of unique identifiers."""
-		error = ValueError(f"Invalid fingerprint: {fingerprint}")
+		valid_b64_chars = string.ascii_letters + string.digits + '+/='
+		is_valid = True
 		if not isinstance(fingerprint, str):
-			raise error
+			is_valid = False
 		elif len(fingerprint) != 122:
-			raise error
+			is_valid = False
 		elif '-$$-' not in fingerprint:
-			raise error
-		for uid in fingerprint.split('-$$-'):
-			if len(uid) != 59:
-				raise error
-			elif '..' not in uid:
-				raise error
-			counter, token = uid.split('..')  # type: str, str
-			if len(counter) != 9:
-				raise error
-			elif not counter.isdigit():
-				raise error
-			for char in token:
-				if char not in "0123456789ABCDEF":
-					raise error
+			is_valid = False
+		if is_valid:
+			for uid in fingerprint.split('-$$-'):
+				if len(uid) != 59:
+					is_valid = False
+				elif '..' not in uid:
+					is_valid = False
+				counter, token = uid.split('..')  # type: str, str
+				if len(counter) != 9:
+					is_valid = False
+				elif not counter.isdigit():
+					is_valid = False
+				for char in token:
+					if char not in valid_b64_chars:
+						is_valid = False
+		if not is_valid and raise_on_invalid:
+			raise ValueError(f"Invalid fingerprint: {fingerprint}")
+		return is_valid
 
 	def insert_object(self, obj: t.Any) -> str:
 		"""
@@ -102,7 +110,7 @@ class GlobalWeakStorage:
 		:raises KeyError: if `raise_on_miss` is True and the fingerprint does not relate to any object.
 		:returns: The object associated with the given fingerprint if it exists, otherwise None.
 		"""
-		cls._validate_fingerprint(fingerprint)
+		cls.validate_fingerprint(fingerprint)
 		inst_id, obj_id = fingerprint.split('-$$-')
 		instance = cls._instances.get(inst_id) or {}
 		store: WeakValueDictionary = getattr(instance, '_objects', {})
@@ -121,7 +129,7 @@ class GlobalWeakStorage:
 		:raises KeyError: if `raise_on_miss` is True and the fingerprint does not relate to any object.
 		:returns: The object associated with the given fingerprint if it exists, otherwise None.
 		"""
-		self._validate_fingerprint(fingerprint)
+		self.validate_fingerprint(fingerprint)
 		obj_id = fingerprint.split('-$$-')[1]
 		if raise_on_miss:
 			return self._objects[obj_id]
