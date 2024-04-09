@@ -29,6 +29,7 @@ class DecodedBodyPart:
     mime_type: t.Optional[str] = None
     content: t.Optional[bytes] = None
     content_id: t.Optional[str] = None
+    content_length: t.Optional[int] = None
     is_mixed_multipart: bool = False
 
     def __init__(self, content: bytes) -> None:
@@ -65,6 +66,7 @@ class DecodedBodyPart:
         if encoding not in [None, 'utf-8']:
             content = dec_content.encode('utf-8')
         self.content = content
+        self.content_length = len(content)
 
     def set_file_metadata(self) -> None:
         boundary = self.headers.get_boundary()

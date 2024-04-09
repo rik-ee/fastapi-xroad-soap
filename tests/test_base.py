@@ -15,13 +15,15 @@ import typing as t
 from abc import ABC
 from enum import Enum
 from pydantic_xml import model, element
+from fastapi_xroad_soap.internal.envelope import EnvelopeFactory
 from fastapi_xroad_soap.internal import base as b
 from .conftest import (
-	CustomElement,
-	CustomElementSpec,
-	CustomElementInternal,
+	CustomModelObject,
+	CustomModelInternal,
+	CustomModelSpec,
 	GoodCustomBody,
-	BadCustomBody
+	BadInstantiationCustomBody,
+	BadDeserializationCustomBody
 )
 
 
@@ -42,23 +44,27 @@ def test_a8ntype_enum():
 def test_base_element_spec():
 	assert issubclass(b.BaseElementSpec, ABC)
 
-	assert hasattr(b.BaseElementSpec, "get_a8n")
 	assert hasattr(b.BaseElementSpec, "get_element")
-	assert hasattr(b.BaseElementSpec, "store_user_defined_a8n")
+	assert hasattr(b.BaseElementSpec, "get_element_a8n")
+	assert hasattr(b.BaseElementSpec, "set_a8n_type_from")
 
-	assert hasattr(b.BaseElementSpec.get_a8n, "__isabstractmethod__")
 	assert not hasattr(b.BaseElementSpec.get_element, "__isabstractmethod__")
-	assert not hasattr(b.BaseElementSpec.store_user_defined_a8n, "__isabstractmethod__")
+	assert not hasattr(b.BaseElementSpec.get_element_a8n, "__isabstractmethod__")
+	assert not hasattr(b.BaseElementSpec.set_a8n_type_from, "__isabstractmethod__")
+
+	assert hasattr(b.BaseElementSpec.init_instantiated_data, "__isabstractmethod__")
+	assert hasattr(b.BaseElementSpec.init_deserialized_data, "__isabstractmethod__")
 
 
 def test_base_element_spec_subclass():
-	spec = CustomElementSpec(raise_error=False)
+	spec = CustomModelSpec()
 
-	assert spec.element_type == CustomElement
-	assert spec.raise_error is False
+	assert spec.element_type == CustomModelObject
+	assert spec.raise_error_on_instantiation is False
+	assert spec.raise_error_on_deserialization is False
 
-	arg = t.get_args(spec.get_a8n())[0]
-	assert issubclass(arg, CustomElementInternal)
+	arg = t.get_args(spec.get_element_a8n())[0]
+	assert issubclass(arg, CustomModelInternal)
 
 	el = spec.get_element("fastapi_xroad_soap")
 	assert isinstance(el, model.XmlEntityInfo)
@@ -67,14 +73,19 @@ def test_base_element_spec_subclass():
 	assert el.nsmap == dict()
 	assert el.default_factory == list
 
+	a8n = spec.get_element_a8n()
+	assert t.get_origin(a8n) == list
+	args = t.get_args(a8n)
+	assert len(args) == 1
+
 	store_a8n = functools.partial(
-		spec.store_user_defined_a8n,
+		spec.set_a8n_type_from,
 		attr='attr', name='Test'
 	)
 	store_a8n(b.A8nType.ABSENT)
 	assert spec.a8n_type == b.A8nType.MAND
 
-	store_a8n(CustomElement)
+	store_a8n(CustomModelObject)
 	assert spec.a8n_type == b.A8nType.MAND
 
 	for a8n in [t.Optional, t.Union, t.List, list]:
@@ -85,25 +96,25 @@ def test_base_element_spec_subclass():
 		with pytest.raises(TypeError):
 			store_a8n(a8n[object, None])
 
-	store_a8n(t.Optional[CustomElement])
+	store_a8n(t.Optional[CustomModelObject])
 	assert spec.a8n_type == b.A8nType.OPT
 
-	store_a8n(t.Union[CustomElement, None])
+	store_a8n(t.Union[CustomModelObject, None])
 	assert spec.a8n_type == b.A8nType.OPT
 
-	store_a8n(t.List[CustomElement])
+	store_a8n(t.List[CustomModelObject])
 	assert spec.a8n_type == b.A8nType.LIST
 
 	with pytest.raises(TypeError):
-		store_a8n(t.Iterable[CustomElement])
+		store_a8n(t.Iterable[CustomModelObject])
 
 
 def test_element_spec_meta_subclass():
-	spec = CustomElementSpec(raise_error=False)
+	spec = CustomModelSpec()
 
 	class TestBody(metaclass=b.ElementSpecMeta):
 		_element_specs: t.Dict[str, t.Any] = dict()
-		text: CustomElement = spec
+		text: CustomModelObject = spec
 
 	assert "_element_specs" in TestBody.__annotations__
 	assert t.get_origin(TestBody.__annotations__["text"]) == list
@@ -127,3 +138,19 @@ def test_message_body_subclass():
 		</TestBody>
 	""").strip()
 	assert output == expected
+
+
+def test_custom_bodies():
+	body = GoodCustomBody(cust_elem=CustomModelObject(text="asdfg"))
+	factory = EnvelopeFactory[GoodCustomBody]()
+	envelope = factory.serialize(content=body)
+	factory.deserialize(envelope)
+
+	with pytest.raises(ValueError, match="init_instantiated_data_value_error"):
+		BadInstantiationCustomBody(cust_elem=CustomModelObject(text="asdfg"))
+
+	body = BadDeserializationCustomBody(cust_elem=CustomModelObject(text="asdfg"))
+	factory = EnvelopeFactory[BadDeserializationCustomBody]()
+	envelope = factory.serialize(content=body)
+	with pytest.raises(ValueError, match="init_deserialized_data_value_error"):
+		factory.deserialize(envelope)

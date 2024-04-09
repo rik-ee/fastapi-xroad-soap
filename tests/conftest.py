@@ -8,68 +8,81 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from __future__ import annotations
 import typing as t
-from pydantic import Field, PrivateAttr, model_validator
-from pydantic_xml import element
+from pydantic import Field
 from fastapi_xroad_soap.internal import base as b
 
 
 __all__ = [
-	"CustomElement",
-	"CustomElementSpec",
-	"CustomElementInternal",
+	"CustomModelObject",
+	"CustomModelInternal",
+	"CustomModelSpec",
+	"CustomModelElement",
 	"GoodCustomBody",
-	"BadCustomBody"
+	"BadInstantiationCustomBody",
+	"BadDeserializationCustomBody"
 ]
 
 
-class CustomElement(b.MessageBody):
-	text: str = element(default='')
+class CustomModelObject(b.MessageBody):
+	text: str = Field(exclude=True, default='')
 
-	def __new__(cls, *, raise_error: bool = False):
-		kwargs = dict(raise_error=raise_error)
-		return CustomElementSpec(**kwargs)
+	def __new__(cls, text: str) -> CustomModelObject:
+		kwargs = {k: v for k, v in locals().items() if v != cls}
+		return t.cast(CustomModelObject, CustomModelInternal(**kwargs))
 
 	@classmethod
-	def _real_new_(cls, *args, **kwargs):
-		return super().__new__(cls, *args, **kwargs)
+	def _real_new_(cls, sub_cls):
+		return super().__new__(sub_cls)
 
 
-class CustomElementSpec(b.BaseElementSpec):
+class CustomModelInternal(CustomModelObject):
+	text: str = Field(default=None)
+
+	def __new__(cls, **__):
+		return super()._real_new_(cls)
+
+
+class CustomModelSpec(b.BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
-		self.raise_error = kwargs.pop("raise_error")
+		self.raise_error_on_instantiation = kwargs.pop("raise_error_on_instantiation", False)
+		self.raise_error_on_deserialization = kwargs.pop("raise_error_on_deserialization", False)
 		super().__init__(
-			internal_type=CustomElementInternal,
-			element_type=CustomElement,
+			element_type=CustomModelObject,
+			internal_type=CustomModelInternal,
 			**kwargs
 		)
 
-	def get_a8n(self) -> t.Any:
-		new = type("CustomElement", (CustomElementInternal,), dict(
-			_raise_error=self.raise_error
-		))
-		return t.List[new]
+	def init_instantiated_data(self, data: t.List) -> t.List:
+		if self.raise_error_on_instantiation:
+			raise ValueError("init_instantiated_data_value_error")
+		return data
+
+	def init_deserialized_data(self, data: t.List) -> t.List:
+		if self.raise_error_on_deserialization:
+			raise ValueError("init_deserialized_data_value_error")
+		return data
 
 
-class CustomElementInternal(CustomElement):
-	ex_text: str = Field(exclude=True)
-	_raise_error: str = PrivateAttr(default=None)
-
-	def __new__(cls, *_, **__):
-		return super()._real_new_()
-
-	@model_validator(mode="after")
-	def init_values(self):
-		self.text = self.ex_text
-		if self._raise_error == "raise":
-			raise ValueError(self)
-		delattr(self, "ex_text")
-		return self
+class CustomModelElement(b.MessageBody):
+	def __new__(
+			cls,
+			*,
+			raise_error_on_instantiation: bool = False,
+			raise_error_on_deserialization: bool = False
+	) -> CustomModelObject:
+		kwargs = {k: v for k, v in locals().items() if v != cls}
+		return t.cast(CustomModelObject, CustomModelSpec(**kwargs))
 
 
 class GoodCustomBody(b.MessageBody):
-	cust_elem = CustomElement(raise_error=False)
+	cust_elem = CustomModelElement()
 
 
-class BadCustomBody(b.MessageBody):
-	cust_elem = CustomElement(raise_error=True)
+class BadInstantiationCustomBody(b.MessageBody):
+	cust_elem = CustomModelElement(raise_error_on_instantiation=True)
+
+
+class BadDeserializationCustomBody(b.MessageBody):
+	cust_elem = CustomModelElement(raise_error_on_deserialization=True)
