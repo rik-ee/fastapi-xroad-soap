@@ -9,14 +9,18 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from .swaref import (
-	SwaRef,
+	SwaRefFile,
+	SwaRefInternal,
 	SwaRefSpec,
-	SwaRefInternal
+	SwaRefElement,
+	SwaRef
 )
 
 
 __all__ = [
-	"SwaRef",
+	"SwaRefFile",
+	"SwaRefInternal",
 	"SwaRefSpec",
-	"SwaRefInternal"
+	"SwaRefElement",
+	"SwaRef"
 ]

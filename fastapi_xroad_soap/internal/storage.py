@@ -82,7 +82,7 @@ class GlobalWeakStorage:
 					if char not in valid_b64_chars:
 						is_valid = False
 		if not is_valid and raise_on_invalid:
-			raise ValueError(f"Invalid fingerprint: {fingerprint}")
+			raise ValueError(f"invalid fingerprint: {fingerprint}")
 		return is_valid
 
 	def insert_object(self, obj: t.Any) -> str:
