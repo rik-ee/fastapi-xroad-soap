@@ -90,30 +90,26 @@ class SoapAction:
 						files.append(part2)
 				else:
 					files.append(part1)
-			xml_str = envelope.content
-			self.validate_files(xml_str, files)
-			for file in files:
-				cid = file.content_id.encode()
-				uid = self.storage.insert_object(file).encode()
-				xml_str = xml_str.replace(cid, uid)
-			http_body = xml_str
-		elif body_ct not in ["text/xml", "application/xml", "application/soap+xml"]:
+			http_body = self.process_files(envelope.content, files)
+		elif body_ct not in ["text/xml", "application/xml"]:
 			raise f.ClientFault(f"Invalid content type: {body_ct}")
 		return self.deserialize(http_body)
 
-	@staticmethod
-	def validate_files(xml_str: bytes, files: t.List[DecodedBodyPart]) -> None:
+	def process_files(self, xml_str: bytes, files: t.List[DecodedBodyPart]) -> bytes:
 		ids = [file.content_id for file in files]
 		for cid in ids:
 			if ids.count(cid) > 1:
 				raise f.DuplicateCIDFault(cid)
 		for file in files:
-			cid = file.content_id
-			count = xml_str.count(cid.encode())
+			cid = file.content_id.encode()
+			count = xml_str.count(cid)
 			if count == 0:
-				raise f. MissingCIDFault(cid)
+				raise f.MissingCIDFault(cid.decode())
 			elif count > 1:
-				raise f.DuplicateCIDFault(cid)
+				raise f.DuplicateCIDFault(cid.decode())
+			uid = self.storage.insert_object(file).encode()
+			xml_str = xml_str.replace(cid, uid)
+		return xml_str
 
 	def deserialize(self, http_body: bytes) -> GenericEnvelope:
 		if self.body_type is None:
@@ -123,7 +119,7 @@ class SoapAction:
 			return factory().deserialize(http_body)
 		except ValidationError:
 			extra_nsmap = self.extract_extra_nsmap(http_body)
-			name = f"Namespaced{self.body_type.__name__}"
+			name = self.body_type.__name__
 			last_err = None
 			for ns in extra_nsmap.keys():
 				new = t.cast(t.Type[MessageBody], type(
