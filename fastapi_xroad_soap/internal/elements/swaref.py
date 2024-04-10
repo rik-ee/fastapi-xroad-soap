@@ -53,7 +53,7 @@ class SwaRefFile(MessageBody):
 
 
 class SwaRefInternal(SwaRefFile):
-	fingerprint: str = Field(default=None)
+	content_id: str = Field(default=None)
 
 	def __new__(cls, **__):
 		return super()._real_new_(cls)
@@ -62,7 +62,7 @@ class SwaRefInternal(SwaRefFile):
 		if len(kwargs) == 1:
 			key, value = list(kwargs.items())[0]
 			if key == "name":
-				kwargs = dict(fingerprint=value)
+				kwargs = dict(content_id=value)
 		super().__init__(**kwargs)
 
 
@@ -106,18 +106,18 @@ class SwaRefSpec(BaseElementSpec):
 			self.validate_file(obj.name, obj.size)
 			obj.mimetype = utils.guess_mime_type(obj.name)
 			obj.digest = self.digest(obj.content)
-			if hasattr(obj, "fingerprint"):
-				delattr(obj, "fingerprint")
+			if hasattr(obj, "content_id"):
+				delattr(obj, "content_id")
 		return data
 
 	def init_deserialized_data(self, data: t.List[SwaRefInternal]) -> t.List[SwaRefInternal]:
 		for obj in data:
-			if not hasattr(obj, "fingerprint"):
+			if not hasattr(obj, "content_id"):
 				continue
 			try:
-				file: DecodedBodyPart = GlobalWeakStorage.retrieve_object(obj.fingerprint)
+				file: DecodedBodyPart = GlobalWeakStorage.retrieve_object(obj.content_id)
 			except ValueError:
-				raise ValueError(f"no file attachment found $${obj.fingerprint}$$")
+				raise ValueError(f"no file attachment found $${obj.content_id}$$")
 
 			file_size = len(file.content)
 			self.validate_file(file.file_name, file_size, file.content_id)
@@ -129,7 +129,7 @@ class SwaRefSpec(BaseElementSpec):
 			obj.content = file.content
 
 			setattr(obj, "_file", file)
-			delattr(obj, "fingerprint")
+			delattr(obj, "content_id")
 		return data
 
 
