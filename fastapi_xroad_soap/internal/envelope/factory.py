@@ -92,6 +92,6 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 		model = AnyBody
 		if self._type is not None:
 			model = GenericBody[self._type]
-		factory = self._factory[model]  # type: MessageBody
+		factory = self._factory[model]  # type: t.Type[MessageBody]
 		obj = factory.from_xml(content, context={"deserializing": True})
 		return t.cast(GenericEnvelope, obj)
