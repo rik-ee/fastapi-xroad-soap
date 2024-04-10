@@ -27,7 +27,9 @@ _USN = t.Union[str, None]
 
 def split_on_find(content: _USB, separator: _USB) -> t.Tuple[_USB, _USB]:
 	point, sep_len = content.find(separator), len(separator)
-	first, second = content[:point], content[point + sep_len:]
+	end = point if point != -1 else len(content) + 1
+	start = end + sep_len if point != -1 else 0
+	first, second = content[:end], content[start:]
 	return first.strip(), second.strip()
 
 
@@ -45,7 +47,7 @@ def detect_decode(string: bytes, encoding: str = 'utf-8') -> t.Tuple[_USB, _USN]
 			return string, None
 		kwargs = dict(should_rename_legacy=True)
 		match = chardet.detect(string, **kwargs)
-		if match and match["confidence"] >= 0.7:
+		if match and match["confidence"] >= 0.7:  # pragma: no cover
 			enc = match["encoding"]
 			return string.decode(enc), enc
-	return string, None
+		return string, None  # pragma: no cover

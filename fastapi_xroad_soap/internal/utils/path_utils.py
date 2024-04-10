@@ -62,7 +62,8 @@ def read_cached_file(
 ) -> t.Union[str, bytes, t.List[str], t.List[bytes]]:
 	path = resolve_relpath(path)
 	mode = 'rb' if binary else 'r'
-	with path.open(mode, encoding=encoding) as file:
+	args = {} if binary else dict(encoding=encoding)
+	with path.open(mode, **args) as file:
 		func = file.readlines if as_lines else file.read
 		return func()
 
