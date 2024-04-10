@@ -12,12 +12,14 @@ import chardet
 import mimetypes
 import typing as t
 import charset_normalizer as charset
+from ..base import MessageBody, BaseElementSpec
 
 
 __all__ = [
 	"split_on_find",
 	"guess_mime_type",
-	"detect_decode"
+	"detect_decode",
+	"object_has_spec"
 ]
 
 
@@ -51,3 +53,19 @@ def detect_decode(string: bytes, encoding: str = 'utf-8') -> t.Tuple[_USB, _USN]
 			enc = match["encoding"]
 			return string.decode(enc), enc
 		return string, None  # pragma: no cover
+
+
+def object_has_spec(obj: MessageBody, spec_cls: t.Type[BaseElementSpec]):
+	if not isinstance(obj, MessageBody):
+		return False
+	elif specs := getattr(obj, "_element_specs", None):
+		for spec in specs.values():
+			if isinstance(spec, spec_cls):
+				return True
+	for value in vars(obj).values():
+		if isinstance(value, MessageBody):
+			ret = object_has_spec(value, spec_cls)
+			if ret is False:
+				continue
+			return True
+	return False

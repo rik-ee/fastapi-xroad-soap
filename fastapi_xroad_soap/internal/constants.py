@@ -8,13 +8,18 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from enum import Enum
+
+
 __all__ = [
     "ENV_NSMAP",
     "XRO_NSMAP",
     "IDEN_NSMAP",
     "HEADER_NSMAP",
-    "WSDL_NSMAP"
+    "WSDL_NSMAP",
+    "A8nType"
 ]
+
 
 ENV_NSMAP = {"soapenv": "http://schemas.xmlsoap.org/soap/envelope/"}
 XRO_NSMAP = {"xro": "http://x-road.eu/xsd/xroad.xsd"}
@@ -28,3 +33,10 @@ WSDL_NSMAP = {
     "xsd": "http://www.w3.org/2001/XMLSchema",
     **XRO_NSMAP
 }
+
+
+class A8nType(Enum):
+    LIST = "list"
+    OPT = "optional"
+    MAND = "mandatory"
+    ABSENT = "absent"

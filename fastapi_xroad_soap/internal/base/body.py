@@ -10,128 +10,22 @@
 #
 from __future__ import annotations
 import typing as t
-import inflection
-from enum import Enum
-from abc import ABC, abstractmethod
-from pydantic import PrivateAttr, ValidationInfo, model_validator
-from pydantic_xml import model, element
+from pydantic_xml import model
+from pydantic import (
+	PrivateAttr,
+	ValidationInfo,
+	model_validator
+)
+from ..constants import A8nType
+from .meta import CompositeMeta
+
+try:
+	from .spec import BaseElementSpec
+except ImportError:
+	BaseElementSpec: t.TypeAlias = t.Any
 
 
-__all__ = [
-	"A8nType",
-	"BaseElementSpec",
-	"ElementSpecMeta",
-	"CompositeMeta",
-	"MessageBody",
-	"MessageBodyType"
-]
-
-
-class A8nType(Enum):
-	LIST = "list"
-	OPT = "optional"
-	MAND = "mandatory"
-	ABSENT = "absent"
-
-
-class BaseElementSpec(ABC):
-	tag: t.Optional[str]
-	ns: t.Optional[str]
-	nsmap: t.Optional[t.Dict[str, str]]
-	min_occurs: int
-	max_occurs: t.Union[int, t.Literal["unbounded"]]
-	element_type: t.Type[MessageBody]
-	internal_type: t.Optional[t.Type[MessageBody]]
-	a8n_type: t.Union[A8nType, None]
-
-	def __init__(
-			self,
-			element_type: t.Type[MessageBody],
-			internal_type: t.Optional[t.Type[MessageBody]] = None,
-			**kwargs
-	) -> None:
-		self.tag = kwargs.get("tag")
-		self.ns = kwargs.get("ns")
-		self.nsmap = kwargs.get("nsmap")
-		self.min_occurs = kwargs.get("min_occurs") or 0
-		self.max_occurs = kwargs.get("max_occurs") or "unbounded"
-		self.element_type = element_type
-		self.internal_type = internal_type
-		self.a8n_type = None
-
-	@abstractmethod
-	def init_instantiated_data(self, data: t.List[t.Any]) -> t.List[t.Any]: ...
-
-	@abstractmethod
-	def init_deserialized_data(self, data: t.List[t.Any]) -> t.List[t.Any]: ...
-
-	def get_element_a8n(self) -> t.Type[t.List[t.Any]]:
-		return t.List[self.internal_type or self.element_type]
-
-	def get_element(self, attr: str) -> model.XmlEntityInfo:
-		return element(
-			tag=self.tag or inflection.camelize(attr),
-			ns=self.ns or '',
-			nsmap=self.nsmap or dict(),
-			default_factory=list
-		)
-
-	def set_a8n_type_from(self, a8n: t.Any, attr: str, name: str) -> None:
-		if a8n in [A8nType.ABSENT, self.element_type]:
-			self.a8n_type = A8nType.MAND
-			return
-		elif a8n in [t.Optional, t.Union, t.List, list]:
-			raise TypeError(
-				f"Not permitted to provide '{a8n}' "
-				f"annotation without a type argument."
-			)
-		if args := t.get_args(a8n):
-			if len(args) == 1 and args[0] != self.element_type:
-				raise TypeError(
-					f"Single annotation argument for class '{name}' "
-					f"attribute '{attr}' must be '{self.element_type}'."
-				)
-			for arg in args:
-				if arg is type(None):
-					continue
-				elif arg == self.element_type:
-					continue
-				arg_name = "None" if arg is type(None) else arg.__name__
-				raise TypeError(
-					f"Invalid annotation argument '{arg_name}' "
-					f"for '{name}' class attribute '{attr}'."
-				)
-		if origin := t.get_origin(a8n):
-			if origin == list:
-				self.a8n_type = A8nType.LIST
-				return
-			elif "Union" in origin.__name__:
-				self.a8n_type = A8nType.OPT
-				return
-		raise TypeError(
-			f"Unsupported annotation '{a8n}' for "
-			f"class '{name}' attribute '{attr}'."
-		)
-
-
-class ElementSpecMeta(type):
-	def __new__(cls, name, bases, class_fields, **kwargs):
-		class_a8ns: dict = class_fields.get("__annotations__", {})
-		element_specs = dict()
-		for attr, obj in class_fields.items():
-			if isinstance(obj, BaseElementSpec):
-				a8n = class_a8ns.get(attr, A8nType.ABSENT)
-				obj.set_a8n_type_from(a8n, attr, name)
-				class_fields[attr] = obj.get_element(attr)
-				class_a8ns[attr] = obj.get_element_a8n()
-				element_specs[attr] = obj
-		class_fields["__annotations__"] = class_a8ns
-		class_fields["_element_specs"] = element_specs
-		return super().__new__(cls, name, bases, class_fields, **kwargs)
-
-
-class CompositeMeta(ElementSpecMeta, model.XmlModelMeta):
-	pass
+__all__ = ["MessageBody", "MessageBodyType"]
 
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
@@ -163,6 +57,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 					f"in list for argument '{attr}'"
 				)
 
+	# noinspection PyNestedDecorators
 	@model_validator(mode="before")
 	@classmethod
 	def _validate_before(cls, data: t.Dict[str, t.Any], info: ValidationInfo) -> t.Any:
