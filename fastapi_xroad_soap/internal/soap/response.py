@@ -10,9 +10,9 @@
 #
 import typing as t
 from fastapi import Response
-from .. import utils
 from ..base import MessageBody
 from ..cid_gen import CIDGenerator
+from ..multipart import MultipartEncoder
 from ..elements import (
 	SwaRefInternal,
 	SwaRefSpec
@@ -26,6 +26,9 @@ from ..envelope import (
 __all__ = ["SoapResponse"]
 
 
+FileObject = t.Union[SwaRefInternal, t.List[SwaRefInternal]]
+
+
 class SoapResponse(Response):
 	media_type = 'text/xml'
 
@@ -35,38 +38,58 @@ class SoapResponse(Response):
 			header: t.Optional[XroadHeader] = None,
 			http_status_code: t.Optional[int] = 200
 	) -> None:
-		if utils.object_has_spec(content, SwaRefSpec):
-			self.assign_content_ids(content, CIDGenerator())
+		if files := self.assign_content_ids(content):
+			message = self.serialize(content, header)
+			encoder = MultipartEncoder(message, files)
+			xml_str = encoder.message
+			http_headers = encoder.headers
+		else:
+			xml_str = self.serialize(content, header)
+			http_headers = {
+				"Content-Type": "text/xml;charset=UTF-8"
+			}
+		super().__init__(
+			content=xml_str,
+			headers=http_headers,
+			status_code=http_status_code
+		)
 
+	@classmethod
+	def assign_content_ids(cls, content: MessageBody, gen: CIDGenerator = None) -> t.List[SwaRefInternal]:
+		gen, files = gen or CIDGenerator(), list()
+		if not isinstance(content, MessageBody):
+			return []
+
+		# Define recursion behavior
+		for sub_content in vars(content).values():
+			if isinstance(sub_content, MessageBody):
+				nested = cls.assign_content_ids(sub_content, gen)
+				files.extend(nested)
+
+		# Add files from content
+		specs = getattr(content, "_element_specs", None)
+		if specs is None:
+			return files
+		for attr, spec in specs.items():
+			if not isinstance(spec, SwaRefSpec):
+				continue
+			obj: FileObject = getattr(content, attr)
+			if isinstance(obj, SwaRefInternal):
+				obj.content_id = gen.token
+				files.append(obj)
+			elif isinstance(obj, list):
+				for item in obj:
+					if isinstance(item, SwaRefInternal):
+						item.content_id = gen.token
+						files.append(item)
+		return files
+
+	@staticmethod
+	def serialize(content: MessageBody, header: t.Optional[XroadHeader]) -> bytes:
 		envelope = EnvelopeFactory[content.__class__]()
-		xml_str = envelope.serialize(
+		return envelope.serialize(
 			content=content,
 			header=header,
 			pretty_print=False,
 			skip_empty=True
 		)
-		super().__init__(
-			content=xml_str,
-			status_code=http_status_code
-		)
-
-	@classmethod
-	def assign_content_ids(cls, content: MessageBody, gen: CIDGenerator) -> None:
-		if not isinstance(content, MessageBody):
-			return
-		elif specs := getattr(content, "_element_specs", None):
-			for attr, spec in specs.items():
-				if not isinstance(spec, SwaRefSpec):
-					continue
-				obj = getattr(content, attr)  # type: SwaRefInternal
-				if isinstance(obj, SwaRefInternal):
-					obj.content_id = gen.token
-					continue
-				elif not isinstance(obj, list):
-					continue
-				for item in obj:
-					if isinstance(item, SwaRefInternal):
-						item.content_id = gen.token
-		for value in vars(content).values():
-			if isinstance(value, MessageBody):
-				cls.assign_content_ids(value, gen)
