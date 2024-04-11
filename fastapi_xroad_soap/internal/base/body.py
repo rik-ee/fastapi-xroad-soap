@@ -21,7 +21,7 @@ from .meta import CompositeMeta
 
 try:
 	from .spec import BaseElementSpec
-except ImportError:
+except ImportError:  # pragma: no cover
 	BaseElementSpec: t.TypeAlias = t.Any
 
 

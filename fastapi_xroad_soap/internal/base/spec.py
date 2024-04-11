@@ -16,7 +16,7 @@ from ..constants import A8nType
 
 try:
 	from .body import MessageBody
-except ImportError:
+except ImportError:  # pragma: no cover
 	MessageBody: t.TypeAlias = t.Any
 
 
