@@ -11,8 +11,7 @@
 from .content_utils import (
 	split_on_find,
 	guess_mime_type,
-	detect_decode,
-	object_has_spec
+	detect_decode
 )
 from .path_utils import (
 	search_upwards,
@@ -31,7 +30,6 @@ __all__ = [
 	"split_on_find",
 	"guess_mime_type",
 	"detect_decode",
-	"object_has_spec",
 	"search_upwards",
 	"resolve_relpath",
 	"read_cached_file",
