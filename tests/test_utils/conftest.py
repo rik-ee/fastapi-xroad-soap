@@ -48,7 +48,11 @@ def create_temp_file(content, binary=False):
 	mode = "wb" if binary else "w"
 	encoding = "utf-8" if not binary else None
 
-	temp_file = tempfile.NamedTemporaryFile(delete=False, mode=mode, encoding=encoding)
+	temp_file = tempfile.NamedTemporaryFile(
+		encoding=encoding,
+		delete=False,
+		mode=mode
+	)
 	if binary and isinstance(content, str):
 		content = content.encode('utf-8')
 	elif not binary and isinstance(content, bytes):
@@ -61,7 +65,12 @@ def create_temp_file(content, binary=False):
 
 
 def create_temp_xml_file(content):
-	temp_file = tempfile.NamedTemporaryFile(delete=False, mode='w', suffix=".xml", encoding='utf-8')
+	temp_file = tempfile.NamedTemporaryFile(
+		encoding='utf-8',
+		suffix=".xml",
+		delete=False,
+		mode='w'
+	)
 	temp_file.write(content)
 	temp_file.close()
 	return Path(temp_file.name)

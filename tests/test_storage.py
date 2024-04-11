@@ -16,6 +16,22 @@ import typing as t
 from fastapi_xroad_soap.utils import GlobalWeakStorage
 
 
+__all__ = [
+    "test_class_attributes",
+    "test_instance_attributes",
+    "test_unique_id_generation",
+    "test_validate_fingerprint",
+    "test_get_object_from_class",
+    "test_get_object_from_instance",
+    "test_get_object_with_bad_fingerprint",
+    "test_object_persistence",
+    "test_object_removal_on_reference_loss",
+    "test_multiple_instances",
+    "test_object_counter_increment",
+    "test_instance_counter_wrap"
+]
+
+
 @pytest.fixture(scope="function")
 def storage():
     return GlobalWeakStorage()

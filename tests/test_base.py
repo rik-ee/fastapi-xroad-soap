@@ -16,7 +16,12 @@ from abc import ABC
 from enum import Enum
 from pydantic_xml import model, element
 from fastapi_xroad_soap.internal.envelope import EnvelopeFactory
-from fastapi_xroad_soap.internal import base as b
+from fastapi_xroad_soap.internal.constants import A8nType
+from fastapi_xroad_soap.internal.base import (
+	BaseElementSpec,
+	ElementSpecMeta,
+	MessageBody
+)
 from .conftest import (
 	CustomModelObject,
 	CustomModelInternal,
@@ -28,32 +33,32 @@ from .conftest import (
 
 
 def test_a8ntype_enum():
-	assert issubclass(b.A8nType, Enum)
+	assert issubclass(A8nType, Enum)
 
-	assert hasattr(b.A8nType, "LIST")
-	assert hasattr(b.A8nType, "OPT")
-	assert hasattr(b.A8nType, "MAND")
-	assert hasattr(b.A8nType, "ABSENT")
+	assert hasattr(A8nType, "LIST")
+	assert hasattr(A8nType, "OPT")
+	assert hasattr(A8nType, "MAND")
+	assert hasattr(A8nType, "ABSENT")
 
-	assert b.A8nType.LIST.value == "list"
-	assert b.A8nType.OPT.value == "optional"
-	assert b.A8nType.MAND.value == "mandatory"
-	assert b.A8nType.ABSENT.value == "absent"
+	assert A8nType.LIST.value == "list"
+	assert A8nType.OPT.value == "optional"
+	assert A8nType.MAND.value == "mandatory"
+	assert A8nType.ABSENT.value == "absent"
 
 
 def test_base_element_spec():
-	assert issubclass(b.BaseElementSpec, ABC)
+	assert issubclass(BaseElementSpec, ABC)
 
-	assert hasattr(b.BaseElementSpec, "get_element")
-	assert hasattr(b.BaseElementSpec, "get_element_a8n")
-	assert hasattr(b.BaseElementSpec, "set_a8n_type_from")
+	assert hasattr(BaseElementSpec, "get_element")
+	assert hasattr(BaseElementSpec, "get_element_a8n")
+	assert hasattr(BaseElementSpec, "set_a8n_type_from")
 
-	assert not hasattr(b.BaseElementSpec.get_element, "__isabstractmethod__")
-	assert not hasattr(b.BaseElementSpec.get_element_a8n, "__isabstractmethod__")
-	assert not hasattr(b.BaseElementSpec.set_a8n_type_from, "__isabstractmethod__")
+	assert not hasattr(BaseElementSpec.get_element, "__isabstractmethod__")
+	assert not hasattr(BaseElementSpec.get_element_a8n, "__isabstractmethod__")
+	assert not hasattr(BaseElementSpec.set_a8n_type_from, "__isabstractmethod__")
 
-	assert hasattr(b.BaseElementSpec.init_instantiated_data, "__isabstractmethod__")
-	assert hasattr(b.BaseElementSpec.init_deserialized_data, "__isabstractmethod__")
+	assert hasattr(BaseElementSpec.init_instantiated_data, "__isabstractmethod__")
+	assert hasattr(BaseElementSpec.init_deserialized_data, "__isabstractmethod__")
 
 
 def test_base_element_spec_subclass():
@@ -82,11 +87,11 @@ def test_base_element_spec_subclass():
 		spec.set_a8n_type_from,
 		attr='attr', name='Test'
 	)
-	store_a8n(b.A8nType.ABSENT)
-	assert spec.a8n_type == b.A8nType.MAND
+	store_a8n(A8nType.ABSENT)
+	assert spec.a8n_type == A8nType.MAND
 
 	store_a8n(CustomModelObject)
-	assert spec.a8n_type == b.A8nType.MAND
+	assert spec.a8n_type == A8nType.MAND
 
 	for a8n in [t.Optional, t.Union, t.List, list]:
 		with pytest.raises(TypeError):
@@ -97,13 +102,13 @@ def test_base_element_spec_subclass():
 			store_a8n(a8n[object, None])
 
 	store_a8n(t.Optional[CustomModelObject])
-	assert spec.a8n_type == b.A8nType.OPT
+	assert spec.a8n_type == A8nType.OPT
 
 	store_a8n(t.Union[CustomModelObject, None])
-	assert spec.a8n_type == b.A8nType.OPT
+	assert spec.a8n_type == A8nType.OPT
 
 	store_a8n(t.List[CustomModelObject])
-	assert spec.a8n_type == b.A8nType.LIST
+	assert spec.a8n_type == A8nType.LIST
 
 	with pytest.raises(TypeError):
 		store_a8n(t.Iterable[CustomModelObject])
@@ -112,7 +117,7 @@ def test_base_element_spec_subclass():
 def test_element_spec_meta_subclass():
 	spec = CustomModelSpec()
 
-	class TestBody(metaclass=b.ElementSpecMeta):
+	class TestBody(metaclass=ElementSpecMeta):
 		_element_specs: t.Dict[str, t.Any] = dict()
 		text: CustomModelObject = spec
 
@@ -124,7 +129,7 @@ def test_element_spec_meta_subclass():
 
 
 def test_message_body_subclass():
-	class TestBody(b.MessageBody):
+	class TestBody(MessageBody):
 		text: str = element()
 		number: int = element()
 

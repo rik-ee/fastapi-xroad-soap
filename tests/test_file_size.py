@@ -16,6 +16,17 @@ from fastapi_xroad_soap.internal.file_size import (
 )
 
 
+__all__ = [
+	"test_attributes",
+	"test_inheritance",
+	"test_multipliers",
+	"test_size_and_value",
+	"test_invalid_size",
+	"test_class_str_method",
+	"test_bytes_to_iec_str"
+]
+
+
 def test_attributes():
 	assert hasattr(FileSize, "KB")
 	assert hasattr(FileSize, "MB")

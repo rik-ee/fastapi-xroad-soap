@@ -19,7 +19,6 @@ from fastapi_xroad_soap.internal.envelope import (
 	XroadService,
 	XroadClient,
 	XroadHeader,
-	GenericEnvelope,
 	GenericFault,
 	GenericBody,
 	AnyBody

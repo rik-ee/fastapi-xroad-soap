@@ -11,7 +11,10 @@
 from __future__ import annotations
 import typing as t
 from pydantic import Field
-from fastapi_xroad_soap.internal import base as b
+from fastapi_xroad_soap.internal.base import (
+	BaseElementSpec,
+	MessageBody
+)
 
 
 __all__ = [
@@ -25,7 +28,7 @@ __all__ = [
 ]
 
 
-class CustomModelObject(b.MessageBody):
+class CustomModelObject(MessageBody):
 	text: str = Field(exclude=True, default='')
 
 	def __new__(cls, text: str) -> CustomModelObject:
@@ -44,7 +47,7 @@ class CustomModelInternal(CustomModelObject):
 		return super()._real_new_(cls)
 
 
-class CustomModelSpec(b.BaseElementSpec):
+class CustomModelSpec(BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
 		self.raise_error_on_instantiation = kwargs.pop("raise_error_on_instantiation", False)
 		self.raise_error_on_deserialization = kwargs.pop("raise_error_on_deserialization", False)
@@ -65,7 +68,7 @@ class CustomModelSpec(b.BaseElementSpec):
 		return data
 
 
-class CustomModelElement(b.MessageBody):
+class CustomModelElement(MessageBody):
 	def __new__(
 			cls,
 			*,
@@ -76,13 +79,13 @@ class CustomModelElement(b.MessageBody):
 		return t.cast(CustomModelObject, CustomModelSpec(**kwargs))
 
 
-class GoodCustomBody(b.MessageBody):
+class GoodCustomBody(MessageBody):
 	cust_elem = CustomModelElement()
 
 
-class BadInstantiationCustomBody(b.MessageBody):
+class BadInstantiationCustomBody(MessageBody):
 	cust_elem = CustomModelElement(raise_error_on_instantiation=True)
 
 
-class BadDeserializationCustomBody(b.MessageBody):
+class BadDeserializationCustomBody(MessageBody):
 	cust_elem = CustomModelElement(raise_error_on_deserialization=True)
