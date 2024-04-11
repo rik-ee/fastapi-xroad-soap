@@ -10,10 +10,11 @@
 #
 from .bodypart import DecodedBodyPart
 from .decoder import MultipartDecoder
+from .encoder import MultipartEncoder
 from .errors import (
 	MultipartError,
 	NonMultipartError,
-	CorruptMultipartError,
+	InvalidSeparatorError,
 	MissingContentIDError
 )
 
@@ -21,8 +22,9 @@ from .errors import (
 __all__ = [
 	"DecodedBodyPart",
 	"MultipartDecoder",
+	"MultipartEncoder",
 	"MultipartError",
 	"NonMultipartError",
-	"CorruptMultipartError",
+	"InvalidSeparatorError",
 	"MissingContentIDError"
 ]

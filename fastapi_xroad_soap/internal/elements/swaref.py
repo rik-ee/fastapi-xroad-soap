@@ -38,9 +38,9 @@ _HashFuncType = t.Literal["sha256", "sha512", "sha3_256", "sha3_384", "sha3_512"
 
 class SwaRefFile(MessageBody):
 	name: str = Field(exclude=True, default='')
-	mimetype: str = Field(exclude=True, default='')
 	size: int = Field(exclude=True, default=0)
 	digest: str = Field(exclude=True, default='')
+	mimetype: str = Field(exclude=True, default='')
 	content: bytes = Field(exclude=True, default='')
 
 	def __new__(cls, name: str, content: bytes) -> SwaRefFile:
@@ -65,6 +65,14 @@ class SwaRefInternal(SwaRefFile):
 				kwargs = dict(content_id=value)
 		super().__init__(**kwargs)
 
+	@property
+	def mime_cid(self) -> str:
+		cid = self.content_id
+		if isinstance(cid, str) and ':' in cid:
+			raw = self.content_id.split(':')[1]
+			return f"<{raw}>"
+		return ''
+
 
 class SwaRefSpec(BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
@@ -80,7 +88,9 @@ class SwaRefSpec(BaseElementSpec):
 	def digest(self, content: bytes) -> str:
 		hash_func = getattr(hashlib, self.hash_func)
 		digest = hash_func(content).digest()
-		return base64.b64encode(digest).decode()
+		name = self.hash_func.replace('_', '-')
+		b64_hash = base64.b64encode(digest).decode()
+		return f"{name}={b64_hash}"
 
 	def validate_file(self, name: str, size: int, content_id: str = None) -> None:
 		extract = '' if content_id is None else f"$${content_id}$$"
@@ -104,8 +114,11 @@ class SwaRefSpec(BaseElementSpec):
 		for obj in data:
 			obj.size = len(obj.content)
 			self.validate_file(obj.name, obj.size)
-			obj.mimetype = utils.guess_mime_type(obj.name)
+
 			obj.digest = self.digest(obj.content)
+			obj.mimetype = utils.guess_mime_type(obj.name)
+			obj.content = utils.convert_to_utf8(obj.content)
+
 			if hasattr(obj, "content_id"):
 				delattr(obj, "content_id")
 		return data
@@ -119,14 +132,13 @@ class SwaRefSpec(BaseElementSpec):
 			except ValueError:
 				raise ValueError(f"no file attachment found $${obj.content_id}$$")
 
-			file_size = len(file.content)
-			self.validate_file(file.file_name, file_size, file.content_id)
-
 			obj.name = file.file_name
-			obj.mimetype = utils.guess_mime_type(file.file_name)
-			obj.size = file_size
+			obj.size = len(file.content)
+			self.validate_file(obj.name, obj.size, file.content_id)
+
 			obj.digest = self.digest(file.content)
-			obj.content = file.content
+			obj.mimetype = utils.guess_mime_type(file.file_name)
+			obj.content = utils.convert_to_utf8(file.content)
 
 			setattr(obj, "_file", file)
 			delattr(obj, "content_id")

@@ -11,7 +11,7 @@
 __all__ = [
     "MultipartError",
     "NonMultipartError",
-    "CorruptMultipartError",
+    "InvalidSeparatorError",
     "MissingContentIDError"
 ]
 
@@ -26,13 +26,13 @@ class NonMultipartError(MultipartError):
         super().__init__(msg)
 
 
-class CorruptMultipartError(MultipartError):
+class InvalidSeparatorError(MultipartError):
     def __init__(self):
-        msg = "Request body is not a valid multipart message"
+        msg = "Multipart request body does not conform to RFC-5322"
         super().__init__(msg)
 
 
 class MissingContentIDError(MultipartError):
     def __init__(self):
-        msg = f"All MIME file attachments must have Content-ID headers"
+        msg = f"All file attachments must have Content-ID headers"
         super().__init__(msg)
