@@ -18,7 +18,8 @@ from ..base import MessageBody, BaseElementSpec
 __all__ = [
 	"split_on_find",
 	"guess_mime_type",
-	"detect_decode"
+	"detect_decode",
+	"convert_to_utf8"
 ]
 
 
@@ -52,3 +53,10 @@ def detect_decode(string: bytes, encoding: str = 'utf-8') -> t.Tuple[_USB, _USN]
 			enc = match["encoding"]
 			return string.decode(enc), enc
 		return string, None  # pragma: no cover
+
+
+def convert_to_utf8(string: bytes) -> bytes:
+	decoded, encoding = detect_decode(string)
+	if encoding not in [None, 'utf-8']:
+		string = decoded.encode('utf-8')
+	return string

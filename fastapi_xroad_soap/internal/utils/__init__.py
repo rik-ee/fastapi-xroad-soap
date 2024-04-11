@@ -11,7 +11,8 @@
 from .content_utils import (
 	split_on_find,
 	guess_mime_type,
-	detect_decode
+	detect_decode,
+	convert_to_utf8
 )
 from .path_utils import (
 	search_upwards,
