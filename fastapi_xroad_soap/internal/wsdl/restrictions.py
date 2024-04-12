@@ -144,6 +144,6 @@ class AnyURIRestriction(BaseXmlModel, tag="restriction"):
 	length: t.Union[Length, None] = None
 	min_length: t.Union[MinLength, None] = None
 	max_length: t.Union[MaxLength, None] = None
-	pattern: t.Union[RegexPattern, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
 	whiteSpace: t.Union[WhiteSpace, None] = None
+	pattern: t.Union[RegexPattern, None] = None

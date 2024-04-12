@@ -66,8 +66,7 @@ class BaseElementSpec(ABC):
 		)
 
 	def set_a8n_type_from(self, a8n: t.Any, attr: str, cls_name: str) -> None:
-		elem_name = self.element_type.__name__
-		if a8n in [A8nType.ABSENT, elem_name]:
+		if a8n in [A8nType.ABSENT, self.element_type]:
 			self.a8n_type = A8nType.MAND
 			return
 		elif a8n in [t.Optional, t.Union, t.List, list]:
@@ -79,7 +78,7 @@ class BaseElementSpec(ABC):
 			if len(args) == 1 and args[0] != self.element_type:
 				raise TypeError(
 					f"Single annotation argument for class '{cls_name}' "
-					f"attribute '{attr}' must be '{elem_name}'."
+					f"attribute '{attr}' must be '{self.element_type.__name__}'."
 				)
 			for arg in args:
 				if arg is type(None):
