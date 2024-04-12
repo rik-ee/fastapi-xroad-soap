@@ -9,6 +9,8 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from .internal.elements import (
+	Boolean,
+	Float,
 	Integer,
 	String,
 	SwaRef
@@ -16,6 +18,8 @@ from .internal.elements import (
 
 
 __all__ = [
+	"Boolean",
+	"Float",
 	"Integer",
 	"String",
 	"SwaRef"

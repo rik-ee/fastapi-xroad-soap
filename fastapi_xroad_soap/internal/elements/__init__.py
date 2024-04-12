@@ -8,6 +8,14 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from .boolean import (
+	BooleanSpec,
+	Boolean
+)
+from .float import (
+	FloatSpec,
+	Float
+)
 from .integer import (
 	IntegerSpec,
 	Integer
@@ -26,6 +34,10 @@ from .swaref import (
 
 
 __all__ = [
+	"BooleanSpec",
+	"Boolean",
+	"FloatSpec",
+	"Float",
 	"IntegerSpec",
 	"Integer",
 	"StringSpec",

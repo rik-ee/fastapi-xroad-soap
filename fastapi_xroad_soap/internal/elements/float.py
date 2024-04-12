@@ -14,36 +14,34 @@ from ..base import BaseElementSpec
 from .validators import CommonValidators, NumberValidators
 
 
-__all__ = ["IntegerSpec", "Integer"]
+__all__ = ["FloatSpec", "Float"]
 
 
-class IntegerSpec(BaseElementSpec, CommonValidators, NumberValidators):
+class FloatSpec(BaseElementSpec, CommonValidators, NumberValidators):
 	def __init__(self, **kwargs) -> None:
 		self.min_value = kwargs.pop("min_value")
 		self.max_value = kwargs.pop("max_value")
-		self.total_digits = kwargs.pop("total_digits")
 		self.enumerations = kwargs.pop("enumerations")
 		self.pattern = kwargs.pop("pattern")
 		super().__init__(
-			element_type=int,
+			element_type=float,
 			**kwargs
 		)
 
-	def process(self, integer: int) -> int:
-		self.validate_pattern(integer)
-		self.validate_integer_digits(integer)
-		self.validate_numeric_value(integer)
-		self.validate_enumerations(integer)
-		return integer
+	def process(self, floater: float) -> float:
+		self.validate_pattern(floater)
+		self.validate_numeric_value(floater)
+		self.validate_enumerations(floater)
+		return floater
 
-	def init_instantiated_data(self, data: t.List[int]) -> t.List[int]:
+	def init_instantiated_data(self, data: t.List[float]) -> t.List[float]:
 		return [self.process(obj) for obj in data]
 
-	def init_deserialized_data(self, data: t.List[int]) -> t.List[int]:
+	def init_deserialized_data(self, data: t.List[float]) -> t.List[float]:
 		return [self.process(obj) for obj in data]
 
 
-class Integer:
+class Float:
 	def __new__(
 			cls,
 			*,
@@ -52,11 +50,10 @@ class Integer:
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			min_value: t.Optional[int] = None,
-			max_value: t.Optional[int] = None,
-			total_digits: t.Optional[int] = None,
+			min_value: t.Optional[float] = None,
+			max_value: t.Optional[float] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None
-	) -> t.Union[int, t.List[int]]:
+	) -> t.Union[float, t.List[float]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(int, IntegerSpec(**kwargs))
+		return t.cast(float, FloatSpec(**kwargs))

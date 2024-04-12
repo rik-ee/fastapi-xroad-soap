@@ -91,14 +91,14 @@ class NumberValidators:
 					f"count of {self.total_digits} digits $${integer}$$"
 				)
 
-	def validate_integer_value(self, integer: int) -> None:
-		if self.min_value is not None and integer < self.min_value:
+	def validate_numeric_value(self, number: t.Union[int, float]) -> None:
+		if self.min_value is not None and number < self.min_value:
 			raise ValueError(
 				f"input value is less than the minimal value "
-				f"of {self.min_value} $${integer}$$"
+				f"of {self.min_value} $${number}$$"
 			)
-		if self.max_value is not None and integer > self.max_value:
+		if self.max_value is not None and number > self.max_value:
 			raise ValueError(
 				f"input value is greater than the maximum allowable "
-				f"value of {self.max_value} $${integer}$$"
+				f"value of {self.max_value} $${number}$$"
 			)
