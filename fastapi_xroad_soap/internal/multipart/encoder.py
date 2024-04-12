@@ -55,6 +55,7 @@ class MultipartEncoder:
 		part = MIMEBase(*file.mimetype.split('/'))
 		part.add_header("Content-ID", file.mime_cid)
 		part.add_header("Content-Digest", file.digest)
+		part.add_header("Content-Length", str(file.size))
 		part.add_header('Content-Disposition', '; '.join([
 			"attachment", f'name="{file.name}"', f'filename="{file.name}"'
 		]))
