@@ -8,6 +8,14 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from .integer import (
+	IntegerSpec,
+	Integer
+)
+from .string import (
+	StringSpec,
+	String
+)
 from .swaref import (
 	SwaRefFile,
 	SwaRefInternal,
@@ -18,6 +26,10 @@ from .swaref import (
 
 
 __all__ = [
+	"IntegerSpec",
+	"Integer",
+	"StringSpec",
+	"String",
 	"SwaRefFile",
 	"SwaRefInternal",
 	"SwaRefSpec",
