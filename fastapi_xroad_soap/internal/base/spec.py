@@ -65,8 +65,9 @@ class BaseElementSpec(ABC):
 			default_factory=list
 		)
 
-	def set_a8n_type_from(self, a8n: t.Any, attr: str, name: str) -> None:
-		if a8n in [A8nType.ABSENT, self.element_type]:
+	def set_a8n_type_from(self, a8n: t.Any, attr: str, cls_name: str) -> None:
+		elem_name = self.element_type.__name__
+		if a8n in [A8nType.ABSENT, elem_name]:
 			self.a8n_type = A8nType.MAND
 			return
 		elif a8n in [t.Optional, t.Union, t.List, list]:
@@ -77,8 +78,8 @@ class BaseElementSpec(ABC):
 		if args := t.get_args(a8n):
 			if len(args) == 1 and args[0] != self.element_type:
 				raise TypeError(
-					f"Single annotation argument for class '{name}' "
-					f"attribute '{attr}' must be '{self.element_type}'."
+					f"Single annotation argument for class '{cls_name}' "
+					f"attribute '{attr}' must be '{elem_name}'."
 				)
 			for arg in args:
 				if arg is type(None):
@@ -88,7 +89,7 @@ class BaseElementSpec(ABC):
 				arg_name = "None" if arg is type(None) else arg.__name__
 				raise TypeError(
 					f"Invalid annotation argument '{arg_name}' "
-					f"for '{name}' class attribute '{attr}'."
+					f"for '{cls_name}' class attribute '{attr}'."
 				)
 		if origin := t.get_origin(a8n):
 			if origin == list:
@@ -99,5 +100,5 @@ class BaseElementSpec(ABC):
 				return
 		raise TypeError(
 			f"Unsupported annotation '{a8n}' for "
-			f"class '{name}' attribute '{attr}'."
+			f"class '{cls_name}' attribute '{attr}'."
 		)
