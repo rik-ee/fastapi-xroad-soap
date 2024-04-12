@@ -10,21 +10,22 @@
 #
 import typing as t
 from enum import Enum
+from pydantic import AnyUrl
 from .common import CommonSpecTypeB
 
 
-__all__ = ["StringSpec", "String"]
+__all__ = ["NetResSpec", "NetRes"]
 
 
-class StringSpec(CommonSpecTypeB):
+class NetResSpec(CommonSpecTypeB):
 	def __init__(self, **kwargs) -> None:
 		super().__init__(
-			element_type=str,
+			element_type=AnyUrl,
 			**kwargs
 		)
 
 
-class String:
+class NetRes:
 	def __new__(
 			cls,
 			*,
@@ -37,8 +38,7 @@ class String:
 			min_length: t.Optional[int] = None,
 			max_length: t.Optional[int] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
-			pattern: t.Optional[str] = None,
-			whitespace: t.Literal["preserve", "replace", "collapse"] = "preserve"
-	) -> t.Union[str, t.List[str]]:
+			pattern: t.Optional[str] = None
+	) -> t.Union[AnyUrl, t.List[AnyUrl]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(str, StringSpec(**kwargs))
+		return t.cast(AnyUrl, NetResSpec(**kwargs))

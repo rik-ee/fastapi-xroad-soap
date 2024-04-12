@@ -10,37 +10,20 @@
 #
 import typing as t
 from enum import Enum
-from ..base import BaseElementSpec
-from .validators import CommonValidators, NumberValidators
+from .common import CommonSpecTypeA
+from .validators import NumberValidators
 
 
 __all__ = ["IntegerSpec", "Integer"]
 
 
-class IntegerSpec(BaseElementSpec, CommonValidators, NumberValidators):
+class IntegerSpec(CommonSpecTypeA, NumberValidators):
 	def __init__(self, **kwargs) -> None:
-		self.min_value = kwargs.pop("min_value")
-		self.max_value = kwargs.pop("max_value")
 		self.total_digits = kwargs.pop("total_digits")
-		self.enumerations = kwargs.pop("enumerations")
-		self.pattern = kwargs.pop("pattern")
 		super().__init__(
 			element_type=int,
 			**kwargs
 		)
-
-	def process(self, integer: int) -> int:
-		self.validate_pattern(integer)
-		self.validate_integer_digits(integer)
-		self.validate_numeric_value(integer)
-		self.validate_enumerations(integer)
-		return integer
-
-	def init_instantiated_data(self, data: t.List[int]) -> t.List[int]:
-		return [self.process(obj) for obj in data]
-
-	def init_deserialized_data(self, data: t.List[int]) -> t.List[int]:
-		return [self.process(obj) for obj in data]
 
 
 class Integer:

@@ -10,35 +10,18 @@
 #
 import typing as t
 from enum import Enum
-from ..base import BaseElementSpec
-from .validators import CommonValidators, NumberValidators
+from .common import CommonSpecTypeA
 
 
 __all__ = ["FloatSpec", "Float"]
 
 
-class FloatSpec(BaseElementSpec, CommonValidators, NumberValidators):
+class FloatSpec(CommonSpecTypeA):
 	def __init__(self, **kwargs) -> None:
-		self.min_value = kwargs.pop("min_value")
-		self.max_value = kwargs.pop("max_value")
-		self.enumerations = kwargs.pop("enumerations")
-		self.pattern = kwargs.pop("pattern")
 		super().__init__(
 			element_type=float,
 			**kwargs
 		)
-
-	def process(self, floater: float) -> float:
-		self.validate_pattern(floater)
-		self.validate_numeric_value(floater)
-		self.validate_enumerations(floater)
-		return floater
-
-	def init_instantiated_data(self, data: t.List[float]) -> t.List[float]:
-		return [self.process(obj) for obj in data]
-
-	def init_deserialized_data(self, data: t.List[float]) -> t.List[float]:
-		return [self.process(obj) for obj in data]
 
 
 class Float:

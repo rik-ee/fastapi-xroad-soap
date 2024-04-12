@@ -10,21 +10,22 @@
 #
 import typing as t
 from enum import Enum
-from .common import CommonSpecTypeB
+from datetime import time
+from .common import CommonSpecTypeA
 
 
-__all__ = ["StringSpec", "String"]
+__all__ = ["TimeSpec", "Time"]
 
 
-class StringSpec(CommonSpecTypeB):
+class TimeSpec(CommonSpecTypeA):
 	def __init__(self, **kwargs) -> None:
 		super().__init__(
-			element_type=str,
+			element_type=time,
 			**kwargs
 		)
 
 
-class String:
+class Time:
 	def __new__(
 			cls,
 			*,
@@ -33,12 +34,10 @@ class String:
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			length: t.Optional[int] = None,
-			min_length: t.Optional[int] = None,
-			max_length: t.Optional[int] = None,
+			min_value: t.Optional[time] = None,
+			max_value: t.Optional[time] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
-			pattern: t.Optional[str] = None,
-			whitespace: t.Literal["preserve", "replace", "collapse"] = "preserve"
-	) -> t.Union[str, t.List[str]]:
+			pattern: t.Optional[str] = None
+	) -> t.Union[time, t.List[time]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(str, StringSpec(**kwargs))
+		return t.cast(time, TimeSpec(**kwargs))

@@ -21,8 +21,22 @@ __all__ = [
 
 
 class CommonValidators:
+	min_value: t.Optional[t.Any] = None
+	max_value: t.Optional[t.Any] = None
 	pattern: t.Optional[str] = None
 	enumerations: t.Optional[t.Type[Enum]] = None
+
+	def validate_min_max_value(self, obj: t.Any) -> None:
+		if self.min_value is not None and obj < self.min_value:
+			raise ValueError(
+				f"input value is less than the minimal value "
+				f"of {self.min_value} $${obj}$$"
+			)
+		if self.max_value is not None and obj > self.max_value:
+			raise ValueError(
+				f"input value is greater than the maximum allowable "
+				f"value of {self.max_value} $${obj}$$"
+			)
 
 	def validate_pattern(self, obj: t.Any) -> None:
 		string = str(obj)
@@ -50,7 +64,8 @@ class StringValidators:
 	max_length: t.Optional[int] = None
 	whitespace: t.Literal["preserve", "replace", "collapse"] = "preserve"
 
-	def validate_string_length(self, string: str) -> None:
+	def validate_string_length(self, obj: str) -> None:
+		string = str(obj)
 		lstr = len(string)
 		if self.length is not None and lstr != self.length:
 			raise ValueError(
@@ -69,36 +84,26 @@ class StringValidators:
 					f"length of {self.max_length} chars $${string}$$"
 				)
 
-	def process_whitespace(self, string) -> str:
+	def process_whitespace(self, obj: t.Any) -> str:
+		if not isinstance(obj, str):
+			return obj
 		if self.whitespace == "replace":
-			return re.sub(r'\s', ' ', string)
+			return re.sub(r'\s', ' ', obj)
 		elif self.whitespace == "collapse":
-			return re.sub(r'\s+', ' ', string)
-		return string
+			return re.sub(r'\s+', ' ', obj)
+		return obj
 
 
 class NumberValidators:
-	min_value: t.Optional[int] = None
-	max_value: t.Optional[int] = None
 	total_digits: t.Optional[int] = None
 
-	def validate_integer_digits(self, integer: int) -> None:
+	def validate_total_digits(self, obj: t.Any) -> None:
+		if not isinstance(obj, int):
+			return
 		if self.total_digits is not None:
-			int_len = len(str(abs(integer)))
+			int_len = len(str(abs(obj)))
 			if int_len > self.total_digits:
 				raise ValueError(
 					f"input value digits count exceeds the maximum allowable "
-					f"count of {self.total_digits} digits $${integer}$$"
+					f"count of {self.total_digits} digits $${obj}$$"
 				)
-
-	def validate_numeric_value(self, number: t.Union[int, float]) -> None:
-		if self.min_value is not None and number < self.min_value:
-			raise ValueError(
-				f"input value is less than the minimal value "
-				f"of {self.min_value} $${number}$$"
-			)
-		if self.max_value is not None and number > self.max_value:
-			raise ValueError(
-				f"input value is greater than the maximum allowable "
-				f"value of {self.max_value} $${number}$$"
-			)

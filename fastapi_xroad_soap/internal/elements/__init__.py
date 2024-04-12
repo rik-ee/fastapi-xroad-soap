@@ -8,22 +8,14 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .boolean import (
-	BooleanSpec,
-	Boolean
-)
-from .float import (
-	FloatSpec,
-	Float
-)
-from .integer import (
-	IntegerSpec,
-	Integer
-)
-from .string import (
-	StringSpec,
-	String
-)
+from .boolean import BooleanSpec, Boolean
+from .date import DateSpec, Date
+from .datetime import DateTimeSpec, DateTime
+from .time import TimeSpec, Time
+from .float import FloatSpec, Float
+from .integer import IntegerSpec, Integer
+from .string import StringSpec, String
+from .netres import NetResSpec, NetRes
 from .swaref import (
 	SwaRefFile,
 	SwaRefInternal,
@@ -34,14 +26,14 @@ from .swaref import (
 
 
 __all__ = [
-	"BooleanSpec",
-	"Boolean",
-	"FloatSpec",
-	"Float",
-	"IntegerSpec",
-	"Integer",
-	"StringSpec",
-	"String",
+	"BooleanSpec", "Boolean",
+	"DateSpec", "Date",
+	"DateTimeSpec", "DateTime",
+	"TimeSpec", "Time",
+	"FloatSpec", "Float",
+	"IntegerSpec", "Integer",
+	"StringSpec", "String",
+	"NetResSpec", "NetRes",
 	"SwaRefFile",
 	"SwaRefInternal",
 	"SwaRefSpec",

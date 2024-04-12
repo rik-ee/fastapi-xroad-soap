@@ -10,17 +10,25 @@
 #
 from .internal.elements import (
 	Boolean,
+	Date,
+	Time,
+	DateTime,
 	Float,
 	Integer,
 	String,
+	NetRes,
 	SwaRef
 )
 
 
 __all__ = [
 	"Boolean",
+	"Date",
+	"Time",
+	"DateTime",
 	"Float",
 	"Integer",
 	"String",
+	"NetRes",
 	"SwaRef"
 ]
