@@ -9,10 +9,14 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from .internal.elements import (
+	Integer,
+	String,
 	SwaRef
 )
 
 
 __all__ = [
+	"Integer",
+	"String",
 	"SwaRef"
 ]
