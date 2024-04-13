@@ -5,7 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.org/project/devtools-cli/), **do not edit manually**._
 
 
-### [0.2.0] - 2024-04-13 - _latest_
+### [0.2.1] - 2024-04-14 - _latest_
+
+- Updated dependencies
+- Fixed pytests and GHA workflows
+
+### [0.2.0] - 2024-04-13
 
 - Almost full functionality (TODO: wsdl generation)
 - Added PyPI publishing workflow
@@ -16,5 +21,6 @@ _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.or
 
 - Initialized project
 
+[0.2.1]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.1.0...0.1.0
