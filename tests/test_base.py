@@ -85,7 +85,7 @@ def test_base_element_spec_subclass():
 
 	store_a8n = functools.partial(
 		spec.set_a8n_type_from,
-		attr='attr', name='Test'
+		attr='attr', cls_name='Test'
 	)
 	store_a8n(A8nType.ABSENT)
 	assert spec.a8n_type == A8nType.MAND

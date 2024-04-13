@@ -15,8 +15,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from fastapi_xroad_soap.internal.utils import path_utils as utils
 from .conftest import (
 	setup_search_upwards,
-	create_temp_file,
-	create_temp_xml_file
+	create_temp_file
 )
 
 
@@ -77,13 +76,13 @@ def test_resolve_relpath_relative_path(tmpdir):
 	("Line 1\nLine 2\nLine 3", False, True, ["Line 1\n", "Line 2\n", "Line 3"]),
 	(b"Line 1\nLine 2\nLine 3", True, True, [b"Line 1\n", b"Line 2\n", b"Line 3"]),
 ])
-def test_read_cached_file(content, binary, as_lines, expected_result):
+def test_read_cached_file(content, binary, as_lines, expected_result, create_temp_file):
 	temp_file_path = create_temp_file(content, binary=binary)
 	result = utils.read_cached_file(temp_file_path, binary=binary, as_lines=as_lines)
 	assert result == expected_result, "The function did not return the expected result."
 
 
-def test_read_cached_file_encoding():
+def test_read_cached_file_encoding(create_temp_file):
 	content = "Café"
 	temp_file_path = create_temp_file(content)
 	result = utils.read_cached_file(temp_file_path, encoding="UTF-8")
@@ -99,7 +98,7 @@ def test_read_cached_file_nonexistent_file(invalid_path):
 		utils.read_cached_file(invalid_path)
 
 
-def test_read_cached_file_cached_result():
+def test_read_cached_file_cached_result(create_temp_file):
 	content = "This is some text."
 	temp_file_path = create_temp_file(content)
 	_ = utils.read_cached_file(temp_file_path)
@@ -113,28 +112,28 @@ def test_read_cached_file_cached_result():
 	("<root><child>Text</child></root>", False, str),
 	("<root><child>Text</child></root>", True, getattr(etree, "_Element")),
 ])
-def test_read_cached_xml_file(content, return_as_etree, expected_type):
-	temp_xml_path = create_temp_xml_file(content)
+def test_read_cached_xml_file(content, return_as_etree, expected_type, create_temp_file):
+	temp_xml_path = create_temp_file(content, file_name="test.xml")
 	result = utils.read_cached_xml_file(temp_xml_path, return_as_etree=return_as_etree)
 	assert isinstance(result, expected_type), f"Expected result type {expected_type}, got {type(result)}"
 
 
-def test_read_cached_xml_file_invalid_xml():
-	temp_xml_path = create_temp_xml_file("<root><child></root>")
+def test_read_cached_xml_file_invalid_xml(create_temp_file):
+	temp_xml_path = create_temp_file("<root><child></root>", file_name="test.xml")
 	with pytest.raises(etree.LxmlError):
 		utils.read_cached_xml_file(temp_xml_path, return_as_etree=True)
 
 
-def test_read_cached_xml_file_return_content():
+def test_read_cached_xml_file_return_content(create_temp_file):
 	xml_content = "<root><child>Some text</child></root>"
-	temp_xml_path = create_temp_xml_file(xml_content)
+	temp_xml_path = create_temp_file(xml_content, file_name="test.xml")
 	result = utils.read_cached_xml_file(temp_xml_path)
 	assert result == xml_content
 
 
-def test_read_cached_xml_file_return_etree():
+def test_read_cached_xml_file_return_etree(create_temp_file):
 	xml_content = "<root><child>Some text</child></root>"
-	temp_xml_path = create_temp_xml_file(xml_content)
+	temp_xml_path = create_temp_file(xml_content, file_name="test.xml")
 	result = utils.read_cached_xml_file(temp_xml_path, return_as_etree=True)
 	assert isinstance(result, getattr(etree, "_Element"))
 	assert result.tag == "root"

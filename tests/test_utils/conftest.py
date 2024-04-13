@@ -9,19 +9,18 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import pytest
-import tempfile
+import typing as t
 from pathlib import Path
 
 
 __all__ = [
 	"setup_search_upwards",
-	"create_temp_file",
-	"create_temp_xml_file"
+	"create_temp_file"
 ]
 
 
 @pytest.fixture
-def setup_search_upwards():
+def setup_search_upwards(tmp_path):
 	def create_nested_files(root_path, nested_path, file_name):
 		full_path = Path(root_path, nested_path)
 		full_path.mkdir(parents=True, exist_ok=True)
@@ -29,48 +28,35 @@ def setup_search_upwards():
 		file_path.touch()
 		return file_path
 
-	with tempfile.TemporaryDirectory() as temp_dir:
-		root_dir = Path(temp_dir)
-		target_file_path = create_nested_files(
-			root_path=root_dir,
-			nested_path="nested/dir/structure",
-			file_name="target_file.txt"
-		)
-		unrelated_file_path = create_nested_files(
-			root_dir,
-			nested_path="another/nested/dir",
-			file_name="unrelated_file.txt"
-		)
-		yield root_dir, target_file_path, unrelated_file_path
-
-
-def create_temp_file(content, binary=False):
-	mode = "wb" if binary else "w"
-	encoding = "utf-8" if not binary else None
-
-	temp_file = tempfile.NamedTemporaryFile(
-		encoding=encoding,
-		delete=False,
-		mode=mode
+	target_file_path = create_nested_files(
+		root_path=tmp_path,
+		nested_path="nested/dir/structure",
+		file_name="target_file.txt"
 	)
-	if binary and isinstance(content, str):
-		content = content.encode('utf-8')
-	elif not binary and isinstance(content, bytes):
-		content = content.decode('utf-8')
-
-	temp_file.write(content)
-	temp_file.close()
-
-	return Path(temp_file.name)
-
-
-def create_temp_xml_file(content):
-	temp_file = tempfile.NamedTemporaryFile(
-		encoding='utf-8',
-		suffix=".xml",
-		delete=False,
-		mode='w'
+	unrelated_file_path = create_nested_files(
+		root_path=tmp_path,
+		nested_path="another/nested/dir",
+		file_name="unrelated_file.txt"
 	)
-	temp_file.write(content)
-	temp_file.close()
-	return Path(temp_file.name)
+	yield tmp_path, target_file_path, unrelated_file_path
+
+
+@pytest.fixture
+def create_temp_file(tmp_path: Path):
+	def closure(content: t.Union[str, bytes], file_name: str = "test.txt", binary: bool = False):
+		file_path = tmp_path / file_name
+		file_path.touch()
+
+		if binary and isinstance(content, str):
+			content = content.encode('utf-8')
+		elif not binary and isinstance(content, bytes):
+			content = content.decode('utf-8')
+
+		mode = "wb" if binary else "w"
+		encoding = "utf-8" if not binary else None
+
+		with file_path.open(mode=mode, encoding=encoding) as fp:
+			fp.write(content)
+
+		return file_path
+	return closure
