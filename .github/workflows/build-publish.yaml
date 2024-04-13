@@ -6,6 +6,7 @@ on:
 jobs:
   test-coverage:
     uses: rik-ee/fastapi-xroad-soap/.github/workflows/test-coverage.yaml@main
+    secrets: inherit
 
   build:
     needs: test-coverage
