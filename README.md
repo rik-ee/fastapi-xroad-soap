@@ -20,7 +20,7 @@
 ### Description
 
 This library provides an extension to FastAPI, which allows FastAPI to be used as a SOAP service in the [X-Road](https://x-road.global/) data-exchange ecosystem. 
-Internally, it utilizes the [pydantic-xml](https://pydantic-xml.readthedocs.io/en/latest/index.html#) library for data validation and its conversion between XML structures and Python objects. 
+Internally, it utilizes the [pydantic-xml](https://pydantic-xml.readthedocs.io/en/latest/index.html#) library for data validation and conversion between XML structures and Python objects. 
 
 The full documentation of this library can be found in the [Wiki](https://github.com/rik-ee/fastapi-xroad-soap/wiki).  
 
