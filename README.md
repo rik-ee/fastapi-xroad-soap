@@ -28,13 +28,11 @@ The full documentation of this library can be found in the [Wiki](https://github
 ### Installation
 
 Using PIP:
-
 ```shell
 pip install fastapi-xroad-soap
 ```
 
 Using Poetry:
-
 ```shell
 poetry add fastapi-xroad-soap
 ```

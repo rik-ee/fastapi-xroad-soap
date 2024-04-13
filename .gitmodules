@@ -1,9 +1,0 @@
-[submodule "submodules/toolbelt"]
-	path = submodules/toolbelt
-	url = https://github.com/requests/toolbelt
-[submodule "submodules/requests"]
-	path = submodules/requests
-	url = https://github.com/psf/requests
-[submodule "submodules/urllib3"]
-	path = submodules/urllib3
-	url = https://github.com/urllib3/urllib3
