@@ -28,7 +28,7 @@ def test_guess_mime_type():
 	mime_map = {
 		"file.json": ["application/json"],
 		"file.txt": ["text/plain"],
-		"file.xml": ["text/xml"],
+		"file.xml": ["text/xml", "application/xml"],
 		"file.zip": ["application/zip", "application/x-zip-compressed"],
 		"file.tar": ["application/tar", "application/x-tar"],
 		"file.exe": ["application/octet-stream", "application/x-msdownload"],
