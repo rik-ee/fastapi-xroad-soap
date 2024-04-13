@@ -31,7 +31,7 @@ def test_guess_mime_type():
 		"file.xml": ["text/xml", "application/xml"],
 		"file.zip": ["application/zip", "application/x-zip-compressed"],
 		"file.tar": ["application/tar", "application/x-tar"],
-		"file.exe": ["application/octet-stream", "application/x-msdownload"],
+		"file.exe": ["application/x-msdownload", "application/x-msdos-program"],
 		"file.bin": ["application/octet-stream"],
 		"file.pdf": ["application/pdf"],
 		"file.jpg": ["image/jpeg"],
