@@ -1,35 +1,14 @@
-name: Publish to PyPI
+name: Build and Publish to PyPI
 
 on:
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Run commands
-        run: |
-          pip install poetry==1.8.2
-          poetry config virtualenvs.create false
-          poetry install --with dev
-          pytest
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  test-coverage:
+    uses: rik-ee/fastapi-xroad-soap/.github/workflows/test-coverage.yaml@main
 
   build:
-    needs: test
+    needs: test-coverage
     runs-on: ubuntu-latest
 
     steps:
