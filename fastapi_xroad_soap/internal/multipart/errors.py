@@ -34,5 +34,5 @@ class InvalidSeparatorError(MultipartError):
 
 class MissingContentIDError(MultipartError):
     def __init__(self):
-        msg = f"All file attachments must have Content-ID headers"
+        msg = "All file attachments must have Content-ID headers"
         super().__init__(msg)

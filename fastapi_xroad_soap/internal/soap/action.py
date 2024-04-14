@@ -140,7 +140,7 @@ class SoapAction:
 		pattern = r'<.*?Envelope\s*([^>]*)>'
 		match = re.search(pattern, http_body.decode(), re.IGNORECASE)
 		if match is None:
-			raise f.ClientFault(f"Unexpected envelope structure")
+			raise f.ClientFault("Unexpected envelope structure")
 		nsmap = dict()
 		for raw_ns in match.group(1).split(' '):
 			key, value = raw_ns[len('xmlns:'):].split('=')  # type: str, str
