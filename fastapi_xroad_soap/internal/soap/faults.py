@@ -112,17 +112,18 @@ class DuplicateCIDFault(SoapFault):
 class ValidationFault(SoapFault):
 	def __init__(self, ex: Exception) -> None:
 		error = str(ex)
-		match = re.search(r"^(.*?)\sfor", error)
+		parts = re.split(r'\n(?!\s\s)', error)
+		match = re.search(r"^(.*?)\sfor", parts[0])
 		string = match.group(1) if match else "validation error"
 		super().__init__(
 			http_status_code=400,
-			detail=self.extract_details(error),
+			detail=self.extract_details(parts[1:]),
 			string=string + " in SOAP envelope",
 			code="Client"
 		)
 
 	@staticmethod
-	def extract_details(error: str) -> MessageBody:
+	def extract_details(parts: t.List[str]) -> MessageBody:
 		class Detail(MessageBody):
 			location: str = element()
 			reason: str = element()
@@ -132,11 +133,8 @@ class ValidationFault(SoapFault):
 			details: t.List[Detail] = element(tag="validationError")
 
 		details = list()
-		pattern = r"(body\..+?)(?=\nbody\.|\Z)"
-		matches = re.findall(pattern, error, re.DOTALL)
-
-		for match in matches:
-			loc, msg = match.split('\n')
+		for part in parts:
+			loc, msg = part.split('\n')
 			iv_match = re.search(r"\$\$(.*?)\$\$", msg)
 			if iv_match:
 				msg = msg.replace(f"$${iv_match.group(1)}$$", '')
