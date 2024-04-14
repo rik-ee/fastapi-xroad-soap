@@ -112,7 +112,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 			count = len(value)
 
 			if count > 1 and spec.a8n_type in [A8nType.MAND, A8nType.OPT]:
-				raise ValueError(f"only one {spec.tag} element is allowed")
+				raise ValueError(f"only one {spec.tag} element is allowed $$Count: {count}$$")
 			elif count == 0 and spec.a8n_type == A8nType.MAND:
 				raise ValueError(f"must provide at least one {spec.tag} element")
 			elif spec.a8n_type == A8nType.LIST:
