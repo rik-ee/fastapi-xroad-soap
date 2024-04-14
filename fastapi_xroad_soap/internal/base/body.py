@@ -62,9 +62,8 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 	@classmethod
 	def _validate_before(cls, data: t.Dict[str, t.Any], info: ValidationInfo) -> t.Any:
 		# Used for validating model instantiation in user code
-		if (info.context or {}).get("deserializing", False):
-			return data
-		elif not isinstance(data, dict):
+		is_incoming_request = (info.context or {}).get("deserializing", False)
+		if is_incoming_request or not isinstance(data, dict):
 			return data
 
 		private_attrs = getattr(cls, "__private_attributes__")
@@ -96,7 +95,8 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 	@model_validator(mode="after")
 	def _validate_after(self, info: ValidationInfo) -> MessageBody:
 		# Used for validating deserialized incoming requests
-		if not (info.context or {}).get("deserializing", False):
+		is_incoming_request = (info.context or {}).get("deserializing", False)
+		if not is_incoming_request:  # is model instantiation in user code
 			return self
 
 		specs = getattr(self, "_element_specs", None)
