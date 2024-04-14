@@ -137,13 +137,16 @@ class SoapAction:
 
 	@staticmethod
 	def extract_extra_nsmap(http_body: bytes) -> t.Dict[str, str]:
-		pattern = r'<.*?Envelope\s*([^>]*)>'
-		match = re.search(pattern, http_body.decode(), re.IGNORECASE)
-		if match is None:
+		parts = re.split(r'>\s*<', http_body.decode(), maxsplit=1)
+		match = re.search(r'envelope', parts[0], re.IGNORECASE)
+		if len(parts) == 1 or match is None:
 			raise f.ClientFault("Unexpected envelope structure")
+		parts = re.split(r'[ :]', parts[0])
 		nsmap = dict()
-		for raw_ns in match.group(1).split(' '):
-			key, value = raw_ns[len('xmlns:'):].split('=')  # type: str, str
+		for part in parts:
+			if '=' not in part:
+				continue
+			key, value = part.split('=')  # type: str, str
 			if key not in HEADER_NSMAP:
 				nsmap[key] = value.strip('"')
 		return nsmap
