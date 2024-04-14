@@ -66,10 +66,11 @@ class BaseElementSpec(ABC):
 		)
 
 	def set_a8n_type_from(self, a8n: t.Any, attr: str, cls_name: str) -> None:
-		if a8n in [A8nType.ABSENT, self.element_type]:
-			self.a8n_type = A8nType.MAND
-			return
-		elif a8n in [t.Optional, t.Union, t.List, list]:
+		self._validate_user_defined_a8n(a8n, attr, cls_name)
+		self._set_a8n_type_from(a8n, attr, cls_name)
+
+	def _validate_user_defined_a8n(self, a8n: t.Any, attr: str, cls_name: str) -> None:
+		if a8n in [t.Optional, t.Union, t.List, list]:
 			raise TypeError(
 				f"Not permitted to provide '{a8n}' "
 				f"annotation without a type argument."
@@ -81,15 +82,18 @@ class BaseElementSpec(ABC):
 					f"attribute '{attr}' must be '{self.element_type.__name__}'."
 				)
 			for arg in args:
-				if arg is type(None):
-					continue
-				elif arg == self.element_type:
+				if arg is type(None) or arg == self.element_type:
 					continue
 				arg_name = "None" if arg is type(None) else arg.__name__
 				raise TypeError(
 					f"Invalid annotation argument '{arg_name}' "
 					f"for '{cls_name}' class attribute '{attr}'."
 				)
+
+	def _set_a8n_type_from(self, a8n: t.Any, attr: str, cls_name: str) -> None:
+		if a8n in [A8nType.ABSENT, self.element_type]:
+			self.a8n_type = A8nType.MAND
+			return
 		if origin := t.get_origin(a8n):
 			if origin == list:
 				self.a8n_type = A8nType.LIST
@@ -97,7 +101,8 @@ class BaseElementSpec(ABC):
 			elif "Union" in origin.__name__:
 				self.a8n_type = A8nType.OPT
 				return
-		raise TypeError(
-			f"Unsupported annotation '{a8n}' for "
-			f"class '{cls_name}' attribute '{attr}'."
-		)
+		if self.a8n_type is None:
+			raise TypeError(
+				f"Unsupported annotation '{a8n}' for "
+				f"class '{cls_name}' attribute '{attr}'."
+			)
