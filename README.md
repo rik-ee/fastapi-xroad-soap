@@ -1,5 +1,7 @@
 # FastAPI X-Road SOAP
 
+<img src="https://raw.githubusercontent.com/rik-ee/fastapi-xroad-soap/main/media/fxs_logo.jpg" alt="Logo" width="500">
+
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fastapi-xroad-soap)](https://pypi.org/project/fastapi-xroad-soap/)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/rik-ee/fastapi-xroad-soap/build-publish.yaml)](https://github.com/rik-ee/fastapi-xroad-soap/actions/workflows/build-publish.yaml)
