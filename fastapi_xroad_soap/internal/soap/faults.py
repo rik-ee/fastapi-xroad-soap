@@ -132,7 +132,7 @@ class ValidationFault(SoapFault):
 			details: t.List[Detail] = element(tag="validationError")
 
 		details = list()
-		pattern = r"(body\..+?)(?=\nbody\.|\Z)"
+		pattern = r"(body\..+?)(?=\nbody\.|$)"
 		matches = re.findall(pattern, error, re.DOTALL)
 
 		for match in matches:
