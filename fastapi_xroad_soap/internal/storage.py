@@ -56,33 +56,35 @@ class GlobalWeakStorage:
 		b64_token = base64.b64encode(token)
 		return f"{filled}..{b64_token.decode()}"
 
-	@staticmethod
-	def validate_fingerprint(fingerprint: str, raise_on_invalid: bool = True) -> bool:
-		"""Validates the format of unique identifiers."""
-		valid_b64_chars = string.ascii_letters + string.digits + '+/='
+	@classmethod
+	def validate_fingerprint(cls, fingerprint: str, raise_on_invalid: bool = True) -> bool:
+		"""Validates the fingerprint format and its unique identifiers."""
 		is_valid = True
-		if not isinstance(fingerprint, str):
-			is_valid = False
-		elif len(fingerprint) != 122:
-			is_valid = False
-		elif '-$$-' not in fingerprint:
+		if (
+			not isinstance(fingerprint, str)
+			or len(fingerprint) != 122
+			or '-$$-' not in fingerprint
+		):
 			is_valid = False
 		if is_valid:
-			for uid in fingerprint.split('-$$-'):
-				if len(uid) != 59:
-					is_valid = False
-				elif '..' not in uid:
-					is_valid = False
-				counter, token = uid.split('..')  # type: str, str
-				if len(counter) != 9:
-					is_valid = False
-				elif not counter.isdigit():
-					is_valid = False
-				for char in token:
-					if char not in valid_b64_chars:
-						is_valid = False
+			is_valid = cls._validate_unique_ids(fingerprint)
 		if not is_valid and raise_on_invalid:
 			raise ValueError(f"invalid fingerprint: {fingerprint}")
+		return is_valid
+
+	@staticmethod
+	def _validate_unique_ids(fingerprint: str) -> bool:
+		valid_b64_chars = string.ascii_letters + string.digits + '+/='
+		is_valid = True
+		for uid in fingerprint.split('-$$-'):
+			if len(uid) != 59 or '..' not in uid:
+				is_valid = False
+			counter, token = uid.split('..')  # type: str, str
+			if len(counter) != 9 or not counter.isdigit():
+				is_valid = False
+			for char in token:
+				if char not in valid_b64_chars:
+					is_valid = False
 		return is_valid
 
 	def insert_object(self, obj: t.Any) -> str:
