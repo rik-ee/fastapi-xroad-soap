@@ -83,35 +83,34 @@ def test_base_element_spec_subclass():
 	args = t.get_args(a8n)
 	assert len(args) == 1
 
-	store_a8n = functools.partial(
-		spec.set_a8n_type_from,
-		attr='attr', cls_name='Test'
-	)
-	store_a8n(A8nType.ABSENT)
-	assert spec.a8n_type == A8nType.MAND
 
-	store_a8n(CustomModelObject)
-	assert spec.a8n_type == A8nType.MAND
+def test_base_element_spec_a8n():
+	def create_spec_set_a8n(_a8n):
+		_spec = CustomModelSpec()
+		_spec.set_a8n_type_from(_a8n, attr='attr', cls_name='Test')
+		return _spec
+
+	for a8n in [A8nType.ABSENT, CustomModelObject]:
+		spec = create_spec_set_a8n(a8n)
+		assert spec.a8n_type == A8nType.MAND
+
+	for a8n in [t.Optional[CustomModelObject], t.Union[CustomModelObject, None]]:
+		spec = create_spec_set_a8n(a8n)
+		assert spec.a8n_type == A8nType.OPT
+
+	spec = create_spec_set_a8n(t.List[CustomModelObject])
+	assert spec.a8n_type == A8nType.LIST
 
 	for a8n in [t.Optional, t.Union, t.List, list]:
 		with pytest.raises(TypeError):
-			store_a8n(a8n)
+			create_spec_set_a8n(a8n)
 		with pytest.raises(TypeError):
-			store_a8n(a8n[object])
+			create_spec_set_a8n(a8n[object])
 		with pytest.raises(TypeError):
-			store_a8n(a8n[object, None])
-
-	store_a8n(t.Optional[CustomModelObject])
-	assert spec.a8n_type == A8nType.OPT
-
-	store_a8n(t.Union[CustomModelObject, None])
-	assert spec.a8n_type == A8nType.OPT
-
-	store_a8n(t.List[CustomModelObject])
-	assert spec.a8n_type == A8nType.LIST
+			create_spec_set_a8n(a8n[object, None])
 
 	with pytest.raises(TypeError):
-		store_a8n(t.Iterable[CustomModelObject])
+		create_spec_set_a8n(t.Iterable[CustomModelObject])
 
 
 def test_element_spec_meta_subclass():
