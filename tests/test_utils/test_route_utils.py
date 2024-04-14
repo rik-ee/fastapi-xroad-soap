@@ -17,10 +17,10 @@ from fastapi_xroad_soap.internal.utils import route_utils as utils
 def test_with_annotations():
 	class TestClass:
 		def method(self, arg: int) -> None:
-			pass
+			pass  # Shut Up SonarCloud
 
 	def func(a: int, b: str) -> float:
-		pass
+		pass  # Shut Up SonarCloud
 
 	annotations = utils.get_annotations(TestClass.method)
 	assert annotations == {'arg': int, 'return': None}
@@ -31,10 +31,10 @@ def test_with_annotations():
 
 def test_without_annotations():
 	class TestClass:
-		pass
+		pass  # Shut Up SonarCloud
 
 	def func(a, b):
-		pass
+		pass  # Shut Up SonarCloud
 
 	obj = TestClass()
 	assert utils.get_annotations(obj) == {}
@@ -45,39 +45,39 @@ def test_without_annotations():
 
 
 class CustomMessageBody(MessageBody):
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def correct_function(body: CustomMessageBody, header: XroadHeader) -> CustomMessageBody:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def correct_function_reversed_args(header: XroadHeader, body: CustomMessageBody) -> CustomMessageBody:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def correct_function_no_return(header: XroadHeader, body: CustomMessageBody) -> None:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def incorrect_body_annotation(body: XroadHeader, header: XroadHeader) -> CustomMessageBody:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def incorrect_body_annotation2(body: CustomMessageBody(), header: XroadHeader) -> CustomMessageBody:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def incorrect_header_annotation(body: CustomMessageBody, header: CustomMessageBody) -> CustomMessageBody:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def incorrect_return_annotation(body: CustomMessageBody, header: XroadHeader) -> int:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def unallowed_parameter_name(body: CustomMessageBody, header: XroadHeader, footer: XroadHeader) -> CustomMessageBody:
-	pass
+	pass  # Shut Up SonarCloud
 
 
 def test_validate_annotations_correct():
