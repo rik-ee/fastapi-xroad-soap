@@ -13,6 +13,7 @@ from fastapi import Response
 from ..base import MessageBody
 from ..cid_gen import CIDGenerator
 from ..multipart import MultipartEncoder
+from ..base import BaseElementSpec
 from ..elements import (
 	SwaRefInternal,
 	SwaRefSpec
@@ -67,9 +68,17 @@ class SoapResponse(Response):
 				files.extend(nested)
 
 		# Add files from content
-		specs = getattr(content, "_element_specs", None)
-		if specs is None:
-			return files
+		if specs := getattr(content, "_element_specs", None):
+			cls._add_file_specs(files, specs, content, gen)
+		return files
+
+	@staticmethod
+	def _add_file_specs(
+			files: t.List[SwaRefInternal],
+			specs: t.Dict[str, BaseElementSpec],
+			content: MessageBody,
+			gen: CIDGenerator
+	) -> None:
 		for attr, spec in specs.items():
 			if not isinstance(spec, SwaRefSpec):
 				continue
@@ -82,7 +91,6 @@ class SoapResponse(Response):
 					if isinstance(item, SwaRefInternal):
 						item.content_id = gen.token
 						files.append(item)
-		return files
 
 	@staticmethod
 	def serialize(content: MessageBody, header: t.Optional[XroadHeader]) -> bytes:
