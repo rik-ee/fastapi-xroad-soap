@@ -142,7 +142,7 @@ class SoapAction:
 		match = re.search(r'envelope', parts[0], re.IGNORECASE)
 		if len(parts) == 1 or match is None:
 			raise f.ClientFault("Unexpected envelope structure")
-		parts = re.split(r'[ :]', parts[0])
+		parts = re.split(r' |xmlns:', parts[0])
 		nsmap = dict()
 		for part in parts:
 			if '=' not in part:
