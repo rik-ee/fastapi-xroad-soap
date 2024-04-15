@@ -8,3 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from .generator import generate
+
+
+__all__ = ["generate"]
