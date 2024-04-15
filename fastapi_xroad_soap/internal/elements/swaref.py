@@ -12,7 +12,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import typing as t
-from pydantic import Field
+from pydantic.fields import ModelPrivateAttr, Field
 from ..base import BaseElementSpec, MessageBody
 from ..storage import GlobalWeakStorage
 from ..multipart import DecodedBodyPart
@@ -177,6 +177,27 @@ class SwaRef:
 
 class SwaRefUtils:
 	@classmethod
+	def model_has_cls_specs(cls, content_cls: t.Type[MessageBody]) -> bool:
+		# print(type(content_cls))
+		has_swa_ref = False
+
+		# Define recursion behavior
+		fields = getattr(content_cls, "model_fields", {})
+		for sub_content_cls in fields.values():
+			has_swa_ref |= cls.model_has_cls_specs(sub_content_cls)
+
+		# Check private attributes for SwaRef specs
+		privates = getattr(content_cls, "__private_attributes__", {})
+		specs_attr: ModelPrivateAttr = privates.get("_element_specs")
+		if specs_attr is None:
+			return has_swa_ref
+		specs = specs_attr.get_default()
+		for spec in specs.values():
+			if isinstance(spec, SwaRefSpec):
+				has_swa_ref |= True
+		return has_swa_ref
+
+	@classmethod
 	def gather_specs_and_files(cls, content: MessageBody) -> _SwaRefTypes:
 		specs, files = [], []
 		if not isinstance(content, MessageBody):
@@ -189,7 +210,7 @@ class SwaRefUtils:
 				for a, b in [(specs, _specs), (files, _files)]:
 					a.extend(b)
 
-		# Add specs and files from content
+		# Gather specs and files from content
 		cls._add_specs_and_files(specs, files, content)
 		return specs, files
 
