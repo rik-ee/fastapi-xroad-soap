@@ -10,7 +10,7 @@
 #
 import typing as t
 from pydantic_xml import BaseXmlModel, element, attr
-from ..constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 from .port_type import WSDLPortType
 from .binding import WSDLBinding
 from .service import WSDLService

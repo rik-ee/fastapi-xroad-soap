@@ -10,7 +10,7 @@
 #
 import typing as t
 from pydantic_xml import BaseXmlModel, attr
-from ..constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 from .restrictions import (
     StringRestriction,
     IntegerRestriction,
@@ -54,10 +54,10 @@ class SimpleType(BaseXmlModel, tag="simpleType"):
 
 
 class AnyXML(BaseXmlModel, tag="any"):
-    process_contents: str = attr(default="lax")
+    process_contents: str = attr(name="processContents", default="lax")
 
 
-class Element(BaseXmlModel, tag="element"):
+class Element(BaseXmlModel, tag="element", skip_empty=True):
     name: str = attr()
     type: str = attr()
     min_occurs: t.Union[str, None] = attr(name="minOccurs", default=None)
@@ -74,8 +74,8 @@ class ComplexType(BaseXmlModel, tag="complexType"):
 
 
 class Import(BaseXmlModel, tag="import"):
-    schema_loc: str = attr(name="schemaLocation")
     namespace: str = attr()
+    schema_loc: str = attr(name="schemaLocation")
 
 
 class Include(BaseXmlModel, tag="include"):

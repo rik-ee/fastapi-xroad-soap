@@ -28,7 +28,6 @@ HEADER_NSMAP = {**ENV_NSMAP, **XRO_NSMAP, **IDEN_NSMAP}
 WSDL_NSMAP = {
     "wsdl": "http://schemas.xmlsoap.org/wsdl/",
     "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
-    "enc": "http://schemas.xmlsoap.org/soap/encoding/",
     "wsi": "http://ws-i.org/profiles/basic/1.1/xsd/",
     "xsd": "http://www.w3.org/2001/XMLSchema",
     **XRO_NSMAP
