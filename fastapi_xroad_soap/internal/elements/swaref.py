@@ -12,11 +12,15 @@ from __future__ import annotations
 import base64
 import hashlib
 import typing as t
-from pydantic.fields import ModelPrivateAttr, Field
-from ..base import BaseElementSpec, MessageBody
+from pydantic.fields import Field
 from ..storage import GlobalWeakStorage
 from ..multipart import DecodedBodyPart
 from ..file_size import FileSize
+from ..base import (
+	BaseElementSpec,
+	CompositeMeta,
+	MessageBody
+)
 from .. import utils
 
 
@@ -187,11 +191,9 @@ class SwaRefUtils:
 			has_swa_ref |= cls.model_has_cls_specs(sub_content_cls)
 
 		# Check private attributes for SwaRef specs
-		privates = getattr(content_cls, "__private_attributes__", {})
-		specs_attr: ModelPrivateAttr = privates.get("_element_specs")
-		if specs_attr is None:
+		if type(content_cls) is not CompositeMeta:
 			return has_swa_ref
-		specs = specs_attr.get_default()
+		specs = content_cls.model_specs()
 		for spec in specs.values():
 			if type(spec).__name__ == "SwaRefSpec":
 				has_swa_ref |= True
