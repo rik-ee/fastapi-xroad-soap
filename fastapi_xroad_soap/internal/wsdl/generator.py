@@ -8,7 +8,6 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-import re
 import typing as t
 import inflection
 from internal.soap.action import SoapAction
@@ -188,13 +187,3 @@ def _generate_binding(actions: t.Dict[str, SoapAction]) -> WSDLBinding:
 			for key in actions.keys()
 		]
 	)
-
-
-def _wrap_wsdl_namespaces(xml_str: str) -> str:
-	def replace(match):
-		part_before_gt = match.group(1)
-		replaced_part = part_before_gt.replace(' ', '\n  ')
-		return replaced_part + '>'
-
-	pattern = r'^(.*?)>'
-	return re.sub(pattern, replace, xml_str, count=1)
