@@ -14,14 +14,14 @@ from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
-from ..elements import SwaRefInternal
+from ..elements import SwaRefFile
 
 
 __all__ = ["MultipartEncoder"]
 
 
 class MultipartEncoder:
-	def __init__(self, content: bytes, files: t.List[SwaRefInternal]) -> None:
+	def __init__(self, content: bytes, files: t.List[SwaRefFile]) -> None:
 		multipart = self.compute_multipart(content, files)
 		headers, message = multipart.split(b"\r\n\r\n", 1)
 		self.headers = self.raw_headers_to_dict(headers)
@@ -29,7 +29,7 @@ class MultipartEncoder:
 		self.headers["Content-Length"] = str(len(self.message))
 
 	@classmethod
-	def compute_multipart(cls, xml_str: bytes, files: t.List[SwaRefInternal]) -> bytes:
+	def compute_multipart(cls, xml_str: bytes, files: t.List[SwaRefFile]) -> bytes:
 		root = MIMEMultipart("related", type="text/xml", start="<rootpart>")
 		cls.attach_soap_envelope(xml_str, root)
 		if len(files) > 1:
@@ -51,7 +51,7 @@ class MultipartEncoder:
 		parent.attach(part)
 
 	@staticmethod
-	def attach_file(file: SwaRefInternal, parent: MIMEMultipart):
+	def attach_file(file: SwaRefFile, parent: MIMEMultipart):
 		part = MIMEBase(*file.mimetype.split('/'))
 		part.add_header("Content-ID", file.mime_cid)
 		part.add_header("Content-Digest", file.digest)

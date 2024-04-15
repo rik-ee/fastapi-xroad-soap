@@ -21,7 +21,8 @@ from .swaref import (
 	SwaRefInternal,
 	SwaRefSpec,
 	SwaRefElement,
-	SwaRef
+	SwaRef,
+	SwaRefUtils
 )
 
 
@@ -38,5 +39,6 @@ __all__ = [
 	"SwaRefInternal",
 	"SwaRefSpec",
 	"SwaRefElement",
-	"SwaRef"
+	"SwaRef",
+	"SwaRefUtils"
 ]
