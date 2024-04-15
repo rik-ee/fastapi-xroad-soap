@@ -10,9 +10,14 @@
 #
 import typing as t
 import inflection
-from internal.soap.action import SoapAction
-from internal.elements import SwaRefUtils
-from internal.wsdl.models import *
+from ..soap.action import SoapAction
+from ..elements import SwaRefUtils
+from ..base import (
+	BaseElementSpec,
+	CompositeMeta,
+	MessageBody
+)
+from .models import *
 
 
 __all__ = ["generate"]
@@ -84,7 +89,34 @@ def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[Element]:
 	]
 
 
+def get_complex_types(composite_type: t.Type[MessageBody]) -> t.List[t.Type[MessageBody]]:
+	complex_types = [composite_type]
+	a8ns = getattr(composite_type, '__annotations__', {})
+	for key, value in a8ns.items():
+		if type(value) is CompositeMeta:
+			_ct = get_complex_types(value)
+			complex_types.extend(_ct)
+	return complex_types
+
+
+def get_simple_types(complex_type: t.Type[MessageBody]) -> t.List[BaseElementSpec]:
+	simple_types = []
+	for k, v in complex_type.model_specs().items():
+		print(k, isinstance(v, BaseElementSpec))
+
+
 def _generate_complex_types(actions: t.Dict[str, SoapAction]) -> t.List[ComplexType]:
+	complex_types = []
+	for action in actions.values():
+		if action.body_type is not None:
+			_ct = get_complex_types(action.body_type)
+			complex_types.extend(_ct)
+		if action.return_type is not None:
+			_ct = get_complex_types(action.return_type)
+			complex_types.extend(_ct)
+	for item in complex_types:
+		get_simple_types(item)
+
 	return [
 		ComplexType(
 			name="FaultResponse",
