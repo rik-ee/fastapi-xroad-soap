@@ -17,10 +17,7 @@ __all__ = ["BooleanSpec", "Boolean"]
 
 class BooleanSpec(BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(
-			element_type=bool,
-			**kwargs
-		)
+		super().__init__(element_type=bool, **kwargs)
 
 	def init_instantiated_data(self, data: t.List[bool]) -> t.List[bool]:
 		return data

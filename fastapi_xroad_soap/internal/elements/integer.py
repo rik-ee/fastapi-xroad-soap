@@ -19,11 +19,7 @@ __all__ = ["IntegerSpec", "Integer"]
 
 class IntegerSpec(CommonSpecTypeA, NumberValidators):
 	def __init__(self, **kwargs) -> None:
-		self.total_digits = kwargs.pop("total_digits")
-		super().__init__(
-			element_type=int,
-			**kwargs
-		)
+		super().__init__(element_type=int, **kwargs)
 
 
 class Integer:

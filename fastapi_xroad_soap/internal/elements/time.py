@@ -19,10 +19,7 @@ __all__ = ["TimeSpec", "Time"]
 
 class TimeSpec(CommonSpecTypeA):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(
-			element_type=time,
-			**kwargs
-		)
+		super().__init__(element_type=time, **kwargs)
 
 
 class Time:

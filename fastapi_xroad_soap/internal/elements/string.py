@@ -18,10 +18,7 @@ __all__ = ["StringSpec", "String"]
 
 class StringSpec(CommonSpecTypeB):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(
-			element_type=str,
-			**kwargs
-		)
+		super().__init__(element_type=str, **kwargs)
 
 
 class String:

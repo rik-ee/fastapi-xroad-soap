@@ -19,10 +19,7 @@ __all__ = ["NetResSpec", "NetRes"]
 
 class NetResSpec(CommonSpecTypeB):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(
-			element_type=AnyUrl,
-			**kwargs
-		)
+		super().__init__(element_type=AnyUrl, **kwargs)
 
 
 class NetRes:
