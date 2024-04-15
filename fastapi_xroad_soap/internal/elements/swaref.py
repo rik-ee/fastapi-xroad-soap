@@ -193,7 +193,7 @@ class SwaRefUtils:
 			return has_swa_ref
 		specs = specs_attr.get_default()
 		for spec in specs.values():
-			if isinstance(spec, SwaRefSpec):
+			if type(spec).__name__ == "SwaRefSpec":
 				has_swa_ref |= True
 		return has_swa_ref
 
