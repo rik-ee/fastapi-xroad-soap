@@ -55,7 +55,7 @@ def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[Import]:
 	for action in actions.values():
 		if (
 			action.body_type is not None
-			and SwaRefUtils.model_has_cls_specs(action.body_type)
+			and SwaRefUtils.contains_swa_ref_specs(action.body_type)
 		):
 			wsi = "http://ws-i.org/profiles/basic/1.1/"
 			imports.append(Import(

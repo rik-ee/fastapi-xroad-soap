@@ -181,14 +181,15 @@ class SwaRef:
 
 class SwaRefUtils:
 	@classmethod
-	def model_has_cls_specs(cls, content_cls: t.Type[MessageBody]) -> bool:
+	def contains_swa_ref_specs(cls, content_cls: t.Type[MessageBody]) -> bool:
 		# print(type(content_cls))
 		has_swa_ref = False
 
 		# Define recursion behavior
 		fields = getattr(content_cls, "model_fields", {})
 		for sub_content_cls in fields.values():
-			has_swa_ref |= cls.model_has_cls_specs(sub_content_cls)
+			res = cls.contains_swa_ref_specs(sub_content_cls)
+			has_swa_ref |= res
 
 		# Check private attributes for SwaRef specs
 		if type(content_cls) is not CompositeMeta:
