@@ -11,7 +11,7 @@
 import typing as t
 from fastapi import Response
 from ..base import MessageBody
-from ..cid_gen import CIDGenerator
+from ..uid_gen import UIDGenerator
 from ..multipart import MultipartEncoder
 from ..elements import SwaRefUtils
 from ..envelope import (
@@ -33,9 +33,9 @@ class SoapResponse(Response):
 			http_status_code: t.Optional[int] = 200
 	) -> None:
 		if files := SwaRefUtils.gather_specs_and_files(content)[1]:
-			cid_gen = CIDGenerator()
+			cid = UIDGenerator(mode="cid")
 			for file in files:
-				file.content_id = cid_gen.token
+				file.content_id = cid.generate()
 			message = self.serialize(content, header)
 			encoder = MultipartEncoder(message, files)
 			xml_str = encoder.message
