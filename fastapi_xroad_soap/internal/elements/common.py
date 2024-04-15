@@ -18,10 +18,11 @@ __all__ = ["CommonSpecTypeA", "CommonSpecTypeB"]
 
 class CommonSpecTypeA(BaseElementSpec, CommonValidators, NumberValidators):
 	def __init__(self, element_type: t.Any, **kwargs) -> None:
-		self.min_value = kwargs.pop("min_value")
-		self.max_value = kwargs.pop("max_value")
-		self.enumerations = kwargs.pop("enumerations")
-		self.pattern = kwargs.pop("pattern")
+		self.min_value = kwargs.pop("min_value", None)
+		self.max_value = kwargs.pop("max_value", None)
+		self.total_digits = kwargs.pop("total_digits", None)
+		self.enumerations = kwargs.pop("enumerations", None)
+		self.pattern = kwargs.pop("pattern", None)
 		super().__init__(
 			element_type=element_type,
 			**kwargs
@@ -43,12 +44,15 @@ class CommonSpecTypeA(BaseElementSpec, CommonValidators, NumberValidators):
 
 class CommonSpecTypeB(BaseElementSpec, CommonValidators, StringValidators):
 	def __init__(self, element_type: t.Any, **kwargs) -> None:
-		self.length = kwargs.pop("length")
-		self.min_length = kwargs.pop("min_length")
-		self.max_length = kwargs.pop("max_length")
-		self.enumerations = kwargs.pop("enumerations")
-		self.pattern = kwargs.pop("pattern")
-		self.whitespace = kwargs.pop("whitespace")
+		self.length = kwargs.pop("length", None)
+		self.min_length = kwargs.pop("min_length", None)
+		self.max_length = kwargs.pop("max_length", None)
+		self.enumerations = kwargs.pop("enumerations", None)
+		self.pattern = kwargs.pop("pattern", None)
+		self.whitespace = (
+			kwargs.pop("whitespace", None)
+			or t.cast(t.Literal, "preserve")
+		)
 		super().__init__(
 			element_type=element_type,
 			**kwargs
