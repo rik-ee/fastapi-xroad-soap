@@ -10,7 +10,7 @@
 #
 import typing as t
 from pydantic_xml import BaseXmlModel, element, attr
-from ..constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 
 
 __all__ = [
@@ -24,8 +24,8 @@ __all__ = [
 
 
 class WSDLFaultPort(BaseXmlModel, tag="fault", nsmap=WSDL_NSMAP):
-    message: str = attr()
-    name: str = attr()
+    message: str = attr(default="tns:FaultResponse")
+    name: str = attr(default="FaultResponse")
 
 
 class WSDLOutputPort(BaseXmlModel, tag="output", nsmap=WSDL_NSMAP):
@@ -39,15 +39,15 @@ class WSDLInputPort(BaseXmlModel, tag="input", nsmap=WSDL_NSMAP):
 
 
 class WSDLDocumentation(BaseXmlModel, tag="documentation", nsmap=WSDL_NSMAP):
-    title: str = element(ns='xroad', nsmap=WSDL_NSMAP)
-    notes: str = element(ns='xroad', nsmap=WSDL_NSMAP)
+    title: str = element(ns='xro', nsmap=WSDL_NSMAP)
+    notes: str = element(ns='xro', nsmap=WSDL_NSMAP)
 
 
-class WSDLOperationPort(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSMAP):
-    documentation: WSDLDocumentation
-    input: WSDLInputPort
-    output: WSDLOutputPort
-    fault: WSDLFaultPort
+class WSDLOperationPort(BaseXmlModel, tag="operation", ns="wsdl", nsmap=WSDL_NSMAP, skip_empty=True):
+    documentation: t.Optional[WSDLDocumentation] = None
+    input: t.Optional[WSDLInputPort] = None
+    output: t.Optional[WSDLOutputPort] = None
+    fault: WSDLFaultPort = WSDLFaultPort()
     name: str = attr()
 
 

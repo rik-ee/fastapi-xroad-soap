@@ -12,7 +12,6 @@ import chardet
 import mimetypes
 import typing as t
 import charset_normalizer as charset
-from ..base import MessageBody, BaseElementSpec
 
 
 __all__ = [

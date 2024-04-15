@@ -19,10 +19,7 @@ __all__ = ["DateTimeSpec", "DateTime"]
 
 class DateTimeSpec(CommonSpecTypeA):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(
-			element_type=datetime,
-			**kwargs
-		)
+		super().__init__(element_type=datetime, **kwargs)
 
 
 class DateTime:

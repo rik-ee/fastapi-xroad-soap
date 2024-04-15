@@ -11,6 +11,7 @@
 from __future__ import annotations
 import typing as t
 from pydantic_xml import model
+from pydantic.fields import ModelPrivateAttr
 from pydantic import (
 	PrivateAttr,
 	ValidationInfo,
@@ -30,6 +31,12 @@ __all__ = ["MessageBody", "MessageBodyType"]
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
 	_element_specs: t.Dict[str, BaseElementSpec] = PrivateAttr(default_factory=dict)
+
+	@classmethod
+	def model_specs(cls) -> t.Dict[str, BaseElementSpec]:
+		privates = getattr(cls, "__private_attributes__", {})
+		attr: t.Union[ModelPrivateAttr, None] = privates.get("_element_specs")
+		return attr.get_default() if attr is not None else dict()
 
 	@staticmethod
 	def _validate_list(attr: str, data: t.List[MessageBody], spec: BaseElementSpec):
@@ -66,10 +73,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 		if is_incoming_request or not isinstance(data, dict):
 			return data
 
-		private_attrs = getattr(cls, "__private_attributes__")
-		class_specs = private_attrs.get("_element_specs").get_default()
-
-		for attr, spec in class_specs.items():
+		for attr, spec in cls.model_specs().items():
 			expected = spec.internal_type or spec.element_type
 			value = data.get(attr)
 

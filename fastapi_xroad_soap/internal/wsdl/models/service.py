@@ -19,7 +19,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from pydantic_xml import BaseXmlModel, attr
-from ..constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 
 
 __all__ = [

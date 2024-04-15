@@ -12,11 +12,15 @@ from __future__ import annotations
 import base64
 import hashlib
 import typing as t
-from pydantic import Field
-from ..base import BaseElementSpec, MessageBody
+from pydantic.fields import Field
 from ..storage import GlobalWeakStorage
 from ..multipart import DecodedBodyPart
 from ..file_size import FileSize
+from ..base import (
+	BaseElementSpec,
+	CompositeMeta,
+	MessageBody
+)
 from .. import utils
 
 
@@ -25,7 +29,8 @@ __all__ = [
 	"SwaRefInternal",
 	"SwaRefSpec",
 	"SwaRefElement",
-	"SwaRef"
+	"SwaRef",
+	"SwaRefUtils"
 ]
 
 
@@ -34,6 +39,7 @@ _FileType = t.Union[DecodedBodyPart, None]
 _FileSizeType = t.Union[FileSize, None]
 _Filetypes = t.Union[t.List[str], t.Literal["all"]]
 _HashFuncType = t.Literal["sha256", "sha512", "sha3_256", "sha3_384", "sha3_512"]
+_SwaRefTypes = t.Tuple[t.List["SwaRefSpec"], t.List["SwaRefFile"]]
 
 
 class SwaRefFile(MessageBody):
@@ -171,3 +177,63 @@ class SwaRef:
 			"Cannot directly instantiate SwaRef, you must "
 			"instantiate one of its attribute classes."
 		)
+
+
+class SwaRefUtils:
+	@classmethod
+	def contains_swa_ref_specs(cls, content_cls: t.Type[MessageBody]) -> bool:
+		# print(type(content_cls))
+		has_swa_ref = False
+
+		# Define recursion behavior
+		fields = getattr(content_cls, "model_fields", {})
+		for sub_content_cls in fields.values():
+			res = cls.contains_swa_ref_specs(sub_content_cls)
+			has_swa_ref |= res
+
+		# Check private attributes for SwaRef specs
+		if type(content_cls) is not CompositeMeta:
+			return has_swa_ref
+		specs = content_cls.model_specs()
+		for spec in specs.values():
+			if type(spec).__name__ == "SwaRefSpec":
+				has_swa_ref |= True
+		return has_swa_ref
+
+	@classmethod
+	def gather_specs_and_files(cls, content: MessageBody) -> _SwaRefTypes:
+		specs, files = [], []
+		if not isinstance(content, MessageBody):
+			return specs, files
+
+		# Define recursion behavior
+		for sub_content in vars(content).values():
+			if isinstance(sub_content, MessageBody):
+				_specs, _files = cls.gather_specs_and_files(sub_content)
+				for a, b in [(specs, _specs), (files, _files)]:
+					a.extend(b)
+
+		# Gather specs and files from content
+		cls._add_specs_and_files(specs, files, content)
+		return specs, files
+
+	@staticmethod
+	def _add_specs_and_files(
+			specs: t.List[SwaRefSpec],
+			files: t.List[SwaRefFile],
+			content: MessageBody
+	) -> None:
+		_specs = getattr(content, "_element_specs", None)
+		if _specs is None:
+			return
+		for attr, spec in _specs.items():
+			if not isinstance(spec, SwaRefSpec):
+				continue
+			specs.append(spec)
+			obj = getattr(content, attr)
+			if isinstance(obj, SwaRefFile):
+				files.append(obj)
+			elif isinstance(obj, list):
+				for item in obj:
+					if isinstance(item, SwaRefFile):
+						files.append(item)

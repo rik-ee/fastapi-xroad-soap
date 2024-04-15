@@ -10,7 +10,7 @@
 #
 import typing as t
 from pydantic_xml import BaseXmlModel, attr
-from ..constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 
 
 __all__ = [
@@ -50,22 +50,22 @@ class WSDLFaultBinding(BaseXmlModel, tag="fault", ns="wsdl", nsmap=WSDL_NSMAP):
 
 class WSDLOutputBinding(BaseXmlModel, tag="output", ns="wsdl", nsmap=WSDL_NSMAP):
 	headers: t.List[SOAPHeader] = [
-		SOAPHeader(part="client"),
-		SOAPHeader(part="service"),
-		SOAPHeader(part="id"),
 		SOAPHeader(part="userId"),
-		SOAPHeader(part="protocolVersion")
+		SOAPHeader(part="protocolVersion"),
+		SOAPHeader(part="id"),
+		SOAPHeader(part="service"),
+		SOAPHeader(part="client")
 	]
 	body: SOAPBody = SOAPBody()
 
 
 class WSDLInputBinding(BaseXmlModel, tag="input", ns="wsdl", nsmap=WSDL_NSMAP):
 	headers: t.List[SOAPHeader] = [
-		SOAPHeader(part="client"),
-		SOAPHeader(part="service"),
-		SOAPHeader(part="id"),
+		SOAPHeader(part="userId"),
 		SOAPHeader(part="protocolVersion"),
-		SOAPHeader(part="userId")
+		SOAPHeader(part="id"),
+		SOAPHeader(part="service"),
+		SOAPHeader(part="client")
 	]
 	body: SOAPBody = SOAPBody()
 

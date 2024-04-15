@@ -18,10 +18,7 @@ __all__ = ["FloatSpec", "Float"]
 
 class FloatSpec(CommonSpecTypeA):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(
-			element_type=float,
-			**kwargs
-		)
+		super().__init__(element_type=float, **kwargs)
 
 
 class Float:

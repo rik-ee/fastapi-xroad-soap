@@ -53,8 +53,17 @@ class SoapService(FastAPI):
 	@staticmethod
 	async def _await_or_call(func: FuncOrCoro, *args, **kwargs) -> t.Any: ...
 
-	def add_action(self, name: str, handler: t.Callable[..., t.Any]) -> None: ...
+	def add_action(
+			self,
+			name: str,
+			handler: t.Callable[..., t.Any],
+			description: t.Optional[str] = None
+	) -> None: ...
 
-	def action(self, name: str) -> t.Callable[[DecoratedCallable], DecoratedCallable]: ...
+	def action(
+			self,
+			name: str,
+			description: t.Optional[str] = None
+	) -> t.Callable[[DecoratedCallable], DecoratedCallable]: ...
 
 	def regenerate_wsdl(self, *, force: bool = False) -> None: ...
