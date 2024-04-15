@@ -65,13 +65,11 @@ class SoapService(FastAPI):
 			redoc_url=None,
 			docs_url=None,
 		)
-		self._as_fastapi().add_middleware(
+		app = t.cast(FastAPI, self)
+		app.add_middleware(
 			middleware_class=SoapMiddleware,
 			dispatch=self._soap_middleware
 		)
-
-	def _as_fastapi(self) -> FastAPI:
-		return t.cast(FastAPI, self)
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]:
 		try:
@@ -119,7 +117,7 @@ class SoapService(FastAPI):
 			return await func(*args, **kwargs)
 		return func(*args, **kwargs)
 
-	def add_action(self, name: str, handler: t.Callable[..., t.Any]) -> None:
+	def add_action(self, name: str, handler: t.Callable[..., t.Any], description: t.Optional[str] = None) -> None:
 		if name in self._actions.keys():
 			raise ValueError(f"Cannot add duplicate {name} SOAP action.")
 		anno = utils.validate_annotations(name, handler)
@@ -127,6 +125,7 @@ class SoapService(FastAPI):
 		self._actions[name] = SoapAction(
 			name=name,
 			handler=handler,
+			description=description,
 			body_type=anno.get("body"),
 			body_index=pos.get("body"),
 			header_type=anno.get("header"),
@@ -135,9 +134,9 @@ class SoapService(FastAPI):
 			storage=self._storage
 		)
 
-	def action(self, name: str) -> t.Callable[[DecoratedCallable], DecoratedCallable]:
+	def action(self, name: str, description: t.Optional[str] = None) -> t.Callable[[DecoratedCallable], DecoratedCallable]:
 		def closure(func: DecoratedCallable) -> DecoratedCallable:
-			self.add_action(name, func)
+			self.add_action(name, func, description)
 			return func
 		return closure
 

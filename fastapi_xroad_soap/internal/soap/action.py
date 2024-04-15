@@ -36,6 +36,7 @@ __all__ = ["SoapAction"]
 class SoapAction:
 	name: str
 	handler: t.Callable[..., t.Optional[MessageBody]]
+	description: t.Optional[str]
 	body_type: t.Type[MessageBody]
 	body_index: t.Optional[int]
 	header_type: t.Type[XroadHeader]
