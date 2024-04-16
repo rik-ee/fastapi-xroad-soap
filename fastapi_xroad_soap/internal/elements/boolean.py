@@ -25,6 +25,12 @@ class BooleanSpec(BaseElementSpec):
 	def init_deserialized_data(self, data: t.List[bool]) -> t.List[bool]:
 		return data
 
+	def has_constraints(self) -> bool:
+		return False
+
+	def signature(self) -> bytes:
+		return b''
+
 
 class Boolean:
 	def __new__(

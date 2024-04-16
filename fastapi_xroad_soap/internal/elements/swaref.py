@@ -91,6 +91,12 @@ class SwaRefSpec(BaseElementSpec):
 			**kwargs
 		)
 
+	def has_constraints(self) -> bool:
+		return False
+
+	def signature(self) -> bytes:
+		return b''
+
 	def digest(self, content: bytes) -> str:
 		hash_func = getattr(hashlib, self.hash_func)
 		digest = hash_func(content).digest()

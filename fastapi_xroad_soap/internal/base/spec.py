@@ -54,6 +54,12 @@ class BaseElementSpec(ABC):
 	@abstractmethod
 	def init_deserialized_data(self, data: t.List[t.Any]) -> t.List[t.Any]: ...
 
+	@abstractmethod
+	def has_constraints(self) -> bool: ...
+
+	@abstractmethod
+	def signature(self) -> bytes: ...
+
 	def get_element_a8n(self) -> t.Type[t.List[t.Any]]:
 		return t.List[self.internal_type or self.element_type]
 
