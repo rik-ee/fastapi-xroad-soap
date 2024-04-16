@@ -80,16 +80,9 @@ class SoapService(FastAPI):
 			elif http_request.method != "POST":
 				raise f.InvalidMethodFault(http_request.method)
 
-			action_name = http_request.headers.get("soapaction", '').strip('"')
-			if not action_name or action_name not in self._actions.keys():
-				raise f.InvalidActionFault(action_name)
-
-			http_body = await http_request.body()
-			content_type = http_request.headers.get("content-type")
-
-			action = self._actions[action_name]
-			envelope = action.parse(http_body, content_type)
-			args = action.arguments_from(envelope, action_name)
+			action = self._determine_action(http_request)
+			envelope = await action.parse(http_request)
+			args = action.arguments_from(envelope)
 			ret = await self._await_or_call(action.handler, *args)
 			return action.response_from(ret, envelope.header)
 
@@ -110,6 +103,19 @@ class SoapService(FastAPI):
 				http_request, err
 			)
 		return resp
+
+	def _determine_action(self, http_request: Request) -> SoapAction:
+		name = http_request.headers.get("soapaction", '').strip('"')
+		valid_names = self._actions.keys()
+		if not name:
+			raise f.MissingActionFault()
+		elif name in valid_names:
+			return self._actions[name]
+		fragment: str = name.split('#')[-1]
+		for vn in valid_names:
+			if vn == fragment:
+				return self._actions[name]
+		raise f.InvalidActionFault(name)
 
 	@staticmethod
 	async def _await_or_call(func: FuncOrCoro, *args, **kwargs) -> t.Any:

@@ -10,7 +10,7 @@
 #
 import re
 import typing as t
-from fastapi import Response
+from fastapi import Request, Response
 from pydantic import (
 	BaseModel,
 	ValidationError,
@@ -33,6 +33,10 @@ from . import faults as f
 
 
 __all__ = ["SoapAction"]
+
+
+_ArgsFrom = t.List[t.Union[MessageBody, XroadHeader]]
+_RespFrom = t.Union[Response, SoapResponse]
 
 
 class SoapAction(BaseModel, arbitrary_types_allowed=True):
@@ -58,27 +62,19 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 			)
 		return value
 
-	def arguments_from(
-			self,
-			envelope: GenericEnvelope,
-			action_name: str
-	) -> t.List[t.Union[MessageBody, XroadHeader]]:
+	def arguments_from(self, envelope: GenericEnvelope) -> _ArgsFrom:
 		args = list()
 		if self.body_type is not None:
 			if envelope.body is None:
-				raise f.MissingBodyFault(action_name)
+				raise f.MissingBodyFault(self.name)
 			args.insert(self.body_index, envelope.body.content)
 		if self.header_type is not None:
 			if envelope.header is None:
-				raise f.MissingHeaderFault(action_name)
+				raise f.MissingHeaderFault(self.name)
 			args.insert(self.header_index, envelope.header)
 		return args
 
-	def response_from(
-			self,
-			ret_obj: t.Optional[MessageBody],
-			header: XroadHeader
-	) -> t.Union[Response, SoapResponse]:
+	def response_from(self, ret_obj: t.Optional[MessageBody], header: XroadHeader) -> _RespFrom:
 		has_return = self.return_type is not None
 		if not has_return and ret_obj is None:
 			return Response()
@@ -89,9 +85,12 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 			f"but received {ret_obj}"
 		)
 
-	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
-		body_ct = content_type.split(';')[0]
-		if body_ct == "multipart/related":
+	async def parse(self, http_request: Request) -> GenericEnvelope:
+		content_type = http_request.headers.get("content-type")
+		body_type = content_type.split(';')[0]
+		http_body = await http_request.body()
+
+		if body_type == "multipart/related":
 			files: t.List[DecodedBodyPart] = list()
 			decoder1 = MultipartDecoder(http_body, content_type)
 			envelope = None
@@ -106,8 +105,8 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 				else:
 					files.append(part1)
 			http_body = self.process_files(envelope.content, files)
-		elif body_ct not in ["text/xml", "application/xml"]:
-			raise f.ClientFault(f"Invalid content type: {body_ct}")
+		elif body_type not in ["text/xml", "application/xml"]:
+			raise f.ClientFault(f"Invalid content type: {body_type}")
 		return self.deserialize(http_body)
 
 	def process_files(self, xml_str: bytes, files: t.List[DecodedBodyPart]) -> bytes:
