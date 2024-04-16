@@ -8,9 +8,15 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import hashlib
 import typing as t
 from ..base import BaseElementSpec
-from .validators import CommonValidators, NumberValidators, StringValidators
+from ..uid_gen import UIDGenerator
+from .validators import (
+	CommonValidators,
+	NumberValidators,
+	StringValidators
+)
 
 
 __all__ = ["CommonSpecTypeA", "CommonSpecTypeB"]
@@ -41,6 +47,33 @@ class CommonSpecTypeA(BaseElementSpec, CommonValidators, NumberValidators):
 	def init_deserialized_data(self, data: t.List[t.Any]) -> t.List[t.Any]:
 		return [self.process(obj) for obj in data]
 
+	def has_constraints(self) -> bool:
+		return any([
+			attr is not None for attr in [
+				self.min_value,
+				self.max_value,
+				self.total_digits,
+				self.pattern,
+				self.enumerations
+			]
+		])
+
+	def signature(self) -> str:
+		fp_str = ''.join([
+			repr(self.min_value),
+			repr(self.max_value),
+			repr(self.total_digits),
+			repr(self.pattern),
+			(
+				repr(vars(self.enumerations)) if
+				isinstance(self.enumerations, (type, object))
+				else repr(self.enumerations)
+			)
+		]).encode()
+		digest = hashlib.shake_128(fp_str).digest(10)
+		keygen = UIDGenerator(mode="key")
+		return keygen.generate(digest)
+
 
 class CommonSpecTypeB(BaseElementSpec, CommonValidators, StringValidators):
 	def __init__(self, element_type: t.Any, **kwargs) -> None:
@@ -69,3 +102,31 @@ class CommonSpecTypeB(BaseElementSpec, CommonValidators, StringValidators):
 
 	def init_deserialized_data(self, data: t.List[t.Any]) -> t.List[t.Any]:
 		return [self.process(obj) for obj in data]
+
+	def has_constraints(self) -> bool:
+		return self.whitespace != 'preserve' or any(
+			attr is not None for attr in [
+				self.length,
+				self.min_length,
+				self.max_length,
+				self.pattern,
+				self.enumerations
+			]
+		)
+
+	def signature(self) -> str:
+		fp_str = ''.join([
+			repr(self.length),
+			repr(self.min_length),
+			repr(self.max_length),
+			repr(self.whitespace),
+			repr(self.pattern),
+			(
+				repr(vars(self.enumerations)) if
+				hasattr(self.enumerations, "__dict__")
+				else repr(self.enumerations)
+			)
+		]).encode()
+		digest = hashlib.shake_128(fp_str).digest(10)
+		keygen = UIDGenerator(mode="key")
+		return keygen.generate(digest)

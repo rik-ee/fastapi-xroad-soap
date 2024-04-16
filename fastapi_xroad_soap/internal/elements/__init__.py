@@ -8,6 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from .common import CommonSpecTypeA, CommonSpecTypeB
 from .boolean import BooleanSpec, Boolean
 from .date import DateSpec, Date
 from .datetime import DateTimeSpec, DateTime
@@ -27,6 +28,7 @@ from .swaref import (
 
 
 __all__ = [
+	"CommonSpecTypeA", "CommonSpecTypeB",
 	"BooleanSpec", "Boolean",
 	"DateSpec", "Date",
 	"DateTimeSpec", "DateTime",
