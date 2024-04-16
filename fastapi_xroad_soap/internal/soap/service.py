@@ -111,7 +111,8 @@ class SoapService(FastAPI):
 			raise f.MissingActionFault()
 		elif name in valid_names:
 			return self._actions[name]
-		fragment: str = name.split('#')[-1]
+		sep = '#' if '#' in name else '/'
+		fragment: str = name.split(sep)[-1]
 		for vn in valid_names:
 			if vn == fragment:
 				return self._actions[name]
