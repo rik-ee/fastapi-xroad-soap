@@ -10,9 +10,12 @@
 #
 import re
 import typing as t
-from dataclasses import dataclass
-from pydantic import ValidationError
 from fastapi import Response
+from pydantic import (
+	BaseModel,
+	ValidationError,
+	field_validator
+)
 from ..base import MessageBody
 from ..storage import GlobalWeakStorage
 from ..constants import HEADER_NSMAP
@@ -32,8 +35,7 @@ from . import faults as f
 __all__ = ["SoapAction"]
 
 
-@dataclass(frozen=True)
-class SoapAction:
+class SoapAction(BaseModel, arbitrary_types_allowed=True):
 	name: str
 	handler: t.Callable[..., t.Optional[MessageBody]]
 	description: t.Optional[str]
@@ -43,6 +45,18 @@ class SoapAction:
 	header_index: t.Optional[int]
 	return_type: t.Optional[t.Type[MessageBody]]
 	storage: GlobalWeakStorage
+
+	# noinspection PyNestedDecorators
+	@field_validator("name")
+	@classmethod
+	def validate_name(cls, value: t.Any) -> str:
+		vl = len(value)
+		if vl < 5 or vl > 30:
+			raise ValueError(
+				f"Invalid SOAP action name length {vl} chars for "
+				f"name '{value}'. Length must be >= 5 and <= 30."
+			)
+		return value
 
 	def arguments_from(
 			self,
