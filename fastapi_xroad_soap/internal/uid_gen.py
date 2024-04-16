@@ -57,8 +57,8 @@ class UIDGenerator:
 
 	@staticmethod
 	def _compute_key_token(from_bytes: bytes = None) -> str:
-		tkn_b32hex = base64.b32hexencode(from_bytes).decode()
+		token = base64.b32encode(from_bytes).decode()
 		return '-'.join([
-			tkn_b32hex[i:i + 4] for i in
-			range(0, len(tkn_b32hex), 4)
+			token[i:i + 4] for i in
+			range(0, len(token), 4)
 		])

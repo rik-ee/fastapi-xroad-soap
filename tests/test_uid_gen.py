@@ -27,21 +27,32 @@ __all__ = [
 
 
 def test_cid_token_generation():
+	def validate(_token: str):
+		assert _token.startswith("cid:")
+		assert len(_token) - 4 == 20
+		assert _token.split(':')[-1].isalnum()
+
 	cid = UIDGenerator(mode="cid")
-	token = cid.generate()
-	assert token.startswith("cid:")
-	assert len(token) - 4 == 20
+	validate(cid.generate())
+
+	digest = hashlib.shake_128().digest(10)
+	validate(cid.generate(digest))
 
 
 def test_key_token_generation():
+	def validate(_token: str):
+		assert _token.count('-') == 3
+		parts = _token.split('-')
+		assert len(parts) == 4
+		for part in parts:
+			assert len(part) == 4
+			assert part.isalnum()
+
 	key = UIDGenerator(mode="key")
-	token = key.generate()
-	assert token.count('-') == 3
-	parts = token.split('-')
-	assert len(parts) == 4
-	for part in parts:
-		assert len(part) == 4
-		assert part.isalnum()
+	validate(key.generate())
+
+	digest = hashlib.shake_128().digest(10)
+	validate(key.generate(digest))
 
 
 def test_token_uniqueness():
