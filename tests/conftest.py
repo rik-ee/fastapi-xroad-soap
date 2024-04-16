@@ -57,6 +57,12 @@ class CustomModelSpec(BaseElementSpec):
 			**kwargs
 		)
 
+	def has_constraints(self) -> bool:
+		return False
+
+	def signature(self) -> bytes:
+		return b''
+
 	def init_instantiated_data(self, data: t.List) -> t.List:
 		if self.raise_error_on_instantiation:
 			raise ValueError("init_instantiated_data_value_error")

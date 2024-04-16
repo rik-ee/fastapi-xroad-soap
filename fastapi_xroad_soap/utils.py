@@ -9,7 +9,14 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 from .internal.file_size import FileSize
-from .internal.storage import ExportableGlobalWeakStorage as GlobalWeakStorage
+from .internal.uid_gen import UIDGenerator
+from .internal.storage import (
+	ExportableGWS as GlobalWeakStorage
+)
 
 
-__all__ = ["FileSize", "GlobalWeakStorage"]
+__all__ = [
+	"FileSize",
+	"GlobalWeakStorage",
+	"UIDGenerator"
+]

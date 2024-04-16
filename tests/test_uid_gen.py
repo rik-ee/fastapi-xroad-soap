@@ -9,6 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import pytest
+import hashlib
 import typing as t
 from unittest.mock import patch
 from fastapi_xroad_soap.internal.uid_gen import UIDGenerator
@@ -20,8 +21,8 @@ __all__ = [
 	"test_token_uniqueness",
 	"test_cid_length_increase",
 	"test_key_length_increase",
-	"test_cid_out_of_bounds_collisions",
-	"test_key_out_of_bounds_collisions"
+	"test_out_of_bounds_collisions",
+	"test_deterministic_generation"
 ]
 
 
@@ -52,19 +53,19 @@ def test_token_uniqueness():
 
 def test_cid_length_increase():
 	cid = UIDGenerator(mode="cid")
-	for _ in range(6):
-		tkn_len = cid._token_len + 4
+	for _ in range(5):
+		tkn_len = cid._token_len * 2 + 4
 		assert len(cid.generate()) == tkn_len
-		cid._token_len += 2
-	cid._token_len += 2
+		cid._token_len += 1
+	cid._token_len += 1
 	with pytest.raises(RuntimeError):
 		_ = cid.generate()
 
 
 def test_key_length_increase():
 	key = UIDGenerator(mode="key")
-	for i in range(2, 3):
-		tkn_len = key._token_len - 1 + (i * 5)
+	for _ in range(2):
+		tkn_len = key._token_len * 2 - 1
 		assert len(key.generate()) == tkn_len
 		key._token_len += 5
 	key._token_len += 5
@@ -72,25 +73,25 @@ def test_key_length_increase():
 		_ = key.generate()
 
 
-def test_cid_out_of_bounds_collisions():
-	cid = UIDGenerator(mode="cid")
-	target = 'fastapi_xroad_soap.internal.uid_gen.secrets.token_hex'
-	predef_token = f"cid:{'x' * 20}"
+def test_out_of_bounds_collisions():
+	for mode in ["cid", "key"]:
+		gen = UIDGenerator(mode=t.cast(t.Literal, mode))
+		target = 'fastapi_xroad_soap.internal.uid_gen.secrets.token_bytes'
+		predef_token = b'\x8eK\x1fO\xc2\xa0\xd3\xecP\xd2'
 
-	with patch(target=target, return_value=predef_token):
-		_ = cid.generate()
-		with pytest.raises(RuntimeError):
-			_ = cid.generate()
-	assert cid._token_len > 30
+		with patch(target=target, return_value=predef_token):
+			_ = gen.generate()
+			with pytest.raises(RuntimeError):
+				_ = gen.generate()
+		assert gen._token_len > 15
 
 
-def test_key_out_of_bounds_collisions():
-	key = UIDGenerator(mode="key")
-	target = 'fastapi_xroad_soap.internal.uid_gen.secrets.token_bytes'
-	predef_token = b'\x8eK\x1fO\xc2\xa0\xd3\xecP\xd2'
-
-	with patch(target=target, return_value=predef_token):
-		_ = key.generate()
-		with pytest.raises(RuntimeError):
-			_ = key.generate()
-	assert key._token_len > 15
+def test_deterministic_generation():
+	for mode in ["cid", "key"]:
+		gen = UIDGenerator(mode=t.cast(t.Literal, mode))
+		digest = hashlib.sha512().digest()
+		ids = []
+		for i in range(10):
+			uid = gen.generate(digest)
+			ids.append(uid)
+			assert ids.count(uid) == i + 1
