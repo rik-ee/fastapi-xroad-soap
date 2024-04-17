@@ -22,7 +22,7 @@ class NetResSpec(StringTypeSpec):
 		super().__init__(element_type=AnyUrl, **kwargs)
 
 	@property
-	def _default_wsdl_type_name(self) -> str:
+	def default_wsdl_type_name(self) -> str:
 		return "anyURI"
 
 

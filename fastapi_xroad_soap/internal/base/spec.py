@@ -64,6 +64,10 @@ class BaseElementSpec(ABC):
 	@abstractmethod
 	def wsdl_type_name(self) -> str: ...
 
+	@property
+	def default_wsdl_type_name(self) -> str:
+		raise NotImplementedError
+
 	def _compute_wsdl_type_name(self, default: str, data: t.List) -> str:
 		if not self.has_constraints:
 			return default

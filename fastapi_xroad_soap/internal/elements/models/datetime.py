@@ -22,7 +22,7 @@ class DateTimeSpec(NumericTypeSpec):
 		super().__init__(element_type=datetime, **kwargs)
 
 	@property
-	def _default_wsdl_type_name(self) -> str:
+	def default_wsdl_type_name(self) -> str:
 		return "dateTime"
 
 

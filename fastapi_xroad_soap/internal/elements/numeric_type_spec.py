@@ -8,6 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import functools
 import typing as t
 from abc import abstractmethod
 from ..base import BaseElementSpec
@@ -43,6 +44,7 @@ class NumericTypeSpec(BaseElementSpec, CommonValidators, NumberValidators):
 		return [self.process(obj) for obj in data]
 
 	@property
+	@functools.lru_cache(maxsize=1)
 	def has_constraints(self) -> bool:
 		return any([
 			attr is not None for attr in [
@@ -55,9 +57,10 @@ class NumericTypeSpec(BaseElementSpec, CommonValidators, NumberValidators):
 		])
 
 	@property
+	@functools.lru_cache(maxsize=1)
 	def wsdl_type_name(self) -> str:
 		return self._compute_wsdl_type_name(
-			default=self._default_wsdl_type_name,
+			default=self.default_wsdl_type_name,
 			data=[
 				self.min_value,
 				self.max_value,
@@ -69,4 +72,4 @@ class NumericTypeSpec(BaseElementSpec, CommonValidators, NumberValidators):
 
 	@property
 	@abstractmethod
-	def _default_wsdl_type_name(self) -> str: ...
+	def default_wsdl_type_name(self) -> str: ...
