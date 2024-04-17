@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from ..base import BaseElementSpec
+from internal.base import BaseElementSpec
 
 
 __all__ = ["BooleanSpec", "Boolean"]
@@ -24,6 +24,14 @@ class BooleanSpec(BaseElementSpec):
 
 	def init_deserialized_data(self, data: t.List[bool]) -> t.List[bool]:
 		return data
+
+	@property
+	def has_constraints(self) -> bool:
+		return False
+
+	@property
+	def wsdl_type_name(self) -> str:
+		return "boolean"
 
 
 class Boolean:

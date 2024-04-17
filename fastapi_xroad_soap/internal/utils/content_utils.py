@@ -8,6 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import re
 import chardet
 import mimetypes
 import typing as t
@@ -18,7 +19,8 @@ __all__ = [
 	"split_on_find",
 	"guess_mime_type",
 	"detect_decode",
-	"convert_to_utf8"
+	"convert_to_utf8",
+	"remove_memory_addresses"
 ]
 
 
@@ -59,3 +61,9 @@ def convert_to_utf8(string: bytes) -> bytes:
 	if encoding not in [None, 'utf-8']:
 		string = decoded.encode('utf-8')
 	return string
+
+
+def remove_memory_addresses(string: bytes) -> bytes:
+	pattern = r"0x[0-9A-Fa-f]+"
+	cleaned_text = re.sub(pattern, '', string.decode())
+	return cleaned_text.encode()

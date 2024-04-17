@@ -20,6 +20,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from ..multipart import MultipartError
 from ..storage import GlobalWeakStorage
 from .. import utils, wsdl
+from .validators import validate_annotations
 from .action import SoapAction
 from . import faults as f
 
@@ -29,6 +30,7 @@ __all__ = ["SoapService"]
 
 SoapMiddleware: t.TypeAlias = BaseHTTPMiddleware
 FuncOrCoro = t.Union[t.Callable[..., t.Any], t.Awaitable[t.Any]]
+ActionType = t.Callable[[DecoratedCallable], DecoratedCallable]
 
 
 class SoapService(FastAPI):
@@ -80,16 +82,9 @@ class SoapService(FastAPI):
 			elif http_request.method != "POST":
 				raise f.InvalidMethodFault(http_request.method)
 
-			action_name = http_request.headers.get("soapaction", '').strip('"')
-			if not action_name or action_name not in self._actions.keys():
-				raise f.InvalidActionFault(action_name)
-
-			http_body = await http_request.body()
-			content_type = http_request.headers.get("content-type")
-
-			action = self._actions[action_name]
-			envelope = action.parse(http_body, content_type)
-			args = action.arguments_from(envelope, action_name)
+			action = self._determine_action(http_request)
+			envelope = await action.parse(http_request)
+			args = action.arguments_from(envelope)
 			ret = await self._await_or_call(action.handler, *args)
 			return action.response_from(ret, envelope.header)
 
@@ -111,6 +106,20 @@ class SoapService(FastAPI):
 			)
 		return resp
 
+	def _determine_action(self, http_request: Request) -> SoapAction:
+		name = http_request.headers.get("soapaction", '').strip('"')
+		valid_names = self._actions.keys()
+		if not name:
+			raise f.MissingActionFault()
+		elif name in valid_names:
+			return self._actions[name]
+		sep = '#' if '#' in name else '/'
+		fragment: str = name.split(sep)[-1]
+		for vn in valid_names:
+			if vn == fragment:
+				return self._actions[name]
+		raise f.InvalidActionFault(name)
+
 	@staticmethod
 	async def _await_or_call(func: FuncOrCoro, *args, **kwargs) -> t.Any:
 		if inspect.iscoroutinefunction(func):
@@ -120,7 +129,7 @@ class SoapService(FastAPI):
 	def add_action(self, name: str, handler: t.Callable[..., t.Any], description: t.Optional[str] = None) -> None:
 		if name in self._actions.keys():
 			raise ValueError(f"Cannot add duplicate {name} SOAP action.")
-		anno = utils.validate_annotations(name, handler)
+		anno = validate_annotations(name, handler)
 		pos = utils.extract_parameter_positions(anno)
 		self._actions[name] = SoapAction(
 			name=name,
@@ -134,7 +143,7 @@ class SoapService(FastAPI):
 			storage=self._storage
 		)
 
-	def action(self, name: str, description: t.Optional[str] = None) -> t.Callable[[DecoratedCallable], DecoratedCallable]:
+	def action(self, name: str, description: t.Optional[str] = None) -> ActionType:
 		def closure(func: DecoratedCallable) -> DecoratedCallable:
 			self.add_action(name, func, description)
 			return func

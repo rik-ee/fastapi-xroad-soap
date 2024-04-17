@@ -22,6 +22,7 @@ __all__ = [
 	"ServerFault",
 	"InvalidMethodFault",
 	"InvalidActionFault",
+	"MissingActionFault",
 	"MissingBodyFault",
 	"MissingHeaderFault",
 	"MissingCIDFault",
@@ -82,6 +83,12 @@ class InvalidMethodFault(SoapFault):
 class InvalidActionFault(SoapFault):
 	def __init__(self, action: str) -> None:
 		msg = f"Service does not support SOAP action: {action}"
+		super().__init__(string=msg)
+
+
+class MissingActionFault(SoapFault):
+	def __init__(self):
+		msg = "SOAP action HTTP header is missing."
 		super().__init__(string=msg)
 
 

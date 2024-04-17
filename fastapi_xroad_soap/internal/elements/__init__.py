@@ -8,37 +8,11 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .boolean import BooleanSpec, Boolean
-from .date import DateSpec, Date
-from .datetime import DateTimeSpec, DateTime
-from .time import TimeSpec, Time
-from .float import FloatSpec, Float
-from .integer import IntegerSpec, Integer
-from .string import StringSpec, String
-from .netres import NetResSpec, NetRes
-from .swaref import (
-	SwaRefFile,
-	SwaRefInternal,
-	SwaRefSpec,
-	SwaRefElement,
-	SwaRef,
-	SwaRefUtils
-)
+from .numeric_type_spec import NumericTypeSpec
+from .string_type_spec import StringTypeSpec
 
 
 __all__ = [
-	"BooleanSpec", "Boolean",
-	"DateSpec", "Date",
-	"DateTimeSpec", "DateTime",
-	"TimeSpec", "Time",
-	"FloatSpec", "Float",
-	"IntegerSpec", "Integer",
-	"StringSpec", "String",
-	"NetResSpec", "NetRes",
-	"SwaRefFile",
-	"SwaRefInternal",
-	"SwaRefSpec",
-	"SwaRefElement",
-	"SwaRef",
-	"SwaRefUtils"
+	"NumericTypeSpec",
+	"StringTypeSpec"
 ]

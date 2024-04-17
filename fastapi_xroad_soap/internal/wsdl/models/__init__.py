@@ -26,9 +26,6 @@ from .conditions import (
 	RegexPattern,
 	MinInclusive,
 	MaxInclusive,
-	MinExclusive,
-	MaxExclusive,
-	FractionDigits,
 	TotalDigits,
 	Length,
 	MinLength,
@@ -50,16 +47,8 @@ from .port_type import (
 	WSDLPortType,
 )
 from .restrictions import (
-	StringRestriction,
-	IntegerRestriction,
-	DecimalRestriction,
-	FloatRestriction,
-	DoubleRestriction,
-	DateRestriction,
-	TimeRestriction,
-	DateTimeRestriction,
-	DurationRestriction,
-	AnyURIRestriction
+	NumericTypeRestriction,
+	StringTypeRestriction
 )
 from .schema import (
 	SimpleType,
@@ -97,9 +86,6 @@ __all__ = [
 	"RegexPattern",
 	"MinInclusive",
 	"MaxInclusive",
-	"MinExclusive",
-	"MaxExclusive",
-	"FractionDigits",
 	"TotalDigits",
 	"Length",
 	"MinLength",
@@ -121,16 +107,8 @@ __all__ = [
 	"WSDLPortType",
 
 	# restrictions.py
-	"StringRestriction",
-	"IntegerRestriction",
-	"DecimalRestriction",
-	"FloatRestriction",
-	"DoubleRestriction",
-	"DateRestriction",
-	"TimeRestriction",
-	"DateTimeRestriction",
-	"DurationRestriction",
-	"AnyURIRestriction",
+	"NumericTypeRestriction",
+	"StringTypeRestriction",
 
 	# schema.py
 	"SimpleType",

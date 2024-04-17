@@ -10,19 +10,23 @@
 #
 import typing as t
 from enum import Enum
-from .common import CommonSpecTypeA
-from .validators import NumberValidators
+from pydantic import AnyUrl
+from ..string_type_spec import StringTypeSpec
 
 
-__all__ = ["IntegerSpec", "Integer"]
+__all__ = ["NetResSpec", "NetRes"]
 
 
-class IntegerSpec(CommonSpecTypeA, NumberValidators):
+class NetResSpec(StringTypeSpec):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(element_type=int, **kwargs)
+		super().__init__(element_type=AnyUrl, **kwargs)
+
+	@property
+	def default_wsdl_type_name(self) -> str:
+		return "anyURI"
 
 
-class Integer:
+class NetRes:
 	def __new__(
 			cls,
 			*,
@@ -31,11 +35,11 @@ class Integer:
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			min_value: t.Optional[int] = None,
-			max_value: t.Optional[int] = None,
-			total_digits: t.Optional[int] = None,
+			length: t.Optional[int] = None,
+			min_length: t.Optional[int] = None,
+			max_length: t.Optional[int] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None
-	) -> t.Union[int, t.List[int]]:
+	) -> t.Union[AnyUrl, t.List[AnyUrl]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(int, IntegerSpec(**kwargs))
+		return t.cast(AnyUrl, NetResSpec(**kwargs))

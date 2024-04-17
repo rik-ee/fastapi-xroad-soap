@@ -18,7 +18,7 @@ from weakref import WeakValueDictionary
 
 __all__ = [
 	"GlobalWeakStorage",
-	"ExportableGlobalWeakStorage"
+	"ExportableGWS"
 ]
 
 
@@ -138,4 +138,4 @@ class GlobalWeakStorage:
 		return self._objects.get(obj_id, None)
 
 
-ExportableGlobalWeakStorage = type('GlobalWeakStorage', (GlobalWeakStorage,), {})
+ExportableGWS = type('GlobalWeakStorage', (GlobalWeakStorage,), {})

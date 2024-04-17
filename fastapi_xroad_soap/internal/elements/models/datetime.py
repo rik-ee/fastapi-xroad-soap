@@ -11,15 +11,19 @@
 import typing as t
 from enum import Enum
 from datetime import datetime
-from .common import CommonSpecTypeA
+from ..numeric_type_spec import NumericTypeSpec
 
 
 __all__ = ["DateTimeSpec", "DateTime"]
 
 
-class DateTimeSpec(CommonSpecTypeA):
+class DateTimeSpec(NumericTypeSpec):
 	def __init__(self, **kwargs) -> None:
 		super().__init__(element_type=datetime, **kwargs)
+
+	@property
+	def default_wsdl_type_name(self) -> str:
+		return "dateTime"
 
 
 class DateTime:

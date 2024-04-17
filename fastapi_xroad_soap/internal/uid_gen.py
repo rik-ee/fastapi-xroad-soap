@@ -20,24 +20,29 @@ class UIDGenerator:
 	def __init__(self, mode: t.Literal["cid", "key"]):
 		self.tokens = list()
 		self._mode = mode
-		if mode == "cid":
-			self._max_len = 30
-			self._token_len = 20
-			self._increment = 2
-			self._compute_token = self._compute_cid_token
-		else:
-			self._max_len = 15
-			self._token_len = 10
-			self._increment = 5
-			self._compute_token = self._compute_key_token
+		self._max_len = 15
+		self._token_len = 10
+		self._increment = 1 if mode == "cid" else 5
+		self._compute_token = (
+			self._compute_cid_token
+			if mode == "cid" else
+			self._compute_key_token
+		)
 
-	def generate(self) -> str:
+	def generate(self, from_bytes: bytes = None) -> str:
 		exists_counter = 0
 		while True:
 			if self._token_len > self._max_len:
 				raise RuntimeError("UIDGenerator out of bounds")
-			token = self._compute_token()
-			if token not in self.tokens:
+
+			token_bytes = from_bytes
+			if not isinstance(from_bytes, bytes):
+				token_bytes = secrets.token_bytes(self._token_len)
+			token = self._compute_token(token_bytes)
+
+			if isinstance(from_bytes, bytes):
+				return token
+			elif token not in self.tokens:
 				self.tokens.append(token)
 				return token
 			elif exists_counter < 10:
@@ -46,16 +51,14 @@ class UIDGenerator:
 				self._token_len += self._increment
 				exists_counter = 0
 
-	def _compute_cid_token(self) -> str:
-		size = self._token_len // 2
-		token = secrets.token_hex(size)
-		return f"cid:{token}"
+	@staticmethod
+	def _compute_cid_token(from_bytes: bytes = None) -> str:
+		return f"cid:{from_bytes.hex()}"
 
-	def _compute_key_token(self) -> str:
-		tkn_bytes = secrets.token_bytes(self._token_len)
-		tkn_b32hex = base64.b32hexencode(tkn_bytes).decode()
-		tkn_len = len(tkn_b32hex)
+	@staticmethod
+	def _compute_key_token(from_bytes: bytes = None) -> str:
+		token = base64.b32encode(from_bytes).decode()
 		return '-'.join([
-			tkn_b32hex[i:i + 4]
-			for i in range(0, tkn_len, 4)
+			token[i:i + 4] for i in
+			range(0, len(token), 4)
 		])

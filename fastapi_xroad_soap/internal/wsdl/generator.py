@@ -11,12 +11,8 @@
 import typing as t
 import inflection
 from ..soap.action import SoapAction
-from ..elements import SwaRefUtils
-from ..base import (
-	BaseElementSpec,
-	CompositeMeta,
-	MessageBody
-)
+from ..elements.models import SwaRefUtils
+from .helpers import *
 from .models import *
 
 
@@ -33,8 +29,7 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 				includes=[],
 				imports=_generate_imports(actions),
 				elements=_generate_elements(actions),
-				complex_types=_generate_complex_types(actions),
-				simple_types=_generate_simple_types(actions)
+				**_generate_types(actions)
 			)
 		),
 		messages=_generate_messages(actions),
@@ -49,13 +44,16 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 
 
 def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[Import]:
+	has_specs = SwaRefUtils.contains_swa_ref_specs
 	xro_xsd = "http://x-road.eu/xsd/xroad.xsd"
-	xro_import = Import(namespace=xro_xsd, schema_loc=xro_xsd)
-	imports = [xro_import]
+	imports = [Import(
+		namespace=xro_xsd,
+		schema_loc=xro_xsd
+	)]
 	for action in actions.values():
 		if (
 			action.body_type is not None
-			and SwaRefUtils.contains_swa_ref_specs(action.body_type)
+			and has_specs(action.body_type)
 		):
 			wsi = "http://ws-i.org/profiles/basic/1.1/"
 			imports.append(Import(
@@ -68,18 +66,12 @@ def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[Import]:
 def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[Element]:
 	elements = []
 	for name, action in actions.items():
-		if action.body_type is not None:
-			cls_name = action.body_type_name
-			elements.append(Element(
-				name=cls_name,
-				type=f"tns:{cls_name}"
-			))
-		if action.return_type is not None:
-			cls_name = action.return_type_name
-			elements.append(Element(
-				name=cls_name,
-				type=f"tns:{cls_name}"
-			))
+		for model in [action.body_type, action.return_type]:
+			if model is not None:
+				elements.append(Element(
+					name=model.__name__,
+					type=f"tns:{model.__name__}"
+				))
 	return [
 		*elements,
 		Element(
@@ -89,74 +81,42 @@ def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[Element]:
 	]
 
 
-def get_complex_types(composite_type: t.Type[MessageBody]) -> t.List[t.Type[MessageBody]]:
-	complex_types = [composite_type]
-	a8ns = getattr(composite_type, '__annotations__', {})
-	for key, value in a8ns.items():
-		if type(value) is CompositeMeta:
-			_ct = get_complex_types(value)
-			complex_types.extend(_ct)
-	return complex_types
-
-
-def get_simple_types(complex_type: t.Type[MessageBody]) -> t.List[BaseElementSpec]:
-	simple_types = []
-	for k, v in complex_type.model_specs().items():
-		print(k, isinstance(v, BaseElementSpec))
-
-
-def _generate_complex_types(actions: t.Dict[str, SoapAction]) -> t.List[ComplexType]:
-	complex_types = []
-	for action in actions.values():
-		if action.body_type is not None:
-			_ct = get_complex_types(action.body_type)
-			complex_types.extend(_ct)
-		if action.return_type is not None:
-			_ct = get_complex_types(action.return_type)
-			complex_types.extend(_ct)
-	for item in complex_types:
-		get_simple_types(item)
-
-	return [
-		ComplexType(
-			name="FaultResponse",
-			sequence=Sequence(
-				elements=[
-					Element(name="faultcode", type="string"),
-					Element(name="faultstring", type="string"),
-					Element(name="faultactor", type="string"),
-					Element(name="detail", type="tns:FaultResponseDetail")
-				]
+def _generate_types(actions: t.Dict[str, SoapAction]) -> t.Dict:
+	complex_types, simple_types = gather_all_types(actions)
+	return dict(
+		complex_types=[
+			*complex_types,
+			ComplexType(
+				name="FaultResponse",
+				sequence=Sequence(
+					elements=[
+						Element(name="faultcode", type="string"),
+						Element(name="faultstring", type="string"),
+						Element(name="faultactor", type="string"),
+						Element(name="detail", type="tns:FaultResponseDetail")
+					]
+				)
+			),
+			ComplexType(
+				name="FaultResponseDetail",
+				sequence=Sequence(
+					elements=[AnyXML()]
+				)
 			)
-		),
-		ComplexType(
-			name="FaultResponseDetail",
-			sequence=Sequence(
-				elements=[AnyXML()]
-			)
-		)
-	]
-
-
-def _generate_simple_types(actions: t.Dict[str, SoapAction]) -> t.List[SimpleType]:
-	return []
+		],
+		simple_types=simple_types
+	)
 
 
 def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[WSDLMessage]:
 	messages = []
 	for name, action in actions.items():
-		if action.body_type is not None:
-			cls_name = action.body_type_name
-			messages.append(WSDLMessage(
-				name=cls_name,
-				parts=[WSDLPart(element=f"tns:{cls_name}")]
-			))
-		if action.return_type is not None:
-			cls_name = action.return_type_name
-			messages.append(WSDLMessage(
-				name=cls_name,
-				parts=[WSDLPart(element=f"tns:{cls_name}")]
-			))
+		for model in [action.body_type, action.return_type]:
+			if model is not None:
+				messages.append(WSDLMessage(
+					name=model.__name__,
+					parts=[WSDLPart(element=f"tns:{model.__name__}")]
+				))
 	return [
 		*messages,
 		WSDLMessage(
@@ -179,28 +139,28 @@ def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[WSDLMessage]:
 def _generate_port_type(actions: t.Dict[str, SoapAction]) -> WSDLPortType:
 	ops = []
 	for name, action in actions.items():
-		_docs, _input, _output = {}, {}, {}
-		if action.description is not None:
-			_docs = {"documentation": WSDLDocumentation(
-				title=inflection.titleize(name),
-				notes=action.description
-			)}
-		if action.body_type is not None:
-			cls_name = action.body_type_name
-			_input = {"input": WSDLInputPort(
-				message=f"tns:{cls_name}",
-				name=cls_name
-			)}
-		if action.return_type is not None:
-			cls_name = action.return_type_name
-			_output = {"output": WSDLOutputPort(
-				message=f"tns:{cls_name}",
-				name=cls_name
-			)}
 		ops.append(WSDLOperationPort(
-			**_docs,
-			**_input,
-			**_output,
+			documentation=(
+				None if action.description is None else
+				WSDLDocumentation(
+					title=inflection.titleize(name),
+					notes=action.description
+				)
+			),
+			input=(
+				None if action.body_type is None else
+				WSDLInputPort(
+					message=f"tns:{action.body_type.__name__}",
+					name=action.body_type.__name__
+				)
+			),
+			output=(
+				None if action.return_type is None else
+				WSDLOutputPort(
+					message=f"tns:{action.return_type.__name__}",
+					name=action.return_type.__name__
+				)
+			),
 			name=name
 		))
 	return WSDLPortType(operations=ops)

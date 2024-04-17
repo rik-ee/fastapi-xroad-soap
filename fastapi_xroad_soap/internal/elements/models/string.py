@@ -10,18 +10,22 @@
 #
 import typing as t
 from enum import Enum
-from .common import CommonSpecTypeA
+from ..string_type_spec import StringTypeSpec
 
 
-__all__ = ["FloatSpec", "Float"]
+__all__ = ["StringSpec", "String"]
 
 
-class FloatSpec(CommonSpecTypeA):
+class StringSpec(StringTypeSpec):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(element_type=float, **kwargs)
+		super().__init__(element_type=str, **kwargs)
+
+	@property
+	def default_wsdl_type_name(self) -> str:
+		return "string"
 
 
-class Float:
+class String:
 	def __new__(
 			cls,
 			*,
@@ -30,10 +34,12 @@ class Float:
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			min_value: t.Optional[float] = None,
-			max_value: t.Optional[float] = None,
+			length: t.Optional[int] = None,
+			min_length: t.Optional[int] = None,
+			max_length: t.Optional[int] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
-			pattern: t.Optional[str] = None
-	) -> t.Union[float, t.List[float]]:
+			pattern: t.Optional[str] = None,
+			whitespace: t.Literal["preserve", "replace", "collapse"] = "preserve"
+	) -> t.Union[str, t.List[str]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(float, FloatSpec(**kwargs))
+		return t.cast(str, StringSpec(**kwargs))

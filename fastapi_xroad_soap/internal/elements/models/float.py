@@ -10,19 +10,22 @@
 #
 import typing as t
 from enum import Enum
-from pydantic import AnyUrl
-from .common import CommonSpecTypeB
+from ..numeric_type_spec import NumericTypeSpec
 
 
-__all__ = ["NetResSpec", "NetRes"]
+__all__ = ["FloatSpec", "Float"]
 
 
-class NetResSpec(CommonSpecTypeB):
+class FloatSpec(NumericTypeSpec):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(element_type=AnyUrl, **kwargs)
+		super().__init__(element_type=float, **kwargs)
+
+	@property
+	def default_wsdl_type_name(self) -> str:
+		return "float"
 
 
-class NetRes:
+class Float:
 	def __new__(
 			cls,
 			*,
@@ -31,11 +34,10 @@ class NetRes:
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			length: t.Optional[int] = None,
-			min_length: t.Optional[int] = None,
-			max_length: t.Optional[int] = None,
+			min_value: t.Optional[float] = None,
+			max_value: t.Optional[float] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None
-	) -> t.Union[AnyUrl, t.List[AnyUrl]]:
+	) -> t.Union[float, t.List[float]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(AnyUrl, NetResSpec(**kwargs))
+		return t.cast(float, FloatSpec(**kwargs))

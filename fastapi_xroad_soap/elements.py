@@ -8,27 +8,27 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .internal.elements import (
+from .internal.elements.models import (
 	Boolean,
 	Date,
-	Time,
 	DateTime,
 	Float,
 	Integer,
-	String,
 	NetRes,
-	SwaRef
+	String,
+	SwaRef,
+	Time
 )
 
 
 __all__ = [
 	"Boolean",
 	"Date",
-	"Time",
 	"DateTime",
 	"Float",
 	"Integer",
-	"String",
 	"NetRes",
-	"SwaRef"
+	"String",
+	"SwaRef",
+	"Time"
 ]

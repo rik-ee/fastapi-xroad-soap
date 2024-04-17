@@ -10,9 +10,12 @@
 #
 import re
 import typing as t
-from dataclasses import dataclass
-from pydantic import ValidationError
-from fastapi import Response
+from fastapi import Request, Response
+from pydantic import (
+	BaseModel,
+	ValidationError,
+	field_validator
+)
 from ..base import MessageBody
 from ..storage import GlobalWeakStorage
 from ..constants import HEADER_NSMAP
@@ -32,8 +35,11 @@ from . import faults as f
 __all__ = ["SoapAction"]
 
 
-@dataclass(frozen=True)
-class SoapAction:
+_ArgsFrom = t.List[t.Union[MessageBody, XroadHeader]]
+_RespFrom = t.Union[Response, SoapResponse]
+
+
+class SoapAction(BaseModel, arbitrary_types_allowed=True):
 	name: str
 	handler: t.Callable[..., t.Optional[MessageBody]]
 	description: t.Optional[str]
@@ -44,27 +50,31 @@ class SoapAction:
 	return_type: t.Optional[t.Type[MessageBody]]
 	storage: GlobalWeakStorage
 
-	def arguments_from(
-			self,
-			envelope: GenericEnvelope,
-			action_name: str
-	) -> t.List[t.Union[MessageBody, XroadHeader]]:
+	# noinspection PyNestedDecorators
+	@field_validator("name")
+	@classmethod
+	def validate_name(cls, value: t.Any) -> str:
+		vl = len(value)
+		if vl < 5 or vl > 30:
+			raise ValueError(
+				f"Invalid SOAP action name length {vl} chars for "
+				f"name '{value}'. Length must be >= 5 and <= 30."
+			)
+		return value
+
+	def arguments_from(self, envelope: GenericEnvelope) -> _ArgsFrom:
 		args = list()
 		if self.body_type is not None:
 			if envelope.body is None:
-				raise f.MissingBodyFault(action_name)
+				raise f.MissingBodyFault(self.name)
 			args.insert(self.body_index, envelope.body.content)
 		if self.header_type is not None:
 			if envelope.header is None:
-				raise f.MissingHeaderFault(action_name)
+				raise f.MissingHeaderFault(self.name)
 			args.insert(self.header_index, envelope.header)
 		return args
 
-	def response_from(
-			self,
-			ret_obj: t.Optional[MessageBody],
-			header: XroadHeader
-	) -> t.Union[Response, SoapResponse]:
+	def response_from(self, ret_obj: t.Optional[MessageBody], header: XroadHeader) -> _RespFrom:
 		has_return = self.return_type is not None
 		if not has_return and ret_obj is None:
 			return Response()
@@ -75,26 +85,30 @@ class SoapAction:
 			f"but received {ret_obj}"
 		)
 
-	def parse(self, http_body: bytes, content_type: t.Optional[str]) -> GenericEnvelope:
-		body_ct = content_type.split(';')[0]
-		if body_ct == "multipart/related":
+	async def parse(self, http_request: Request) -> GenericEnvelope:
+		content_type = http_request.headers.get("content-type")
+		body_type = content_type.split(';')[0]
+		http_body = await http_request.body()
+
+		if body_type in ["text/xml", "application/xml", "application/soap+xml"]:
+			return self.deserialize(http_body)
+		elif body_type in ["multipart/related", "multipart/mixed"]:
 			files: t.List[DecodedBodyPart] = list()
-			decoder1 = MultipartDecoder(http_body, content_type)
+			decoder = MultipartDecoder(http_body, content_type)
 			envelope = None
-			for index, part1 in enumerate(decoder1.parts):
+			for index, part in enumerate(decoder.parts):
 				if index == 0:
-					envelope = part1
-				elif part1.is_mixed_multipart:
-					content_type = part1.headers.get('content-type')
-					decoder2 = MultipartDecoder(part1.content, content_type)
-					for part2 in decoder2.parts:
-						files.append(part2)
+					envelope = part
+				elif part.is_mixed_multipart:
+					content_type = part.headers.get('content-type')
+					nested_decoder = MultipartDecoder(part.content, content_type)
+					for nested_part in nested_decoder.parts:
+						files.append(nested_part)
 				else:
-					files.append(part1)
+					files.append(part)
 			http_body = self.process_files(envelope.content, files)
-		elif body_ct not in ["text/xml", "application/xml"]:
-			raise f.ClientFault(f"Invalid content type: {body_ct}")
-		return self.deserialize(http_body)
+			return self.deserialize(http_body)
+		raise f.ClientFault(f"Invalid content type: {body_type}")
 
 	def process_files(self, xml_str: bytes, files: t.List[DecodedBodyPart]) -> bytes:
 		ids = [file.content_id for file in files]
@@ -151,19 +165,3 @@ class SoapAction:
 			if key not in HEADER_NSMAP:
 				nsmap[key] = value.strip('"')
 		return nsmap
-
-	@property
-	def body_type_name(self) -> t.Union[str, None]:
-		if self.body_type is not None:
-			cls_name = self.body_type.__name__
-			if self.name not in cls_name:
-				cls_name = self.name + cls_name
-			return cls_name
-
-	@property
-	def return_type_name(self) -> t.Union[str, None]:
-		if self.return_type is not None:
-			cls_name = self.return_type.__name__
-			if self.name not in cls_name:
-				cls_name = self.name + cls_name
-			return cls_name

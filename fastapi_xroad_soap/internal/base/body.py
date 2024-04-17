@@ -26,7 +26,13 @@ except ImportError:  # pragma: no cover
 	BaseElementSpec: t.TypeAlias = t.Any
 
 
-__all__ = ["MessageBody", "MessageBodyType"]
+__all__ = ["NestedModels", "MessageBody", "MessageBodyType"]
+
+
+NestedModels = t.List[t.Tuple[
+	t.Type["MessageBody"],
+	t.List[t.Type["MessageBody"]]
+]]
 
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
@@ -37,6 +43,17 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 		privates = getattr(cls, "__private_attributes__", {})
 		attr: t.Union[ModelPrivateAttr, None] = privates.get("_element_specs")
 		return attr.get_default() if attr is not None else dict()
+
+	@classmethod
+	def nested_models(cls) -> NestedModels:
+		models, children = [], []
+		a8ns = getattr(cls, '__annotations__', {})
+		for key, value in a8ns.items():
+			if type(value) is CompositeMeta:
+				models.extend(value.get_nested_models())
+				children.append(value)
+		models.append((cls, children))
+		return models
 
 	@staticmethod
 	def _validate_list(attr: str, data: t.List[MessageBody], spec: BaseElementSpec):
