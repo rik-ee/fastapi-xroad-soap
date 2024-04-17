@@ -21,8 +21,8 @@ __all__ = ["StringTypeSpec"]
 class StringTypeSpec(BaseElementSpec, CommonValidators, StringValidators):
 	def __init__(self, element_type: t.Any, **kwargs) -> None:
 		self.length = kwargs.get("length", None)
-		self.min_length = kwargs.get("min_length", None)
-		self.max_length = kwargs.get("max_length", None)
+		self.min_length = self.length or kwargs.get("min_length", None)
+		self.max_length = self.length or kwargs.get("max_length", None)
 		self.enumerations = kwargs.get("enumerations", None)
 		self.pattern = kwargs.get("pattern", None)
 		self.whitespace = (
