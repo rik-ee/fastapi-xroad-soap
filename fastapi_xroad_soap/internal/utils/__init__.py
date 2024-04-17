@@ -12,7 +12,8 @@ from .content_utils import (
 	split_on_find,
 	guess_mime_type,
 	detect_decode,
-	convert_to_utf8
+	convert_to_utf8,
+	remove_memory_addresses
 )
 from .path_utils import (
 	search_upwards,
@@ -22,7 +23,6 @@ from .path_utils import (
 )
 from .route_utils import (
 	get_annotations,
-	validate_annotations,
 	extract_parameter_positions
 )
 
@@ -31,11 +31,12 @@ __all__ = [
 	"split_on_find",
 	"guess_mime_type",
 	"detect_decode",
+	"convert_to_utf8",
+	"remove_memory_addresses",
 	"search_upwards",
 	"resolve_relpath",
 	"read_cached_file",
 	"read_cached_xml_file",
 	"get_annotations",
-	"validate_annotations",
 	"extract_parameter_positions"
 ]
