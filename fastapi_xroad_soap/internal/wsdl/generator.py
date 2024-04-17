@@ -12,19 +12,19 @@ import typing as t
 import inflection
 from ..soap.action import SoapAction
 from ..elements.models import SwaRefUtils
-from .helpers import *
-from .models import *
+from .helpers import gather_all_types
+from . import models as mod
 
 
 __all__ = ["generate"]
 
 
 def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
-	return WSDLDefinitions(
+	return mod.WSDLDefinitions(
 		target_ns=tns,
 		name=name,
-		types=WSDLTypes(
-			service_schema=Schema(
+		types=mod.WSDLTypes(
+			service_schema=mod.Schema(
 				target_ns=tns,
 				includes=[],
 				imports=_generate_imports(actions),
@@ -35,18 +35,18 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 		messages=_generate_messages(actions),
 		port_type=_generate_port_type(actions),
 		binding=_generate_binding(actions),
-		service=WSDLService(
-			port=WSDLPortBinding(
-				address=SOAPAddress()
+		service=mod.WSDLService(
+			port=mod.WSDLPortBinding(
+				address=mod.SOAPAddress()
 			)
 		)
 	).to_xml()
 
 
-def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[Import]:
+def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[mod.Import]:
 	has_specs = SwaRefUtils.contains_swa_ref_specs
 	xro_xsd = "http://x-road.eu/xsd/xroad.xsd"
-	imports = [Import(
+	imports = [mod.Import(
 		namespace=xro_xsd,
 		schema_loc=xro_xsd
 	)]
@@ -56,25 +56,25 @@ def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[Import]:
 			and has_specs(action.body_type)
 		):
 			wsi = "http://ws-i.org/profiles/basic/1.1/"
-			imports.append(Import(
+			imports.append(mod.Import(
 				namespace=f"{wsi}xsd",
 				schema_loc=f"{wsi}swaref.xsd"
 			))
 	return imports
 
 
-def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[Element]:
+def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[mod.Element]:
 	elements = []
 	for name, action in actions.items():
 		for model in [action.body_type, action.return_type]:
 			if model is not None:
-				elements.append(Element(
+				elements.append(mod.Element(
 					name=model.__name__,
 					type=f"tns:{model.__name__}"
 				))
 	return [
 		*elements,
-		Element(
+		mod.Element(
 			name="FaultResponse",
 			type="tns:FaultResponse"
 		)
@@ -86,21 +86,21 @@ def _generate_types(actions: t.Dict[str, SoapAction]) -> t.Dict:
 	return dict(
 		complex_types=[
 			*complex_types,
-			ComplexType(
+			mod.ComplexType(
 				name="FaultResponse",
-				sequence=Sequence(
+				sequence=mod.Sequence(
 					elements=[
-						Element(name="faultcode", type="string"),
-						Element(name="faultstring", type="string"),
-						Element(name="faultactor", type="string"),
-						Element(name="detail", type="tns:FaultResponseDetail")
+						mod.Element(name="faultcode", type="string"),
+						mod.Element(name="faultstring", type="string"),
+						mod.Element(name="faultactor", type="string"),
+						mod.Element(name="detail", type="tns:FaultResponseDetail")
 					]
 				)
 			),
-			ComplexType(
+			mod.ComplexType(
 				name="FaultResponseDetail",
-				sequence=Sequence(
-					elements=[AnyXML()]
+				sequence=mod.Sequence(
+					elements=[mod.AnyXML()]
 				)
 			)
 		],
@@ -108,71 +108,71 @@ def _generate_types(actions: t.Dict[str, SoapAction]) -> t.Dict:
 	)
 
 
-def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[WSDLMessage]:
+def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[mod.WSDLMessage]:
 	messages = []
 	for name, action in actions.items():
 		for model in [action.body_type, action.return_type]:
 			if model is not None:
-				messages.append(WSDLMessage(
+				messages.append(mod.WSDLMessage(
 					name=model.__name__,
-					parts=[WSDLPart(element=f"tns:{model.__name__}")]
+					parts=[mod.WSDLPart(element=f"tns:{model.__name__}")]
 				))
 	return [
 		*messages,
-		WSDLMessage(
+		mod.WSDLMessage(
 			name="FaultResponse",
-			parts=[WSDLPart(element="tns:FaultResponse", name="fault")]
+			parts=[mod.WSDLPart(element="tns:FaultResponse", name="fault")]
 		),
-		WSDLMessage(
+		mod.WSDLMessage(
 			name="xroadHeader",
 			parts=[
-				WSDLPart(element="xro:userId", name="userId"),
-				WSDLPart(element="xro:protocolVersion", name="protocolVersion"),
-				WSDLPart(element="xro:id", name="id"),
-				WSDLPart(element="xro:service", name="service"),
-				WSDLPart(element="xro:client", name="client")
+				mod.WSDLPart(element="xro:userId", name="userId"),
+				mod.WSDLPart(element="xro:protocolVersion", name="protocolVersion"),
+				mod.WSDLPart(element="xro:id", name="id"),
+				mod.WSDLPart(element="xro:service", name="service"),
+				mod.WSDLPart(element="xro:client", name="client")
 			]
 		)
 	]
 
 
-def _generate_port_type(actions: t.Dict[str, SoapAction]) -> WSDLPortType:
+def _generate_port_type(actions: t.Dict[str, SoapAction]) -> mod.WSDLPortType:
 	ops = []
 	for name, action in actions.items():
-		ops.append(WSDLOperationPort(
+		ops.append(mod.WSDLOperationPort(
 			documentation=(
 				None if action.description is None else
-				WSDLDocumentation(
+				mod.WSDLDocumentation(
 					title=inflection.titleize(name),
 					notes=action.description
 				)
 			),
 			input=(
 				None if action.body_type is None else
-				WSDLInputPort(
+				mod.WSDLInputPort(
 					message=f"tns:{action.body_type.__name__}",
 					name=action.body_type.__name__
 				)
 			),
 			output=(
 				None if action.return_type is None else
-				WSDLOutputPort(
+				mod.WSDLOutputPort(
 					message=f"tns:{action.return_type.__name__}",
 					name=action.return_type.__name__
 				)
 			),
 			name=name
 		))
-	return WSDLPortType(operations=ops)
+	return mod.WSDLPortType(operations=ops)
 
 
-def _generate_binding(actions: t.Dict[str, SoapAction]) -> WSDLBinding:
-	return WSDLBinding(
-		binding=SOAPBinding(),
+def _generate_binding(actions: t.Dict[str, SoapAction]) -> mod.WSDLBinding:
+	return mod.WSDLBinding(
+		binding=mod.SOAPBinding(),
 		operations=[
-			WSDLOperationBinding(
+			mod.WSDLOperationBinding(
 				name=key,
-				operation=SOAPOperationBinding(
+				operation=mod.SOAPOperationBinding(
 					soap_action=key
 				)
 			)
