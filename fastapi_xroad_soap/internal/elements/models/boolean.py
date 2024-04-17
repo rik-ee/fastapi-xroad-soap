@@ -9,20 +9,32 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from enum import Enum
-from datetime import datetime
-from .common import CommonSpecTypeA
+from internal.base import BaseElementSpec
 
 
-__all__ = ["DateTimeSpec", "DateTime"]
+__all__ = ["BooleanSpec", "Boolean"]
 
 
-class DateTimeSpec(CommonSpecTypeA):
+class BooleanSpec(BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(element_type=datetime, **kwargs)
+		super().__init__(element_type=bool, **kwargs)
+
+	def init_instantiated_data(self, data: t.List[bool]) -> t.List[bool]:
+		return data
+
+	def init_deserialized_data(self, data: t.List[bool]) -> t.List[bool]:
+		return data
+
+	@property
+	def has_constraints(self) -> bool:
+		return False
+
+	@property
+	def wsdl_type_name(self) -> str:
+		return "boolean"
 
 
-class DateTime:
+class Boolean:
 	def __new__(
 			cls,
 			*,
@@ -30,11 +42,7 @@ class DateTime:
 			ns: t.Optional[str] = None,
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
-			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			min_value: t.Optional[datetime] = None,
-			max_value: t.Optional[datetime] = None,
-			enumerations: t.Optional[t.Type[Enum]] = None,
-			pattern: t.Optional[str] = None
-	) -> t.Union[datetime, t.List[datetime]]:
+			max_occurs: t.Union[int, t.Literal["unbounded"]] = None
+	) -> t.Union[bool, t.List[bool]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(datetime, DateTimeSpec(**kwargs))
+		return t.cast(bool, BooleanSpec(**kwargs))

@@ -13,15 +13,15 @@ import base64
 import hashlib
 import typing as t
 from pydantic.fields import Field
-from ..storage import GlobalWeakStorage
-from ..multipart import DecodedBodyPart
-from ..file_size import FileSize
-from ..base import (
+from fastapi_xroad_soap.internal import utils
+from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
+from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
+from fastapi_xroad_soap.internal.file_size import FileSize
+from fastapi_xroad_soap.internal.base import (
 	BaseElementSpec,
 	CompositeMeta,
 	MessageBody
 )
-from .. import utils
 
 
 __all__ = [
@@ -91,11 +91,13 @@ class SwaRefSpec(BaseElementSpec):
 			**kwargs
 		)
 
+	@property
 	def has_constraints(self) -> bool:
 		return False
 
-	def signature(self) -> bytes:
-		return b''
+	@property
+	def wsdl_type_name(self) -> str:
+		return "wsi:swaRef"
 
 	def digest(self, content: bytes) -> str:
 		hash_func = getattr(hashlib, self.hash_func)

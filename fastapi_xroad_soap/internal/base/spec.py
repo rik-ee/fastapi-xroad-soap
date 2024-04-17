@@ -8,11 +8,13 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import hashlib
 import typing as t
 import inflection
 from abc import ABC, abstractmethod
 from pydantic_xml import model, element
 from ..constants import A8nType
+from ..uid_gen import UIDGenerator
 
 try:
 	from .body import MessageBody
@@ -54,11 +56,29 @@ class BaseElementSpec(ABC):
 	@abstractmethod
 	def init_deserialized_data(self, data: t.List[t.Any]) -> t.List[t.Any]: ...
 
+	@property
 	@abstractmethod
 	def has_constraints(self) -> bool: ...
 
+	@property
 	@abstractmethod
-	def signature(self) -> bytes: ...
+	def wsdl_type_name(self) -> str: ...
+
+	def _compute_wsdl_type_name(self, default: str, data: t.List) -> str:
+		if not self.has_constraints:
+			return default
+
+		repr_forms = []
+		for item in data:
+			has_dict = hasattr(item, "__dict__")
+			subject = vars(item) if has_dict else item
+			repr_forms.append(repr(subject))
+
+		cap_name = default.capitalize()
+		raw_signature = ''.join(repr_forms).encode()
+		raw_digest = hashlib.shake_128(raw_signature).digest(10)
+		key_str = UIDGenerator(mode="key").generate(raw_digest)
+		return f"tns:Custom{cap_name}Type__{key_str}"
 
 	def get_element_a8n(self) -> t.Type[t.List[t.Any]]:
 		return t.List[self.internal_type or self.element_type]

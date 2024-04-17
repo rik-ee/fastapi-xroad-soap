@@ -10,19 +10,23 @@
 #
 import typing as t
 from enum import Enum
-from datetime import date
-from .common import CommonSpecTypeA
+from datetime import time
+from ..numeric_type_spec import NumericTypeSpec
 
 
-__all__ = ["DateSpec", "Date"]
+__all__ = ["TimeSpec", "Time"]
 
 
-class DateSpec(CommonSpecTypeA):
+class TimeSpec(NumericTypeSpec):
 	def __init__(self, **kwargs) -> None:
-		super().__init__(element_type=date, **kwargs)
+		super().__init__(element_type=time, **kwargs)
+
+	@property
+	def _default_wsdl_type_name(self) -> str:
+		return "time"
 
 
-class Date:
+class Time:
 	def __new__(
 			cls,
 			*,
@@ -31,10 +35,10 @@ class Date:
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None,
-			min_value: t.Optional[date] = None,
-			max_value: t.Optional[date] = None,
+			min_value: t.Optional[time] = None,
+			max_value: t.Optional[time] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None
-	) -> t.Union[date, t.List[date]]:
+	) -> t.Union[time, t.List[time]]:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
-		return t.cast(date, DateSpec(**kwargs))
+		return t.cast(time, TimeSpec(**kwargs))

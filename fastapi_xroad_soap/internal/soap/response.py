@@ -13,7 +13,7 @@ from fastapi import Response
 from ..base import MessageBody
 from ..uid_gen import UIDGenerator
 from ..multipart import MultipartEncoder
-from ..elements import SwaRefUtils
+from ..elements.models import SwaRefUtils
 from ..envelope import (
 	EnvelopeFactory,
 	XroadHeader

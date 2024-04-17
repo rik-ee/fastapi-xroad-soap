@@ -14,7 +14,7 @@ from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
-from ..elements import SwaRefFile
+from ..elements.models import SwaRefFile
 
 
 __all__ = ["MultipartEncoder"]

@@ -60,7 +60,7 @@ class CustomModelSpec(BaseElementSpec):
 	def has_constraints(self) -> bool:
 		return False
 
-	def signature(self) -> bytes:
+	def wsdl_type_name(self) -> bytes:
 		return b''
 
 	def init_instantiated_data(self, data: t.List) -> t.List:
