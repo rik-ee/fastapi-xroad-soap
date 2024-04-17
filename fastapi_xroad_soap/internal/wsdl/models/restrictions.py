@@ -15,9 +15,6 @@ from .conditions import (
 	RegexPattern,
 	MinInclusive,
 	MaxInclusive,
-	MinExclusive,
-	MaxExclusive,
-	FractionDigits,
 	TotalDigits,
 	Length,
 	MinLength,
@@ -27,117 +24,25 @@ from .conditions import (
 
 
 __all__ = [
-	"StringRestriction",
-	"AnyURIRestriction",
-	"IntegerRestriction",
-	"DecimalRestriction",
-	"FloatRestriction",
-	"DoubleRestriction",
-	"DateRestriction",
-	"TimeRestriction",
-	"DateTimeRestriction",
-	"DurationRestriction"
+	"NumericTypeRestriction",
+	"StringTypeRestriction"
 ]
 
 
-class StringRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="string")
-	length: t.Union[Length, None] = None
-	min_length: t.Union[MinLength, None] = None
-	max_length: t.Union[MaxLength, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
-	whiteSpace: t.Union[WhiteSpace, None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class AnyURIRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="anyURI")
-	length: t.Union[Length, None] = None
-	min_length: t.Union[MinLength, None] = None
-	max_length: t.Union[MaxLength, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
-	whiteSpace: t.Union[WhiteSpace, None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class IntegerRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="integer")
+class NumericTypeRestriction(BaseXmlModel, tag="restriction"):
+	base: str = attr()
 	min_inclusive: t.Union[MinInclusive, None] = None
 	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
 	total_digits: t.Union[TotalDigits, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
 	pattern: t.Union[RegexPattern, None] = None
 
 
-class DecimalRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="decimal")
-	min_inclusive: t.Union[MinInclusive, None] = None
-	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
-	total_digits: t.Union[TotalDigits, None] = None
-	fraction_digits: t.Union[FractionDigits, None] = None
+class StringTypeRestriction(BaseXmlModel, tag="restriction"):
+	base: str = attr()
+	length: t.Union[Length, None] = None
+	min_length: t.Union[MinLength, None] = None
+	max_length: t.Union[MaxLength, None] = None
 	enumerations: t.Union[t.List[Enumeration], None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class FloatRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="float")
-	min_inclusive: t.Union[MinInclusive, None] = None
-	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class DoubleRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="double")
-	min_inclusive: t.Union[MinInclusive, None] = None
-	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class DateRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="date")
-	min_inclusive: t.Union[MinInclusive, None] = None
-	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class TimeRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="time")
-	min_inclusive: t.Union[MinInclusive, None] = None
-	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class DateTimeRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="dateTime")
-	min_inclusive: t.Union[MinInclusive, None] = None
-	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
-	pattern: t.Union[RegexPattern, None] = None
-
-
-class DurationRestriction(BaseXmlModel, tag="restriction"):
-	base: str = attr(default="duration")
-	min_inclusive: t.Union[MinInclusive, None] = None
-	max_inclusive: t.Union[MaxInclusive, None] = None
-	min_exclusive: t.Union[MinExclusive, None] = None
-	max_exclusive: t.Union[MaxExclusive, None] = None
-	enumerations: t.Union[t.List[Enumeration], None] = None
+	whiteSpace: t.Union[WhiteSpace, None] = None
 	pattern: t.Union[RegexPattern, None] = None

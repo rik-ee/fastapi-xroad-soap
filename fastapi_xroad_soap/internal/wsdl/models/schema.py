@@ -12,45 +12,21 @@ import typing as t
 from pydantic_xml import BaseXmlModel, attr
 from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
 from .restrictions import (
-    StringRestriction,
-    IntegerRestriction,
-    DecimalRestriction,
-    FloatRestriction,
-    DoubleRestriction,
-    DateRestriction,
-    TimeRestriction,
-    DateTimeRestriction,
-    DurationRestriction,
-    AnyURIRestriction
+    NumericTypeRestriction,
+    StringTypeRestriction
 )
 
 
 __all__ = [
-    "SimpleType",
     "AnyXML",
     "Element",
     "Sequence",
     "ComplexType",
+    "SimpleType",
     "Import",
     "Include",
     "Schema"
 ]
-
-
-class SimpleType(BaseXmlModel, tag="simpleType"):
-    name: str = attr()
-    restriction: t.Union[
-        StringRestriction,
-        IntegerRestriction,
-        DecimalRestriction,
-        FloatRestriction,
-        DoubleRestriction,
-        DateRestriction,
-        TimeRestriction,
-        DateTimeRestriction,
-        DurationRestriction,
-        AnyURIRestriction
-    ]
 
 
 class AnyXML(BaseXmlModel, tag="any"):
@@ -71,6 +47,14 @@ class Sequence(BaseXmlModel, tag="sequence"):
 class ComplexType(BaseXmlModel, tag="complexType"):
     name: str = attr()
     sequence: Sequence
+
+
+class SimpleType(BaseXmlModel, tag="simpleType"):
+    name: str = attr()
+    restriction: t.Union[
+        NumericTypeRestriction,
+        StringTypeRestriction
+    ]
 
 
 class Import(BaseXmlModel, tag="import"):

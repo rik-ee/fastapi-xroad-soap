@@ -17,9 +17,6 @@ __all__ = [
 	"RegexPattern",
 	"MinInclusive",
 	"MaxInclusive",
-	"MinExclusive",
-	"MaxExclusive",
-	"FractionDigits",
 	"TotalDigits",
 	"Length",
 	"MinLength",
@@ -41,18 +38,6 @@ class MinInclusive(BaseXmlModel, tag="minInclusive"):
 
 
 class MaxInclusive(BaseXmlModel, tag="maxInclusive"):
-	value: str = attr()
-
-
-class MinExclusive(BaseXmlModel, tag="minExclusive"):
-	value: str = attr()
-
-
-class MaxExclusive(BaseXmlModel, tag="maxExclusive"):
-	value: str = attr()
-
-
-class FractionDigits(BaseXmlModel, tag="fractionDigits"):
 	value: str = attr()
 
 
