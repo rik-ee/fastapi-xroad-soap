@@ -70,7 +70,7 @@ class WSDLInputBinding(BaseXmlModel, tag="input", ns="wsdl", nsmap=WSDL_NSMAP):
 	body: SOAPBody = SOAPBody()
 
 
-class XROADVersion(BaseXmlModel, tag="version", ns="xroad", nsmap=WSDL_NSMAP):
+class XROADVersion(BaseXmlModel, tag="version", ns="xro", nsmap=WSDL_NSMAP):
 	version: str = "v1"
 
 

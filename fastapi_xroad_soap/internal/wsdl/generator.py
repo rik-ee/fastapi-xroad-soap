@@ -10,6 +10,7 @@
 #
 import typing as t
 import inflection
+from ..constants import WSDL_NSMAP
 from ..soap.action import SoapAction
 from ..elements.models import SwaRefUtils
 from .helpers import gather_all_types
@@ -20,7 +21,11 @@ __all__ = ["generate"]
 
 
 def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
-	return mod.WSDLDefinitions(
+	wsdl_def = type(
+		"WSDLDefinitions", (mod.WSDLDefinitions,),
+		{}, nsmap={**WSDL_NSMAP, "tns": tns}
+	)
+	return wsdl_def(
 		target_ns=tns,
 		name=name,
 		types=mod.WSDLTypes(
@@ -40,7 +45,7 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 				address=mod.SOAPAddress()
 			)
 		)
-	).to_xml()
+	).to_xml(pretty_print=True)
 
 
 def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[mod.Import]:
