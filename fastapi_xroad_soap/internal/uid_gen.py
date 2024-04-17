@@ -57,8 +57,6 @@ class UIDGenerator:
 
 	@staticmethod
 	def _compute_key_token(from_bytes: bytes = None) -> str:
-		token = base64.b32encode(from_bytes).decode()
-		return '-'.join([
-			token[i:i + 4] for i in
-			range(0, len(token), 4)
-		])
+		token = base64.b64encode(from_bytes).decode()
+		table = str.maketrans("+/=", "ABC")
+		return token.translate(table)

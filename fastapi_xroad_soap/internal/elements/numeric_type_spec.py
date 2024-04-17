@@ -56,18 +56,16 @@ class NumericTypeSpec(BaseElementSpec, CommonValidators, NumberValidators):
 			]
 		])
 
-	@property
-	@functools.lru_cache(maxsize=1)
-	def wsdl_type_name(self) -> str:
-		return self._compute_wsdl_type_name(
-			default=self.default_wsdl_type_name,
-			data=[
+	def wsdl_type_name(self, *, with_tns: bool = False) -> str:
+		return self._assemble_wsdl_type_name(
+			signature=self._compute_signature(
 				self.min_value,
 				self.max_value,
 				self.total_digits,
 				self.enumerations,
 				self.pattern
-			]
+			),
+			with_tns=with_tns
 		)
 
 	@property

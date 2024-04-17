@@ -10,6 +10,7 @@
 #
 import hashlib
 import typing as t
+import functools
 import inflection
 from abc import ABC, abstractmethod
 from pydantic_xml import model, element
@@ -61,30 +62,32 @@ class BaseElementSpec(ABC):
 	@abstractmethod
 	def has_constraints(self) -> bool: ...
 
-	@property
 	@abstractmethod
-	def wsdl_type_name(self) -> str: ...
+	def wsdl_type_name(self, *, with_tns: bool = False) -> str: ...
 
 	@property
 	def default_wsdl_type_name(self) -> str:
 		raise NotImplementedError
 
-	def _compute_wsdl_type_name(self, default: str, data: t.List) -> str:
-		if not self.has_constraints:
-			return default
-
+	@functools.lru_cache(maxsize=None)
+	def _compute_signature(self, *args) -> str:
 		repr_forms = []
-		for item in data:
-			has_dict = hasattr(item, "__dict__")
-			subject = vars(item) if has_dict else item
+		for arg in args:
+			has_dict = hasattr(arg, "__dict__")
+			subject = vars(arg) if has_dict else arg
 			repr_forms.append(repr(subject))
 
-		cap_name = default.capitalize()
 		raw_sig = ''.join(repr_forms).encode()
 		cleaned_sig = utils.remove_memory_addresses(raw_sig)
-		raw_digest = hashlib.shake_128(cleaned_sig).digest(10)
-		key_str = UIDGenerator(mode="key").generate(raw_digest)
-		return f"tns:Custom{cap_name}Type__{key_str}"
+		raw_digest = hashlib.shake_128(cleaned_sig).digest(12)
+		return UIDGenerator(mode="key").generate(raw_digest)
+
+	def _assemble_wsdl_type_name(self, signature: str, with_tns: bool) -> str:
+		if not self.has_constraints:
+			return self.default_wsdl_type_name
+		ns = "tns:" if with_tns else ''
+		cap_name = self.default_wsdl_type_name.capitalize()
+		return f"{ns}Custom{cap_name}__{signature}"
 
 	def get_element_a8n(self) -> t.Type[t.List[t.Any]]:
 		return t.List[self.internal_type or self.element_type]

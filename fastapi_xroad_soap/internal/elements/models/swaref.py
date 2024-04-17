@@ -95,8 +95,7 @@ class SwaRefSpec(BaseElementSpec):
 	def has_constraints(self) -> bool:
 		return False
 
-	@property
-	def wsdl_type_name(self) -> str:
+	def wsdl_type_name(self, *, with_tns: bool = False) -> str:
 		return "wsi:swaRef"
 
 	def digest(self, content: bytes) -> str:

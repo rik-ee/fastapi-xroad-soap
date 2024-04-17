@@ -38,7 +38,7 @@ def gather_all_types(actions: t.Dict[str, SoapAction]) -> AllTypes:
 			_add_simple_type(spec, simple_types)
 			elements.append(mod.Element(
 				name=spec.tag,
-				type=spec.wsdl_type_name
+				type=spec.wsdl_type_name(with_tns=True)
 			))
 		complex_types.append(mod.ComplexType(
 			name=model.__name__,
@@ -72,7 +72,7 @@ def _add_simple_type(spec: BaseElementSpec, simple_types: t.Dict[str, mod.Simple
 
 def _create_string_simple_type(spec: StringTypeSpec) -> mod.SimpleType:
 	return mod.SimpleType(
-		name=spec.wsdl_type_name,
+		name=spec.wsdl_type_name(),
 		restriction=mod.StringTypeRestriction(
 			base=spec.default_wsdl_type_name,
 			length=(
@@ -107,7 +107,7 @@ def _create_string_simple_type(spec: StringTypeSpec) -> mod.SimpleType:
 
 def _create_numeric_simple_type(spec: NumericTypeSpec) -> mod.SimpleType:
 	return mod.SimpleType(
-		name=spec.wsdl_type_name,
+		name=spec.wsdl_type_name(),
 		restriction=mod.NumericTypeRestriction(
 			base=spec.default_wsdl_type_name,
 			min_inclusive=(
