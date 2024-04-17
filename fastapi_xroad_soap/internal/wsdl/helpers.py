@@ -13,14 +13,40 @@ from ..soap.action import SoapAction
 from ..elements import NumericTypeSpec
 from ..elements import StringTypeSpec
 from ..base import NestedModels, BaseElementSpec
-from .models import *
+from . import models as mod
 
 
-__all__ = [
-	"gather_all_types",
-	"create_string_simple_type",
-	"create_numeric_simple_type"
-]
+__all__ = ["gather_all_types"]
+
+
+AllTypes = t.Tuple[t.List[mod.ComplexType], t.List[mod.SimpleType]]
+
+
+def gather_all_types(actions: t.Dict[str, SoapAction]) -> AllTypes:
+	simple_types: t.Dict[str, mod.SimpleType] = {}
+	complex_types: t.List[mod.ComplexType] = []
+	models = _gather_models(actions)
+
+	for model, children in models:
+		elements = []
+		for child in children:
+			elements.append(mod.Element(
+				name=child.__name__,
+				type=f"tns:{child.__name__}"
+			))
+		for spec in model.model_specs().values():
+			_add_simple_type(spec, simple_types)
+			elements.append(mod.Element(
+				name=spec.tag,
+				type=spec.wsdl_type_name
+			))
+		complex_types.append(mod.ComplexType(
+			name=model.__name__,
+			sequence=mod.Sequence(
+				elements=elements
+			)
+		))
+	return complex_types, list(simple_types.values())
 
 
 def _gather_models(actions: t.Dict[str, SoapAction]) -> NestedModels:
@@ -32,73 +58,46 @@ def _gather_models(actions: t.Dict[str, SoapAction]) -> NestedModels:
 	return models
 
 
-def _add_simple_type(spec: BaseElementSpec, simple_types: t.Dict[str, SimpleType]) -> None:
+def _add_simple_type(spec: BaseElementSpec, simple_types: t.Dict[str, mod.SimpleType]) -> None:
 	if spec.has_constraints:
 		func = (
-			create_string_simple_type if
+			_create_string_simple_type if
 			isinstance(spec, StringTypeSpec)
-			else create_numeric_simple_type
+			else _create_numeric_simple_type
 		)
-		st: SimpleType = func(spec)
+		st: mod.SimpleType = func(spec)
 		if st.name not in simple_types:
 			simple_types[st.name] = st
 
 
-def gather_all_types(actions: t.Dict[str, SoapAction]) -> t.Tuple[t.List[ComplexType], t.List[SimpleType]]:
-	simple_types: t.Dict[str, SimpleType] = {}
-	complex_types: t.List[ComplexType] = []
-	models = _gather_models(actions)
-
-	for model, children in models:
-		elements = []
-		for child in children:
-			elements.append(Element(
-				name=child.__name__,
-				type=f"tns:{child.__name__}"
-			))
-		for spec in model.model_specs().values():
-			_add_simple_type(spec, simple_types)
-			elements.append(Element(
-				name=spec.tag,
-				type=spec.wsdl_type_name
-			))
-		complex_types.append(ComplexType(
-			name=model.__name__,
-			sequence=Sequence(
-				elements=elements
-			)
-		))
-	return complex_types, list(simple_types.values())
-
-
-def create_string_simple_type(spec: StringTypeSpec) -> SimpleType:
-	return SimpleType(
+def _create_string_simple_type(spec: StringTypeSpec) -> mod.SimpleType:
+	return mod.SimpleType(
 		name=spec.wsdl_type_name,
-		restriction=StringTypeRestriction(
+		restriction=mod.StringTypeRestriction(
 			base=spec.default_wsdl_type_name,
 			length=(
 				None if spec.length is None else
-				Length(value=str(spec.length))
+				mod.Length(value=str(spec.length))
 			),
 			min_length=(
 				None if spec.min_length is None or spec.length is not None else
-				MinLength(value=str(spec.min_length))
+				mod.MinLength(value=str(spec.min_length))
 			),
 			max_length=(
 				None if spec.max_length is None or spec.length is not None else
-				MaxLength(value=str(spec.max_length))
+				mod.MaxLength(value=str(spec.max_length))
 			),
 			whitespace=(
 				None if spec.whitespace == "preserve" else
-				WhiteSpace(value=spec.whitespace)
+				mod.WhiteSpace(value=spec.whitespace)
 			),
 			pattern=(
 				None if spec.pattern is None else
-				RegexPattern(value=spec.pattern)
+				mod.RegexPattern(value=spec.pattern)
 			),
 			enumerations=(
 				None if spec.enumerations is None else [
-					Enumeration(value=str(e.value))
+					mod.Enumeration(value=str(e.value))
 					for e in spec.enumerations
 				]
 			)
@@ -106,30 +105,30 @@ def create_string_simple_type(spec: StringTypeSpec) -> SimpleType:
 	)
 
 
-def create_numeric_simple_type(spec: NumericTypeSpec) -> SimpleType:
-	return SimpleType(
+def _create_numeric_simple_type(spec: NumericTypeSpec) -> mod.SimpleType:
+	return mod.SimpleType(
 		name=spec.wsdl_type_name,
-		restriction=NumericTypeRestriction(
+		restriction=mod.NumericTypeRestriction(
 			base=spec.default_wsdl_type_name,
 			min_inclusive=(
 				None if spec.min_value is None else
-				MinInclusive(value=str(spec.min_value))
+				mod.MinInclusive(value=str(spec.min_value))
 			),
 			max_inclusive=(
 				None if spec.max_value is None else
-				MaxInclusive(value=str(spec.max_value))
+				mod.MaxInclusive(value=str(spec.max_value))
 			),
 			total_digits=(
 				None if spec.total_digits is None else
-				TotalDigits(value=str(spec.total_digits))
+				mod.TotalDigits(value=str(spec.total_digits))
 			),
 			pattern=(
 				None if spec.pattern is None else
-				RegexPattern(value=spec.pattern)
+				mod.RegexPattern(value=spec.pattern)
 			),
 			enumerations=(
 				None if spec.enumerations is None else [
-					Enumeration(value=str(e.value))
+					mod.Enumeration(value=str(e.value))
 					for e in spec.enumerations
 				]
 			)
