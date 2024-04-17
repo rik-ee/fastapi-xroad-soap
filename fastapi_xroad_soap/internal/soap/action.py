@@ -90,24 +90,25 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 		body_type = content_type.split(';')[0]
 		http_body = await http_request.body()
 
-		if body_type == "multipart/related":
+		if body_type in ["text/xml", "application/xml", "application/soap+xml"]:
+			return self.deserialize(http_body)
+		elif body_type in ["multipart/related", "multipart/mixed"]:
 			files: t.List[DecodedBodyPart] = list()
-			decoder1 = MultipartDecoder(http_body, content_type)
+			decoder = MultipartDecoder(http_body, content_type)
 			envelope = None
-			for index, part1 in enumerate(decoder1.parts):
+			for index, part in enumerate(decoder.parts):
 				if index == 0:
-					envelope = part1
-				elif part1.is_mixed_multipart:
-					content_type = part1.headers.get('content-type')
-					decoder2 = MultipartDecoder(part1.content, content_type)
-					for part2 in decoder2.parts:
-						files.append(part2)
+					envelope = part
+				elif part.is_mixed_multipart:
+					content_type = part.headers.get('content-type')
+					nested_decoder = MultipartDecoder(part.content, content_type)
+					for nested_part in nested_decoder.parts:
+						files.append(nested_part)
 				else:
-					files.append(part1)
+					files.append(part)
 			http_body = self.process_files(envelope.content, files)
-		elif body_type not in ["text/xml", "application/xml"]:
-			raise f.ClientFault(f"Invalid content type: {body_type}")
-		return self.deserialize(http_body)
+			return self.deserialize(http_body)
+		raise f.ClientFault(f"Invalid content type: {body_type}")
 
 	def process_files(self, xml_str: bytes, files: t.List[DecodedBodyPart]) -> bytes:
 		ids = [file.content_id for file in files]
