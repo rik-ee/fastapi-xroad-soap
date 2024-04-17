@@ -20,6 +20,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from ..multipart import MultipartError
 from ..storage import GlobalWeakStorage
 from .. import utils, wsdl
+from .validators import validate_annotations
 from .action import SoapAction
 from . import faults as f
 
@@ -29,6 +30,7 @@ __all__ = ["SoapService"]
 
 SoapMiddleware: t.TypeAlias = BaseHTTPMiddleware
 FuncOrCoro = t.Union[t.Callable[..., t.Any], t.Awaitable[t.Any]]
+ActionType = t.Callable[[DecoratedCallable], DecoratedCallable]
 
 
 class SoapService(FastAPI):
@@ -127,7 +129,7 @@ class SoapService(FastAPI):
 	def add_action(self, name: str, handler: t.Callable[..., t.Any], description: t.Optional[str] = None) -> None:
 		if name in self._actions.keys():
 			raise ValueError(f"Cannot add duplicate {name} SOAP action.")
-		anno = utils.validate_annotations(name, handler)
+		anno = validate_annotations(name, handler)
 		pos = utils.extract_parameter_positions(anno)
 		self._actions[name] = SoapAction(
 			name=name,
@@ -141,7 +143,7 @@ class SoapService(FastAPI):
 			storage=self._storage
 		)
 
-	def action(self, name: str, description: t.Optional[str] = None) -> t.Callable[[DecoratedCallable], DecoratedCallable]:
+	def action(self, name: str, description: t.Optional[str] = None) -> ActionType:
 		def closure(func: DecoratedCallable) -> DecoratedCallable:
 			self.add_action(name, func, description)
 			return func

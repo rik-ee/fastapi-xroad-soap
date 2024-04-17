@@ -8,3 +8,11 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+from .numeric_type_spec import NumericTypeSpec
+from .string_type_spec import StringTypeSpec
+
+
+__all__ = [
+	"NumericTypeSpec",
+	"StringTypeSpec"
+]

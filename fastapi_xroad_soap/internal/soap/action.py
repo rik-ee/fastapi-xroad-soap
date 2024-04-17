@@ -165,19 +165,3 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 			if key not in HEADER_NSMAP:
 				nsmap[key] = value.strip('"')
 		return nsmap
-
-	@property
-	def body_type_name(self) -> t.Union[str, None]:
-		if self.body_type is not None:
-			cls_name = self.body_type.__name__
-			if self.name not in cls_name:
-				cls_name = self.name + cls_name
-			return cls_name
-
-	@property
-	def return_type_name(self) -> t.Union[str, None]:
-		if self.return_type is not None:
-			cls_name = self.return_type.__name__
-			if self.name not in cls_name:
-				cls_name = self.name + cls_name
-			return cls_name

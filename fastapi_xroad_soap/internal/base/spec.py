@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 from pydantic_xml import model, element
 from ..constants import A8nType
 from ..uid_gen import UIDGenerator
+from .. import utils
 
 try:
 	from .body import MessageBody
@@ -79,8 +80,9 @@ class BaseElementSpec(ABC):
 			repr_forms.append(repr(subject))
 
 		cap_name = default.capitalize()
-		raw_signature = ''.join(repr_forms).encode()
-		raw_digest = hashlib.shake_128(raw_signature).digest(10)
+		raw_sig = ''.join(repr_forms).encode()
+		cleaned_sig = utils.remove_memory_addresses(raw_sig)
+		raw_digest = hashlib.shake_128(cleaned_sig).digest(10)
 		key_str = UIDGenerator(mode="key").generate(raw_digest)
 		return f"tns:Custom{cap_name}Type__{key_str}"
 
