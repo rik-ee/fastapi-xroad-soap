@@ -8,6 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import math
 import pytest
 import typing as t
 from enum import Enum
@@ -84,8 +85,8 @@ def test_float_spec_min_max_restriction():
 	spec = t.cast(FloatSpec, Float(
 		min_value=1.234, max_value=6.789
 	))
-	assert spec.min_value == 1.234
-	assert spec.max_value == 6.789
+	assert math.isclose(spec.min_value, 1.234)
+	assert math.isclose(spec.max_value, 6.789)
 
 	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
 		init_data = t.cast(t.Callable, func)
