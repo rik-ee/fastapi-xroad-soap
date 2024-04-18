@@ -20,9 +20,9 @@ class UIDGenerator:
 	def __init__(self, mode: t.Literal["cid", "key"]):
 		self.tokens = list()
 		self._mode = mode
-		self._max_len = 15
-		self._token_len = 10
-		self._increment = 1 if mode == "cid" else 5
+		self._max_len = 14 if mode == "cid" else 18
+		self._token_len = 10 if mode == "cid" else 12
+		self._increment = 1 if mode == "cid" else 3
 		self._compute_token = (
 			self._compute_cid_token
 			if mode == "cid" else
