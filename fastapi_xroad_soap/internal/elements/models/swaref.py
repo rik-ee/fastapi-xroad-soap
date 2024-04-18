@@ -12,6 +12,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import typing as t
+from pydantic import fields as pyd
 from pydantic.fields import Field
 from fastapi_xroad_soap.internal import utils
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
@@ -191,7 +192,8 @@ class SwaRef:
 class SwaRefUtils:
 	@classmethod
 	def contains_swa_ref_specs(cls, content_cls: t.Type[MessageBody]) -> bool:
-		# print(type(content_cls))
+		if type(content_cls) is pyd.FieldInfo:
+			content_cls = content_cls.annotation
 		has_swa_ref = False
 
 		# Define recursion behavior
