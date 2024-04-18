@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from internal.base import BaseElementSpec
+from fastapi_xroad_soap.internal.base import BaseElementSpec
 
 
 __all__ = ["BooleanSpec", "Boolean"]
