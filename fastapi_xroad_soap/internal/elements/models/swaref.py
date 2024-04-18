@@ -147,12 +147,12 @@ class SwaRefSpec(BaseElementSpec):
 			except ValueError:
 				raise ValueError(f"no file attachment found $${obj.content_id}$$")
 
-			obj.name = file.file_name
+			obj.name = file.name
 			obj.size = len(file.content)
 			self.validate_file(obj.name, obj.size, file.content_id)
 
 			obj.digest = self.digest(file.content)
-			obj.mimetype = utils.guess_mime_type(file.file_name)
+			obj.mimetype = utils.guess_mime_type(file.name)
 			obj.content = utils.convert_to_utf8(file.content)
 
 			setattr(obj, "_file", file)

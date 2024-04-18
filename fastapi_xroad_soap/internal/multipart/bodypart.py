@@ -25,7 +25,7 @@ __all__ = ["DecodedBodyPart"]
 
 class DecodedBodyPart:
     headers: t.Optional[Message] = None
-    file_name: t.Optional[str] = None
+    name: t.Optional[str] = None
     content: t.Optional[bytes] = None
     content_id: t.Optional[str] = None
     is_mixed_multipart: bool = False
@@ -66,9 +66,9 @@ class DecodedBodyPart:
         boundary = self.headers.get_boundary()
         content_disp = self.headers.get_content_disposition()
         if boundary is None and content_disp == "attachment":
-            self.file_name = self.headers.get_filename()
-            if self.file_name is None:
-                self.file_name = self.headers.get_param(
+            self.name = self.headers.get_filename()
+            if self.name is None:
+                self.name = self.headers.get_param(
                     header='content-disposition',
                     param='name'
                 )
