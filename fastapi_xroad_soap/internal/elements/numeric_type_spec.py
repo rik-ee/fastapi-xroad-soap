@@ -31,6 +31,7 @@ class NumericTypeSpec(BaseElementSpec, CommonValidators, NumberValidators):
 		)
 
 	def process(self, obj: t.Any) -> t.Any:
+		self.validate_type(obj, self.element_type)
 		self.validate_pattern(obj)
 		self.validate_total_digits(obj)
 		self.validate_min_max_value(obj)

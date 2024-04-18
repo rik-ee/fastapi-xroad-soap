@@ -10,20 +10,25 @@
 #
 import typing as t
 from fastapi_xroad_soap.internal.base import BaseElementSpec
+from ..validators import CommonValidators
 
 
 __all__ = ["BooleanSpec", "Boolean"]
 
 
-class BooleanSpec(BaseElementSpec):
+class BooleanSpec(BaseElementSpec, CommonValidators):
 	def __init__(self, **kwargs) -> None:
 		super().__init__(element_type=bool, **kwargs)
 
+	def process(self, obj: t.Any) -> t.Any:
+		self.validate_type(obj, self.element_type)
+		return obj
+
 	def init_instantiated_data(self, data: t.List[bool]) -> t.List[bool]:
-		return data
+		return [self.process(obj) for obj in data]
 
 	def init_deserialized_data(self, data: t.List[bool]) -> t.List[bool]:
-		return data
+		return [self.process(obj) for obj in data]
 
 	@property
 	def has_constraints(self) -> bool:

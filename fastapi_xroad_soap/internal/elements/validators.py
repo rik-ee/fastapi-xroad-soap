@@ -26,6 +26,14 @@ class CommonValidators:
 	pattern: t.Optional[str] = None
 	enumerations: t.Optional[t.Type[Enum]] = None
 
+	@staticmethod
+	def validate_type(obj: t.Any, expected_type: t.Any) -> None:
+		if not isinstance(obj, expected_type):
+			raise TypeError(
+				f"invalid type {type(obj).__name__} for object "
+				f"{obj}, expected type {expected_type}"
+			)
+
 	def validate_min_max_value(self, obj: t.Any) -> None:
 		if self.min_value is not None and obj < self.min_value:
 			raise ValueError(

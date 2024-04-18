@@ -35,6 +35,7 @@ class StringTypeSpec(BaseElementSpec, CommonValidators, StringValidators):
 		)
 
 	def process(self, obj: t.Any) -> t.Any:
+		self.validate_type(obj, self.element_type)
 		self.validate_string_length(obj)
 		self.validate_pattern(obj)
 		self.validate_enumerations(obj)
