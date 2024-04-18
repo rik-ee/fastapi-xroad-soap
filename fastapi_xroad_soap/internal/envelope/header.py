@@ -17,7 +17,7 @@ __all__ = ["XroadService", "XroadClient", "XroadHeader"]
 
 
 class XroadService(BaseXmlModel, tag="service", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
-	object_type: str = attr(tag="objectType", ns="iden", default="SERVICE")
+	object_type: str = attr(name="objectType", ns="iden", default="SERVICE")
 	xroad_instance: str = element(tag="xRoadInstance", ns="iden")
 	member_class: str = element(tag="memberClass", ns="iden")
 	member_code: str = element(tag="memberCode", ns="iden")
@@ -27,7 +27,7 @@ class XroadService(BaseXmlModel, tag="service", ns="xro", nsmap=HEADER_NSMAP, se
 
 
 class XroadClient(BaseXmlModel, tag="client", ns="xro", nsmap=HEADER_NSMAP, search_mode='unordered'):
-	object_type: str = attr(tag="objectType", ns="iden", default="SUBSYSTEM")
+	object_type: str = attr(name="objectType", ns="iden", default="SUBSYSTEM")
 	xroad_instance: str = element(tag="xRoadInstance", ns="iden")
 	member_class: str = element(tag="memberClass", ns="iden")
 	member_code: str = element(tag="memberCode", ns="iden")
