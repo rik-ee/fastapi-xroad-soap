@@ -111,10 +111,7 @@ class MessageBody(model.BaseXmlModel, **ModelConfig):
 				raise ValueError(f"argument '{attr}' is missing")
 			elif not isinstance(value, expected):
 				arg_type = type(value).__name__
-				raise ValueError(
-					f"unexpected type '{arg_type}' "
-					f"for argument '{attr}'"
-				)
+				raise ValueError(f"unexpected type '{arg_type}' for argument '{attr}'")
 			data[attr] = [value]
 			spec.init_instantiated_data(data[attr])
 		return data
@@ -139,7 +136,7 @@ class MessageBody(model.BaseXmlModel, **ModelConfig):
 			count = len(value)
 
 			if count > 1 and spec.a8n_type in [A8nType.MAND, A8nType.OPT]:
-				raise ValueError(f"only one {spec.tag} element is allowed $$Count: {count}$$")
+				raise ValueError(f"only one {spec.tag} element is allowed, got {count}")
 			elif count == 0 and spec.a8n_type == A8nType.MAND:
 				raise ValueError(f"must provide at least one {spec.tag} element")
 			elif spec.a8n_type == A8nType.LIST:
