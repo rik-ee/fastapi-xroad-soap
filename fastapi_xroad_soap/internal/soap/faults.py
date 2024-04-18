@@ -10,6 +10,7 @@
 #
 import re
 import typing as t
+import inflection
 from pydantic_xml import element
 from ..base import MessageBody
 from ..envelope import GenericFault
@@ -134,7 +135,7 @@ class ValidationFault(SoapFault):
 		class Detail(MessageBody):
 			location: str = element()
 			reason: str = element()
-			input_value: str = element()
+			input_value: str = element(tag="inputValue")
 
 		class ErrorDetails(MessageBody):
 			details: t.List[Detail] = element(tag="validationError")
@@ -145,13 +146,11 @@ class ValidationFault(SoapFault):
 			iv_match = re.search(r"\$\$(.*?)\$\$", msg)
 			if iv_match:
 				msg = msg.replace(f"$${iv_match.group(1)}$$", '')
-			else:
-				iv_match = re.search(r"input_value=(.+?),", msg)
 			ln_match = re.search(r"(\[line -?\d+]: )", msg)
 			re_match = re.search(r"\[line -?\d+]: (.+?) \[type=", msg)
 			details.append(Detail(
-				location=(ln_match.group(1) + loc) if ln_match else "unknown",
-				input_value=iv_match.group(1) if iv_match else "unknown",
-				reason=re_match.group(1) if re_match else "unknown"
+				location=inflection.camelize(loc) if ln_match else "Unknown",
+				reason=re_match.group(1) if re_match else "Unknown",
+				input_value=iv_match.group(1) if iv_match else "Unknown",
 			))
 		return ErrorDetails(details=details)
