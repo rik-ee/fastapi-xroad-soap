@@ -106,21 +106,23 @@ class SwaRefSpec(BaseElementSpec):
 		return f"{name}={b64_hash}"
 
 	def validate_file(self, name: str, size: int, content_id: str = None) -> None:
-		extract = '' if content_id is None else f"$${content_id}$$"
+		extract = '' if content_id is None else f"$$Content-ID: {content_id}$$"
 		if '.' not in name:
-			raise ValueError(f"invalid file name: {name}")
-		if self.allowed_filetypes != "all":
+			raise ValueError(f"invalid file name $${name}$$")
+		aft = self.allowed_filetypes
+		if aft != "all" and isinstance(aft, list):
 			file_ext = '.' + name.split('.')[-1]
 			if file_ext not in self.allowed_filetypes:
 				raise ValueError(
-					f"file type not allowed: {file_ext} "
-					f"(allowed: {self.allowed_filetypes}){extract}"
+					f"file type '{file_ext}' not in allowed "
+					f"filetypes {self.allowed_filetypes}{extract}"
 				)
-		if self.max_filesize and size > self.max_filesize.value:
-			size_str = FileSize.bytes_to_iec_str(size)
+		mfs = self.max_filesize
+		if isinstance(mfs, FileSize) and size > mfs.value:
+			input_size = FileSize.bytes_to_iec_str(size)
 			raise ValueError(
-				f"file size too large: {size_str} "
-				f"(max: {self.max_filesize}){extract}"
+				f"file size {input_size} larger than "
+				f"allowed max size {mfs}{extract}"
 			)
 
 	def init_instantiated_data(self, data: t.List[SwaRefInternal]) -> t.List[SwaRefInternal]:
