@@ -43,9 +43,9 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 	name: str
 	handler: t.Callable[..., t.Optional[MessageBody]]
 	description: t.Optional[str]
-	body_type: t.Type[MessageBody]
+	body_type: t.Optional[t.Type[MessageBody]]
 	body_index: t.Optional[int]
-	header_type: t.Type[XroadHeader]
+	header_type: t.Optional[t.Type[XroadHeader]]
 	header_index: t.Optional[int]
 	return_type: t.Optional[t.Type[MessageBody]]
 	storage: GlobalWeakStorage
@@ -129,26 +129,28 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 	def deserialize(self, http_body: bytes) -> GenericEnvelope:
 		if self.body_type is None:
 			return EnvelopeFactory().deserialize(http_body)
-		try:
-			factory = EnvelopeFactory[self.body_type]
-			return factory().deserialize(http_body)
-		except ValidationError as ex:
-			extra_nsmap = self.extract_extra_nsmap(http_body)
-			name = self.body_type.__name__
-			last_err = ex
-			for ns in extra_nsmap.keys():
-				new = t.cast(t.Type[MessageBody], type(
-					name, (self.body_type,), {},
-					ns=ns, nsmap=extra_nsmap
-				))
-				attrs = self.body_type.__private_attributes__
-				new.__private_attributes__ = attrs
-				try:
-					factory = EnvelopeFactory[new]
-					return factory().deserialize(http_body)
-				except ValidationError as ex:
-					last_err = ex
-			raise last_err
+
+		extra_nsmap = self.extract_extra_nsmap(http_body)
+		attrs = self.body_type.__private_attributes__
+		name = self.body_type.__name__
+		last_err = None
+
+		def inner(**kwargs) -> GenericEnvelope:
+			strict_type = t.cast(t.Type[MessageBody], type(
+				name, (self.body_type,), {}, extra="forbid", **kwargs
+			))
+			strict_type.__private_attributes__ = attrs
+			envelope = EnvelopeFactory[strict_type]()
+			return envelope.deserialize(http_body)
+
+		if not extra_nsmap:
+			return inner()
+		for ns in extra_nsmap.keys():
+			try:
+				return inner(ns=ns, nsmap=extra_nsmap)
+			except ValidationError as ex:
+				last_err = ex
+		raise last_err
 
 	@staticmethod
 	def extract_extra_nsmap(http_body: bytes) -> t.Dict[str, str]:
