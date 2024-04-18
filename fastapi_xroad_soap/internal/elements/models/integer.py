@@ -39,6 +39,6 @@ class Integer:
 			total_digits: t.Optional[int] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None
-	) -> t.Union[int, t.List[int]]:
+	) -> int:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
 		return t.cast(int, IntegerSpec(**kwargs))

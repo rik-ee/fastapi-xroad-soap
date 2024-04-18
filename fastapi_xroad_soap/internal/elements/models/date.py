@@ -39,6 +39,6 @@ class Date:
 			max_value: t.Optional[date] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None
-	) -> t.Union[date, t.List[date]]:
+	) -> date:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
 		return t.cast(date, DateSpec(**kwargs))

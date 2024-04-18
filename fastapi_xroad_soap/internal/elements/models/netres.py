@@ -40,6 +40,6 @@ class NetRes:
 			max_length: t.Optional[int] = None,
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None
-	) -> t.Union[AnyUrl, t.List[AnyUrl]]:
+	) -> AnyUrl:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
 		return t.cast(AnyUrl, NetResSpec(**kwargs))

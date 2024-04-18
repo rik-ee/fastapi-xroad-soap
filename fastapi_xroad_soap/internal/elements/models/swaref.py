@@ -170,7 +170,7 @@ class SwaRefElement:
 			allowed_filetypes: _Filetypes = "all",
 			max_filesize: _FileSizeType = None,
 			hash_func: _HashFuncType = "sha3_512"
-	) -> t.Union[SwaRefFile, t.List[SwaRefFile]]:
+	) -> SwaRefFile:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
 		return t.cast(SwaRefFile, SwaRefSpec(**kwargs))
 

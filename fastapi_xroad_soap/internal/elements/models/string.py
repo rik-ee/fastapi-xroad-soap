@@ -40,6 +40,6 @@ class String:
 			enumerations: t.Optional[t.Type[Enum]] = None,
 			pattern: t.Optional[str] = None,
 			whitespace: t.Literal["preserve", "replace", "collapse"] = "preserve"
-	) -> t.Union[str, t.List[str]]:
+	) -> str:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
 		return t.cast(str, StringSpec(**kwargs))

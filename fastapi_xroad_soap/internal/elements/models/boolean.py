@@ -42,6 +42,6 @@ class Boolean:
 			nsmap: t.Optional[t.Dict[str, str]] = None,
 			min_occurs: int = None,
 			max_occurs: t.Union[int, t.Literal["unbounded"]] = None
-	) -> t.Union[bool, t.List[bool]]:
+	) -> bool:
 		kwargs = {k: v for k, v in locals().items() if v != cls}
 		return t.cast(bool, BooleanSpec(**kwargs))
