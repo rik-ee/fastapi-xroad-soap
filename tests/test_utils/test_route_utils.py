@@ -9,7 +9,14 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import pytest
-from fastapi_xroad_soap.internal import utils
+from fastapi_xroad_soap.internal.utils import route_utils as utils
+
+
+__all__ = [
+	"test_with_annotations",
+	"test_without_annotations",
+	"test_extract_parameter_positions"
+]
 
 
 def test_with_annotations():

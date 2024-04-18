@@ -19,6 +19,24 @@ from .conftest import (
 )
 
 
+__all__ = [
+	"test_search_upwards_finds_file",
+	"test_search_upwards_raises_file_not_found_error",
+	"test_search_upwards_with_str_inputs",
+	"test_resolve_relpath_path_type",
+	"test_resolve_relpath_absolute_path",
+	"test_resolve_relpath_relative_path",
+	"test_read_cached_file",
+	"test_read_cached_file_encoding",
+	"test_read_cached_file_nonexistent_file",
+	"test_read_cached_file_cached_result",
+	"test_read_cached_xml_file",
+	"test_read_cached_xml_file_invalid_xml",
+	"test_read_cached_xml_file_return_content",
+	"test_read_cached_xml_file_return_etree"
+]
+
+
 def test_search_upwards_finds_file(setup_search_upwards):
 	root_dir, target_file_path, _ = setup_search_upwards
 	found_path = utils.search_upwards(
