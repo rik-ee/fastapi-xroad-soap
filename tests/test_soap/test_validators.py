@@ -26,6 +26,10 @@ def correct_function_reversed_args(header: XroadHeader, body: CustomMessageBody)
 	pass  # Shut Up SonarCloud
 
 
+def correct_function_no_header(body: CustomMessageBody) -> CustomMessageBody:
+	pass  # Shut Up SonarCloud
+
+
 def correct_function_no_return(header: XroadHeader, body: CustomMessageBody) -> None:
 	pass  # Shut Up SonarCloud
 
@@ -60,8 +64,10 @@ def test_validate_annotations_correct():
 	assert annotations1 == expected
 	annotations2 = validate_annotations('', correct_function_reversed_args)
 	assert annotations2 == expected
-	annotations3 = validate_annotations('', correct_function_no_return)
-	assert annotations3 == {**expected, "return": None}
+	annotations3 = validate_annotations('', correct_function_no_header)
+	assert annotations3 == {"body": CustomMessageBody, "return": CustomMessageBody}
+	annotations4 = validate_annotations('', correct_function_no_return)
+	assert annotations4 == {**expected, "return": None}
 
 
 def test_validate_annotations_incorrect_body():
