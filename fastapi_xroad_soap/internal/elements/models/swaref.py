@@ -235,16 +235,9 @@ class SwaRefUtils:
 			content: MessageBody
 	) -> None:
 		_specs = getattr(content, "_element_specs", None)
-		if _specs is None:
-			return
 		for attr, spec in _specs.items():
 			if not isinstance(spec, SwaRefSpec):
 				continue
+			for item in getattr(content, attr):
+				files.append(item)
 			specs.append(spec)
-			obj = getattr(content, attr)
-			if isinstance(obj, SwaRefFile):
-				files.append(obj)
-			elif isinstance(obj, list):
-				for item in obj:
-					if isinstance(item, SwaRefFile):
-						files.append(item)
