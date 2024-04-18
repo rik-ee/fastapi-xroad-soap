@@ -33,15 +33,9 @@ NestedModels = t.List[t.Tuple[
 	t.Type["MessageBody"],
 	t.List[t.Type["MessageBody"]]
 ]]
-ModelConfig = dict(
-	metaclass=CompositeMeta,
-	search_mode='unordered',
-	skip_empty=True,
-	extra="forbid"
-)
 
 
-class MessageBody(model.BaseXmlModel, **ModelConfig):
+class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
 	_element_specs: t.Dict[str, BaseElementSpec] = PrivateAttr(default_factory=dict)
 
 	@classmethod
