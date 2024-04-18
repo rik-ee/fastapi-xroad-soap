@@ -28,7 +28,7 @@ def test_xroad_service():
 	output = service.to_xml(pretty_print=True).decode()
 	output = output.replace("  ", "\t").strip()
 	expected = textwrap.dedent("""
-	<xro:service xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xro="http://x-road.eu/xsd/xroad.xsd" xmlns:iden="http://x-road.eu/xsd/identifiers" iden:object_type="SERVICE">
+	<xro:service xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xro="http://x-road.eu/xsd/xroad.xsd" xmlns:iden="http://x-road.eu/xsd/identifiers" iden:objectType="SERVICE">
 		<iden:xRoadInstance>xroad_instance</iden:xRoadInstance>
 		<iden:memberClass>member_class</iden:memberClass>
 		<iden:memberCode>member_code</iden:memberCode>
@@ -50,7 +50,7 @@ def test_xroad_client():
 	output = client.to_xml(pretty_print=True).decode()
 	output = output.replace("  ", "\t").strip()
 	expected = textwrap.dedent("""
-	<xro:client xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xro="http://x-road.eu/xsd/xroad.xsd" xmlns:iden="http://x-road.eu/xsd/identifiers" iden:object_type="SUBSYSTEM">
+	<xro:client xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xro="http://x-road.eu/xsd/xroad.xsd" xmlns:iden="http://x-road.eu/xsd/identifiers" iden:objectType="SUBSYSTEM">
 		<iden:xRoadInstance>xroad_instance</iden:xRoadInstance>
 		<iden:memberClass>member_class</iden:memberClass>
 		<iden:memberCode>member_code</iden:memberCode>
@@ -87,7 +87,7 @@ def test_xroad_header():
 		<xro:userId>user_id</xro:userId>
 		<xro:protocolVersion>proto_ver</xro:protocolVersion>
 		<xro:id>id</xro:id>
-		<xro:service iden:object_type="SERVICE">
+		<xro:service iden:objectType="SERVICE">
 			<iden:xRoadInstance>xroad_instance</iden:xRoadInstance>
 			<iden:memberClass>member_class</iden:memberClass>
 			<iden:memberCode>member_code</iden:memberCode>
@@ -95,7 +95,7 @@ def test_xroad_header():
 			<iden:serviceCode>service_code</iden:serviceCode>
 			<iden:serviceVersion>service_version</iden:serviceVersion>
 		</xro:service>
-		<xro:client iden:object_type="SUBSYSTEM">
+		<xro:client iden:objectType="SUBSYSTEM">
 			<iden:xRoadInstance>xroad_instance</iden:xRoadInstance>
 			<iden:memberClass>member_class</iden:memberClass>
 			<iden:memberCode>member_code</iden:memberCode>

@@ -167,7 +167,7 @@ def test_factory_6(header: XroadHeader):
 				<xro:userId>user_id</xro:userId>
 				<xro:protocolVersion>proto_ver</xro:protocolVersion>
 				<xro:id>id</xro:id>
-				<xro:service iden:object_type="SERVICE">
+				<xro:service iden:objectType="SERVICE">
 					<iden:xRoadInstance>xroad_instance</iden:xRoadInstance>
 					<iden:memberClass>member_class</iden:memberClass>
 					<iden:memberCode>member_code</iden:memberCode>
@@ -175,7 +175,7 @@ def test_factory_6(header: XroadHeader):
 					<iden:serviceCode>service_code</iden:serviceCode>
 					<iden:serviceVersion>service_version</iden:serviceVersion>
 				</xro:service>
-				<xro:client iden:object_type="SUBSYSTEM">
+				<xro:client iden:objectType="SUBSYSTEM">
 					<iden:xRoadInstance>xroad_instance</iden:xRoadInstance>
 					<iden:memberClass>member_class</iden:memberClass>
 					<iden:memberCode>member_code</iden:memberCode>

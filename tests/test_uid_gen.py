@@ -41,12 +41,9 @@ def test_cid_token_generation():
 
 def test_key_token_generation():
 	def validate(_token: str):
-		assert _token.count('-') == 3
-		parts = _token.split('-')
-		assert len(parts) == 4
-		for part in parts:
-			assert len(part) == 4
-			assert part.isalnum()
+		assert len(_token) == 16
+		for char in _token:
+			assert char.isalnum()
 
 	key = UIDGenerator(mode="key")
 	validate(key.generate())
@@ -68,18 +65,16 @@ def test_cid_length_increase():
 		tkn_len = cid._token_len * 2 + 4
 		assert len(cid.generate()) == tkn_len
 		cid._token_len += 1
-	cid._token_len += 1
 	with pytest.raises(RuntimeError):
 		_ = cid.generate()
 
 
 def test_key_length_increase():
 	key = UIDGenerator(mode="key")
-	for _ in range(2):
-		tkn_len = key._token_len * 2 - 1
+	for i in range(3):
+		tkn_len = key._token_len + 4 + i
 		assert len(key.generate()) == tkn_len
-		key._token_len += 5
-	key._token_len += 5
+		key._token_len += key._increment
 	with pytest.raises(RuntimeError):
 		_ = key.generate()
 
@@ -94,7 +89,7 @@ def test_out_of_bounds_collisions():
 			_ = gen.generate()
 			with pytest.raises(RuntimeError):
 				_ = gen.generate()
-		assert gen._token_len > 15
+		assert gen._token_len >= 15
 
 
 def test_deterministic_generation():
