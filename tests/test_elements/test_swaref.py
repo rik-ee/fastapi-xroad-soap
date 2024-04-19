@@ -12,7 +12,6 @@ import pytest
 import base64
 import hashlib
 import typing as t
-from pydantic_xml import model
 from fastapi_xroad_soap.internal.base import BaseElementSpec
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
@@ -30,40 +29,15 @@ __all__ = [
 ]
 
 
-def test_swa_ref_spec(nsmap, a8n_type_tester):
-	spec = t.cast(SwaRefSpec, SwaRef.Element(
-		tag="TestSwaRef",
-		ns="pytest",
-		nsmap=nsmap,
-		min_occurs=123,
-		max_occurs=456
-	))
-	assert isinstance(spec, SwaRefSpec)
-	assert issubclass(SwaRefSpec, BaseElementSpec)
-
-	assert spec.tag == "TestSwaRef"
-	assert spec.ns == "pytest"
-	assert spec.nsmap == nsmap
-	assert spec.min_occurs == 123
-	assert spec.max_occurs == 456
-	assert spec.element_type == SwaRef.File
-	assert spec.internal_type == SwaRefInternal
-	assert spec.has_constraints is False
-
-	for value in [True, False]:
-		assert spec.wsdl_type_name(with_tns=value) == "wsi:swaRef"
-	with pytest.raises(NotImplementedError):
-		_ = spec.default_wsdl_type_name
-
-	element = spec.get_element('')
-	assert spec.get_element_a8n() == t.List[SwaRefInternal]
-	assert isinstance(element, model.XmlEntityInfo)
-	assert element.path == "TestSwaRef"
-	assert element.ns == "pytest"
-	assert element.nsmap == nsmap
-	assert element.default_factory == list
-
-	a8n_type_tester(spec)
+def test_swa_ref_spec(spec_tester):
+	spec_tester(
+		spec_creator=SwaRef.Element,
+		spec_type=SwaRefSpec,
+		spec_base_type=BaseElementSpec,
+		element_type=SwaRef.File,
+		wsdl_type_name="wsi:swaRef",
+		default_wsdl_type_name=None
+	)
 
 
 def test_swa_ref_spec_data_init():
