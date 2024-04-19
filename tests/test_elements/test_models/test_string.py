@@ -127,3 +127,19 @@ def test_string_spec_enum_restriction():
 			assert init_data([choice]) == [choice]
 		with pytest.raises(ValueError):
 			init_data(["tyuio"])
+
+
+def test_string_process_whitespace():
+	spec = t.cast(StringSpec, String(whitespace="replace"))
+	assert spec.whitespace == "replace"
+
+	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
+		init_data = t.cast(t.Callable, func)
+		assert init_data(["asdfg  \t  qwerty"]) == ["asdfg     qwerty"]
+
+	spec = t.cast(StringSpec, String(whitespace="collapse"))
+	assert spec.whitespace == "collapse"
+
+	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
+		init_data = t.cast(t.Callable, func)
+		assert init_data(["asdfg  \t  qwerty"]) == ["asdfg qwerty"]

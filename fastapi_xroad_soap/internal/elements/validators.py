@@ -93,8 +93,6 @@ class StringValidators:
 				)
 
 	def process_whitespace(self, obj: t.Any) -> str:
-		if not isinstance(obj, str):
-			return obj
 		if self.whitespace == "replace":
 			return re.sub(r'\s', ' ', obj)
 		elif self.whitespace == "collapse":

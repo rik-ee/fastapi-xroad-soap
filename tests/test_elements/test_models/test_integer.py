@@ -19,6 +19,7 @@ from fastapi_xroad_soap.internal.elements.models import Integer, IntegerSpec
 __all__ = [
 	"test_integer_spec",
 	"test_integer_spec_pattern_restriction",
+	"test_integer_spec_total_digits_restriction",
 	"test_integer_spec_min_max_restriction",
 	"test_integer_spec_enum_restriction"
 ]
@@ -78,6 +79,18 @@ def test_integer_spec_pattern_restriction():
 			with pytest.raises(ValueError):
 				bad_value = int(f"12340{bad_int}")
 				init_data([bad_value])
+
+
+def test_integer_spec_total_digits_restriction():
+	spec = t.cast(IntegerSpec, Integer(total_digits=4))
+	assert spec.total_digits == 4
+
+	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
+		init_data = t.cast(t.Callable, func)
+		assert init_data([9999]) == [9999]
+
+		with pytest.raises(ValueError):
+			init_data([10_000])
 
 
 def test_integer_spec_min_max_restriction():
