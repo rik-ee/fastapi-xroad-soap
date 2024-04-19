@@ -25,6 +25,7 @@ from fastapi_xroad_soap.internal.elements.models import (
 
 __all__ = [
 	"fixture_spec_tester",
+	"fixture_wsdl_type_name_tester",
 	"fixture_a8n_type_tester",
 	"fixture_process_data_init",
 	"fixture_data_init_tester",
@@ -44,14 +45,14 @@ _Spec = t.Union[BaseElementSpec, NumericTypeSpec, StringTypeSpec]
 
 
 @pytest.fixture(name="spec_tester", scope="package")
-def fixture_spec_tester(a8n_type_tester) -> t.Callable:
+def fixture_spec_tester(wsdl_type_name_tester, a8n_type_tester) -> t.Callable:
 	def closure(
 			spec_creator: t.Type,
 			spec_type: _SpecType,
 			spec_base_type: _BaseSpec,
 			element_type: t.Type[t.Any],
 			wsdl_type_name: str,
-			default_wsdl_type_name: t.Optional[str] = None
+			default_wsdl_type_name: t.Union[str, None]
 	) -> None:
 		ns, tag = "pytest", "PytestElement"
 		nsmap = {"pytest": "http://fastapi-xroad-soap.pytest"}
@@ -77,10 +78,9 @@ def fixture_spec_tester(a8n_type_tester) -> t.Callable:
 			assert spec.internal_type is None
 		assert spec.has_constraints is False
 
-		for value in [True, False]:
-			assert spec.wsdl_type_name(with_tns=value) == wsdl_type_name
-		if default_wsdl_type_name is not None:
-			assert spec.default_wsdl_type_name == wsdl_type_name
+		wsdl_type_name_tester(spec, wsdl_type_name)
+		if isinstance(spec, (NumericTypeSpec, StringTypeSpec)):
+			assert spec.default_wsdl_type_name == default_wsdl_type_name
 		else:
 			with pytest.raises(NotImplementedError):
 				_ = spec.default_wsdl_type_name
@@ -95,6 +95,25 @@ def fixture_spec_tester(a8n_type_tester) -> t.Callable:
 		assert element.default_factory == list
 
 		a8n_type_tester(spec)
+
+	return closure
+
+
+@pytest.fixture(name="wsdl_type_name_tester", scope="package")
+def fixture_wsdl_type_name_tester() -> t.Callable:
+	def closure(spec: BaseElementSpec, wsdl_type_name: t.Optional[str] = None) -> None:
+		if not spec.has_constraints:
+			for value in [True, False]:
+				assert spec.wsdl_type_name(with_tns=value) == wsdl_type_name
+		else:
+			cap_name = spec.default_wsdl_type_name.capitalize()
+			partial_name = f"Custom{cap_name}"
+
+			name = spec.wsdl_type_name(with_tns=True)
+			assert name.startswith("tns:" + partial_name)
+
+			name = spec.wsdl_type_name(with_tns=False)
+			assert name.startswith(partial_name)
 
 	return closure
 
@@ -143,7 +162,7 @@ def fixture_a8n_type_tester() -> t.Callable:
 
 
 @pytest.fixture(name="process_data_init", scope="package")
-def fixture_process_data_init() -> t.Callable:
+def fixture_process_data_init(wsdl_type_name_tester) -> t.Callable:
 	def closure(
 			spec: _Spec,
 			good_values: t.List[t.Any],
@@ -158,6 +177,8 @@ def fixture_process_data_init() -> t.Callable:
 				spec.init_instantiated_data([bv])
 			with pytest.raises(errors):
 				spec.init_deserialized_data([bv])
+		if spec.has_constraints:
+			wsdl_type_name_tester(spec)
 
 	return closure
 
@@ -264,7 +285,7 @@ def fixture_length_tester(process_data_init) -> t.Callable:
 
 
 @pytest.fixture(name="whitespace_tester", scope="package")
-def fixture_whitespace_tester(process_data_init) -> t.Callable:
+def fixture_whitespace_tester() -> t.Callable:
 	def closure(
 			spec_creator: t.Type,
 			raw_string: str,
