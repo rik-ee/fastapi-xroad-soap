@@ -10,6 +10,7 @@
 #
 import re
 import typing as t
+import collections as c
 from enum import Enum
 
 
@@ -24,7 +25,7 @@ class CommonValidators:
 	min_value: t.Optional[t.Any] = None
 	max_value: t.Optional[t.Any] = None
 	pattern: t.Optional[str] = None
-	enumerations: t.Optional[t.Type[Enum]] = None
+	enumerations: t.Optional[c.Iterable[Enum]] = None
 
 	@staticmethod
 	def validate_type(obj: t.Any, expected_type: t.Any) -> None:
