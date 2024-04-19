@@ -29,6 +29,7 @@ class StringTypeSpec(BaseElementSpec, CommonValidators, StringValidators):
 			kwargs.get("whitespace", None)
 			or t.cast(t.Literal, "preserve")
 		)
+		self.validate_enum_value_types(element_type)
 		super().__init__(
 			element_type=element_type,
 			**kwargs

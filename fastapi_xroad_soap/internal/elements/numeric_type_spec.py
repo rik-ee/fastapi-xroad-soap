@@ -25,6 +25,7 @@ class NumericTypeSpec(BaseElementSpec, CommonValidators, NumberValidators):
 		self.total_digits = kwargs.get("total_digits", None)
 		self.enumerations = kwargs.get("enumerations", None)
 		self.pattern = kwargs.get("pattern", None)
+		self.validate_enum_value_types(element_type)
 		super().__init__(
 			element_type=element_type,
 			**kwargs

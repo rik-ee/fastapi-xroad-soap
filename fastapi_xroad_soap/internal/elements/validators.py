@@ -47,22 +47,34 @@ class CommonValidators:
 			)
 
 	def validate_pattern(self, obj: t.Any) -> None:
-		string = str(obj)
-		if self.pattern is not None:
-			match = re.search(self.pattern, string)
-			if match is None:
-				raise ValueError(
-					f"input value does not match regex "
-					f"pattern '{self.pattern}' $${string}$$"
-				)
+		if self.pattern is None:
+			return
+		string = obj.isoformat() if hasattr(obj, "isoformat") else str(obj)
+		match = re.search(self.pattern, string)
+		if match is None:
+			raise ValueError(
+				f"input value does not match regex "
+				f"pattern '{self.pattern}' $${string}$$"
+			)
 
 	def validate_enumerations(self, obj: t.Any) -> None:
-		if self.enumerations is not None:
-			values = [item.value for item in self.enumerations]
-			if obj not in values:
-				raise ValueError(
-					f"input value is not one of the "
-					f"allowed values: {values} $${obj}$$"
+		if self.enumerations is None:
+			return
+		values = [item.value for item in self.enumerations]
+		if obj not in values:
+			raise ValueError(
+				f"input value is not one of the "
+				f"allowed values: {values} $${obj}$$"
+			)
+
+	def validate_enum_value_types(self, expected_type: t.Type) -> None:
+		if self.enumerations is None:
+			return
+		for item in self.enumerations:
+			if not isinstance(item.value, expected_type):
+				raise TypeError(
+					f"enum value {item.value} is not of type {expected_type} "
+					f"in enum {self.enumerations.__name__}"
 				)
 
 
