@@ -15,7 +15,10 @@ from fastapi_xroad_soap.internal.base import BaseElementSpec
 from fastapi_xroad_soap.internal.elements.models import Boolean, BooleanSpec
 
 
-__all__ = ["test_boolean_spec"]
+__all__ = [
+	"test_boolean_spec",
+	"test_boolean_spec_data_init"
+]
 
 
 def test_boolean_spec(nsmap, a8n_type_tester):
@@ -38,13 +41,6 @@ def test_boolean_spec(nsmap, a8n_type_tester):
 	assert spec.internal_type is None
 	assert spec.has_constraints is False
 
-	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
-		init_data = t.cast(t.Callable, func)
-		assert init_data([True, False]) == [True, False]
-		for bad_data in [None, "asdfg", 1.2345, {}, []]:
-			with pytest.raises(TypeError):
-				init_data([bad_data])
-
 	for value in [True, False]:
 		assert spec.wsdl_type_name(with_tns=value) == "boolean"
 	with pytest.raises(NotImplementedError):
@@ -59,3 +55,14 @@ def test_boolean_spec(nsmap, a8n_type_tester):
 	assert element.default_factory == list
 
 	a8n_type_tester(spec)
+
+
+def test_boolean_spec_data_init():
+	spec = t.cast(BooleanSpec, Boolean())
+
+	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
+		init_data = t.cast(t.Callable, func)
+		assert init_data([True, False]) == [True, False]
+		for bad_data in [None, "asdfg", 1.2345, {}, []]:
+			with pytest.raises(TypeError):
+				init_data([bad_data])

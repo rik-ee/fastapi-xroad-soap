@@ -11,6 +11,7 @@
 import pytest
 import typing as t
 import functools
+from datetime import date, time, datetime
 from fastapi_xroad_soap.internal.base import BaseElementSpec
 from fastapi_xroad_soap.internal.elements.models import SwaRefFile
 from fastapi_xroad_soap.internal.constants import A8nType
@@ -32,7 +33,8 @@ def fixture_a8n_type_tester() -> t.Callable[[BaseElementSpec], None]:
 			t.Optional, t.Union, t.List, t.Dict, t.Set, t.Tuple
 		]
 		base_types = [
-			bool, str, int, float, list, dict, set, tuple, SwaRefFile
+			bool, str, int, float, list, dict, set,
+			tuple, date, time, datetime, SwaRefFile
 		]
 		base_types.remove(spec_et)
 

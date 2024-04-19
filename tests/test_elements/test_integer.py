@@ -18,10 +18,12 @@ from fastapi_xroad_soap.internal.elements.models import Integer, IntegerSpec
 
 __all__ = [
 	"test_integer_spec",
+	"test_integer_spec_data_init",
 	"test_integer_spec_pattern_restriction",
 	"test_integer_spec_total_digits_restriction",
 	"test_integer_spec_min_max_restriction",
-	"test_integer_spec_enum_restriction"
+	"test_integer_spec_enum_restriction",
+	"test_integer_spec_invalid_enum_value_type"
 ]
 
 
@@ -45,13 +47,6 @@ def test_integer_spec(nsmap, a8n_type_tester):
 	assert spec.internal_type is None
 	assert spec.has_constraints is False
 
-	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
-		init_data = t.cast(t.Callable, func)
-		assert init_data([1, 2, 3]) == [1, 2, 3]
-		for bad_data in [None, "asdfg", 1.2345, {}, []]:
-			with pytest.raises(TypeError):
-				init_data([bad_data])
-
 	for value in [True, False]:
 		assert spec.wsdl_type_name(with_tns=value) == "integer"
 	assert spec.default_wsdl_type_name == "integer"
@@ -65,6 +60,17 @@ def test_integer_spec(nsmap, a8n_type_tester):
 	assert element.default_factory == list
 
 	a8n_type_tester(spec)
+
+
+def test_integer_spec_data_init():
+	spec = t.cast(IntegerSpec, Integer())
+
+	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
+		init_data = t.cast(t.Callable, func)
+		assert init_data([1, 2, 3]) == [1, 2, 3]
+		for bad_obj in [None, "asdfg", 1.2345, {}, []]:
+			with pytest.raises(TypeError):
+				init_data([bad_obj])
 
 
 def test_integer_spec_pattern_restriction():
@@ -125,3 +131,12 @@ def test_integer_spec_enum_restriction():
 			assert init_data([choice]) == [choice]
 		with pytest.raises(ValueError):
 			init_data([44444])
+
+
+def test_integer_spec_invalid_enum_value_type():
+	for bad_value in ["asdfg", 1.23, None]:
+		class BadChoice(Enum):
+			CHOICE = bad_value
+
+		with pytest.raises(TypeError):
+			Integer(enumerations=BadChoice)

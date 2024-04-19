@@ -24,8 +24,8 @@ from fastapi_xroad_soap.internal.elements.models import (
 
 __all__ = [
 	"test_swa_ref_spec",
-	"test_swa_ref_data_init",
-	"test_swa_ref_restrictions",
+	"test_swa_ref_spec_data_init",
+	"test_swa_ref_spec_restrictions",
 	"test_swa_ref_internal"
 ]
 
@@ -66,7 +66,7 @@ def test_swa_ref_spec(nsmap, a8n_type_tester):
 	a8n_type_tester(spec)
 
 
-def test_swa_ref_data_init():
+def test_swa_ref_spec_data_init():
 	spec = t.cast(SwaRefSpec, SwaRef.Element())
 
 	file = t.cast(SwaRefInternal, SwaRef.File(
@@ -117,7 +117,7 @@ def test_swa_ref_data_init():
 	GlobalWeakStorage._inst_counter = 0  # clean up
 
 
-def test_swa_ref_restrictions():
+def test_swa_ref_spec_restrictions():
 	spec = t.cast(SwaRefSpec, SwaRef.Element(
 		allowed_filetypes=[".xml"],
 		max_filesize=FileSize.KB(1),

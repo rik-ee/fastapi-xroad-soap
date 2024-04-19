@@ -19,10 +19,13 @@ from fastapi_xroad_soap.internal.elements.models import String, StringSpec
 
 __all__ = [
 	"test_string_spec",
+	"test_string_spec_data_init",
 	"test_string_spec_pattern_restriction",
 	"test_string_spec_length_restriction",
 	"test_string_spec_min_max_restriction",
-	"test_string_spec_enum_restriction"
+	"test_string_spec_enum_restriction",
+	"test_string_spec_invalid_enum_value_type",
+	"test_string_process_whitespace"
 ]
 
 
@@ -46,13 +49,6 @@ def test_string_spec(nsmap, a8n_type_tester):
 	assert spec.internal_type is None
 	assert spec.has_constraints is False
 
-	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
-		init_data = t.cast(t.Callable, func)
-		assert init_data(['a', 'b', 'c']) == ['a', 'b', 'c']
-		for bad_data in [None, 12345, 1.2345, {}, []]:
-			with pytest.raises(TypeError):
-				init_data([bad_data])
-
 	for value in [True, False]:
 		assert spec.wsdl_type_name(with_tns=value) == "string"
 	assert spec.default_wsdl_type_name == "string"
@@ -66,6 +62,17 @@ def test_string_spec(nsmap, a8n_type_tester):
 	assert element.default_factory == list
 
 	a8n_type_tester(spec)
+
+
+def test_string_spec_data_init():
+	spec = t.cast(StringSpec, String())
+
+	for func in [spec.init_instantiated_data, spec.init_deserialized_data]:
+		init_data = t.cast(t.Callable, func)
+		assert init_data(['a', 'b', 'c']) == ['a', 'b', 'c']
+		for bad_data in [None, 12345, 1.2345, {}, []]:
+			with pytest.raises(TypeError):
+				init_data([bad_data])
 
 
 def test_string_spec_pattern_restriction():
@@ -127,6 +134,15 @@ def test_string_spec_enum_restriction():
 			assert init_data([choice]) == [choice]
 		with pytest.raises(ValueError):
 			init_data(["tyuio"])
+
+
+def test_string_spec_invalid_enum_value_type():
+	for bad_value in [123, 1.23, True, None]:
+		class BadChoice(Enum):
+			CHOICE = bad_value
+
+		with pytest.raises(TypeError):
+			String(enumerations=BadChoice)
 
 
 def test_string_process_whitespace():
