@@ -50,7 +50,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 		a8ns = getattr(cls, '__annotations__', {})
 		for key, value in a8ns.items():
 			if type(value) is CompositeMeta:
-				models.extend(value.get_nested_models())
+				models.extend(value.nested_models())
 				children.append(value)
 		models.append((cls, children))
 		return models
