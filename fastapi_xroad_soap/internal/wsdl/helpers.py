@@ -9,7 +9,9 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
+import inflection
 from ..soap.action import SoapAction
+from ..constants import A8nType
 from ..elements import NumericTypeSpec
 from ..elements import StringTypeSpec
 from ..base import NestedModels, BaseElementSpec
@@ -19,10 +21,10 @@ from . import models as mod
 __all__ = ["gather_all_types"]
 
 
-AllTypes = t.Tuple[t.List[mod.ComplexType], t.List[mod.SimpleType]]
+_AllTypes = t.Tuple[t.List[mod.ComplexType], t.List[mod.SimpleType]]
 
 
-def gather_all_types(actions: t.Dict[str, SoapAction]) -> AllTypes:
+def gather_all_types(actions: t.Dict[str, SoapAction]) -> _AllTypes:
 	simple_types: t.Dict[str, mod.SimpleType] = {}
 	complex_types: t.List[mod.ComplexType] = []
 	models = _gather_models(actions)
@@ -34,11 +36,21 @@ def gather_all_types(actions: t.Dict[str, SoapAction]) -> AllTypes:
 				name=child.__name__,
 				type=f"tns:{child.__name__}"
 			))
-		for spec in model.model_specs().values():
+		for name, spec in model.model_specs().items():
 			_add_simple_type(spec, simple_types)
 			elements.append(mod.Element(
-				name=spec.tag,
-				type=spec.wsdl_type_name(with_tns=True)
+				name=spec.tag or inflection.camelize(name),
+				type=spec.wsdl_type_name(with_tns=True),
+				max_occurs=(
+					None if
+					spec.a8n_type != A8nType.LIST
+					else spec.max_occurs
+				),
+				min_occurs={
+					A8nType.MAND: None,
+					A8nType.LIST: str(spec.min_occurs),
+					A8nType.OPT: "0"
+				}[spec.a8n_type]
 			))
 		complex_types.append(mod.ComplexType(
 			name=model.__name__,
