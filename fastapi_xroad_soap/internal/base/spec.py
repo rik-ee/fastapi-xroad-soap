@@ -8,15 +8,11 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-import hashlib
 import typing as t
-import functools
 import inflection
 from abc import ABC, abstractmethod
 from pydantic_xml import model, element
 from ..constants import A8nType
-from ..uid_gen import UIDGenerator
-from .. import utils
 from . import validators as vld
 
 try:
@@ -70,20 +66,7 @@ class BaseElementSpec(ABC):
 	def default_wsdl_type_name(self) -> str:
 		raise NotImplementedError
 
-	@functools.lru_cache(maxsize=None)
-	def _compute_signature(self, *args) -> str:
-		repr_forms = []
-		for arg in args:
-			has_dict = hasattr(arg, "__dict__")
-			subject = vars(arg) if has_dict else arg
-			repr_forms.append(repr(subject))
-
-		raw_sig = ''.join(repr_forms).encode()
-		cleaned_sig = utils.remove_memory_addresses(raw_sig)
-		raw_digest = hashlib.shake_128(cleaned_sig).digest(12)
-		return UIDGenerator(mode="key").generate(raw_digest)
-
-	def _assemble_wsdl_type_name(self, signature: str, with_tns: bool) -> str:
+	def assemble_wsdl_type_name(self, signature: str, with_tns: bool) -> str:
 		if not self.has_constraints:
 			return self.default_wsdl_type_name
 		ns = "tns:" if with_tns else ''

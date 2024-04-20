@@ -10,9 +10,12 @@
 #
 import re
 import chardet
+import hashlib
+import functools
 import mimetypes
 import typing as t
 import charset_normalizer as charset
+from ..uid_gen import UIDGenerator
 
 
 __all__ = [
@@ -20,7 +23,8 @@ __all__ = [
 	"guess_mime_type",
 	"detect_decode",
 	"convert_to_utf8",
-	"remove_memory_addresses"
+	"remove_memory_addresses",
+	"compute_signature"
 ]
 
 
@@ -67,3 +71,17 @@ def remove_memory_addresses(string: bytes) -> bytes:
 	pattern = r"0x[0-9A-Fa-f]+"
 	cleaned_text = re.sub(pattern, '', string.decode())
 	return cleaned_text.encode()
+
+
+@functools.lru_cache(maxsize=None)
+def compute_signature(*args) -> str:
+	repr_forms = []
+	for arg in args:
+		has_dict = hasattr(arg, "__dict__")
+		subject = vars(arg) if has_dict else arg
+		repr_forms.append(repr(subject))
+
+	raw_sig = ''.join(repr_forms).encode()
+	cleaned_sig = remove_memory_addresses(raw_sig)
+	raw_digest = hashlib.shake_128(cleaned_sig).digest(12)
+	return UIDGenerator(mode="key").generate(raw_digest)

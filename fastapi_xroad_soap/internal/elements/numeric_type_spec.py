@@ -12,7 +12,11 @@ import functools
 import typing as t
 from abc import abstractmethod
 from ..base import BaseElementSpec
-from .validators import CommonValidators, NumberValidators
+from .. import utils
+from .validators import (
+	CommonValidators,
+	NumberValidators
+)
 
 
 __all__ = ["NumericTypeSpec"]
@@ -59,8 +63,8 @@ class NumericTypeSpec(BaseElementSpec, CommonValidators, NumberValidators):
 		])
 
 	def wsdl_type_name(self, *, with_tns: bool = False) -> str:
-		return self._assemble_wsdl_type_name(
-			signature=self._compute_signature(
+		return self.assemble_wsdl_type_name(
+			signature=utils.compute_signature(
 				self.min_value,
 				self.max_value,
 				self.total_digits,

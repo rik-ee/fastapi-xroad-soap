@@ -12,7 +12,11 @@ import functools
 import typing as t
 from abc import abstractmethod
 from ..base import BaseElementSpec
-from .validators import CommonValidators, StringValidators
+from .. import utils
+from .validators import (
+	CommonValidators,
+	StringValidators
+)
 
 
 __all__ = ["StringTypeSpec"]
@@ -62,8 +66,8 @@ class StringTypeSpec(BaseElementSpec, CommonValidators, StringValidators):
 		)
 
 	def wsdl_type_name(self, *, with_tns: bool = False) -> str:
-		return self._assemble_wsdl_type_name(
-			signature=self._compute_signature(
+		return self.assemble_wsdl_type_name(
+			signature=utils.compute_signature(
 				self.length,
 				self.min_length,
 				self.max_length,
