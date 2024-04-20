@@ -17,6 +17,7 @@ from pydantic_xml import model, element
 from ..constants import A8nType
 from ..uid_gen import UIDGenerator
 from .. import utils
+from . import validators as vld
 
 try:
 	from .body import MessageBody
@@ -101,7 +102,7 @@ class BaseElementSpec(ABC):
 		)
 
 	def set_a8n_type_from(self, a8n: t.Any, attr: str, cls_name: str) -> None:
-		self._validate_user_defined_a8n(a8n, attr, cls_name)
+		vld.validate_a8n_args(a8n, attr, cls_name, self.element_type)
 		if a8n in [A8nType.ABSENT, self.element_type]:
 			self.a8n_type = A8nType.MAND
 			return
@@ -116,24 +117,3 @@ class BaseElementSpec(ABC):
 			f"Unsupported annotation '{a8n}' for "
 			f"class '{cls_name}' attribute '{attr}'."
 		)
-
-	def _validate_user_defined_a8n(self, a8n: t.Any, attr: str, cls_name: str) -> None:
-		if a8n in [t.Optional, t.Union, t.List, list]:
-			raise TypeError(
-				f"Not permitted to provide '{a8n}' "
-				f"annotation without a type argument."
-			)
-		if args := t.get_args(a8n):
-			if len(args) == 1 and args[0] != self.element_type:
-				raise TypeError(
-					f"Single annotation argument for class '{cls_name}' "
-					f"attribute '{attr}' must be '{self.element_type.__name__}'."
-				)
-			for arg in args:
-				if arg is type(None) or arg == self.element_type:
-					continue
-				arg_name = "None" if arg is type(None) else arg.__name__
-				raise TypeError(
-					f"Invalid annotation argument '{arg_name}' "
-					f"for '{cls_name}' class attribute '{attr}'."
-				)

@@ -11,7 +11,7 @@
 from __future__ import annotations
 import typing as t
 from pydantic_xml import model
-from pydantic.fields import ModelPrivateAttr
+from pydantic import fields
 from pydantic import (
 	PrivateAttr,
 	ValidationInfo,
@@ -19,6 +19,7 @@ from pydantic import (
 )
 from ..constants import A8nType
 from .meta import CompositeMeta
+from . import validators as vld
 
 try:
 	from .spec import BaseElementSpec
@@ -41,7 +42,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 	@classmethod
 	def model_specs(cls) -> t.Dict[str, BaseElementSpec]:
 		privates = getattr(cls, "__private_attributes__", {})
-		attr: t.Union[ModelPrivateAttr, None] = privates.get("_element_specs")
+		attr: t.Union[fields.ModelPrivateAttr, None] = privates.get("_element_specs")
 		return attr.get_default() if attr is not None else dict()
 
 	@classmethod
@@ -49,37 +50,23 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 		models, children = [], []
 		a8ns = getattr(cls, '__annotations__', {})
 		for key, value in a8ns.items():
-			if type(value) is CompositeMeta:
-				models.extend(value.nested_models())
-				children.append(value)
+			origin = t.get_origin(value)
+			if origin == list or "Union" in origin.__name__:
+				args = t.get_args(value)
+				args_len = len(args)
+				opt_union = args_len == 2 and type(None) in args
+				if not opt_union and args_len != 1:
+					raise ValueError(
+						f"Invalid type annotation arguments '{args}' "
+						f"for class {cls.__name__} attribute '{key}'"
+					)
+				value = [a for a in args if a is not None][0]
+			if type(value) is not CompositeMeta:
+				continue
+			models.extend(value.nested_models())
+			children.append(value)
 		models.append((cls, children))
 		return models
-
-	@staticmethod
-	def _validate_list(attr: str, data: t.List[MessageBody], spec: BaseElementSpec):
-		if not isinstance(data, list):
-			raise ValueError(
-				f"expected attribute '{attr}' value to be a list, "
-				f"but received '{type(data).__name__}' instead."
-			)
-		count = len(data)
-		if count < spec.min_occurs:
-			raise ValueError(
-				f"expected at least {spec.min_occurs} "
-				f"{spec.tag} elements, got {count}"
-			)
-		elif isinstance(spec.max_occurs, int) and count > spec.max_occurs:
-			raise ValueError(
-				f"expected at most {spec.max_occurs} "
-				f"{spec.tag} elements, got {count}"
-			)
-		expected = spec.internal_type or spec.element_type
-		for item in data:
-			if not isinstance(item, expected):
-				raise ValueError(
-					f"unexpected type '{type(item).__name__}' "
-					f"in list for argument '{attr}'"
-				)
 
 	# noinspection PyNestedDecorators
 	@model_validator(mode="before")
@@ -95,7 +82,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 			value = data.get(attr)
 
 			if spec.a8n_type == A8nType.LIST:
-				cls._validate_list(attr, value, spec)
+				vld.validate_list_items(attr, value, spec)
 				spec.init_instantiated_data(value)
 				continue
 			elif spec.a8n_type == A8nType.OPT and value is None:
@@ -134,7 +121,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 			elif count == 0 and spec.a8n_type == A8nType.MAND:
 				raise ValueError(f"must provide at least one {spec.tag} element")
 			elif spec.a8n_type == A8nType.LIST:
-				self._validate_list(attr, value, spec)
+				vld.validate_list_items(attr, value, spec)
 				spec.init_deserialized_data(value)
 				continue
 
