@@ -10,6 +10,7 @@
 #
 import typing as t
 import inflection
+from ..base import MessageBody
 from ..constants import WSDL_NSMAP
 from ..soap.action import SoapAction
 from ..elements.models import SwaRefSpec
@@ -49,7 +50,6 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 
 
 def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[mod.Import]:
-	wsi = "http://ws-i.org/profiles/basic/1.1/"
 	xro = "http://x-road.eu/xsd/xroad.xsd"
 	imports = [mod.Import(
 		namespace=xro,
@@ -59,17 +59,22 @@ def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[mod.Import]:
 		for model in [action.body_type, action.return_type]:
 			if model is None:
 				continue
-			for nested_model in model.nested_models():
-				specs = nested_model.model_specs()
-				for spec in specs.values():
-					if not isinstance(spec, SwaRefSpec):
-						continue
-					imports.append(mod.Import(
-						namespace=f"{wsi}xsd",
-						schema_loc=f"{wsi}swaref.xsd"
-					))
-					return imports
+			_add_swaref_import(model, imports)
 	return imports
+
+
+def _add_swaref_import(model: t.Type[MessageBody], imports: t.List[mod.Import]) -> None:
+	wsi = "http://ws-i.org/profiles/basic/1.1/"
+	for nested_model in model.nested_models():
+		specs = nested_model.model_specs()
+		for spec in specs.values():
+			if not isinstance(spec, SwaRefSpec):
+				continue
+			imports.append(mod.Import(
+				namespace=f"{wsi}xsd",
+				schema_loc=f"{wsi}swaref.xsd"
+			))
+			return
 
 
 def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[mod.Element]:
