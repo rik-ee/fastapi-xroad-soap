@@ -14,30 +14,32 @@ from ..soap.action import SoapAction
 from ..constants import A8nType
 from ..elements import NumericTypeSpec
 from ..elements import StringTypeSpec
-from ..base import NestedModels, BaseElementSpec
+from ..base import (
+	MessageBody,
+	CompositeMeta,
+	BaseElementSpec
+)
 from . import models as mod
 
 
 __all__ = ["gather_all_types"]
 
 
-_AllTypes = t.Tuple[t.List[mod.ComplexType], t.List[mod.SimpleType]]
+_AllTypes = t.Tuple[
+	t.List[mod.ComplexType],
+	t.List[mod.SimpleType]
+]
 
 
 def gather_all_types(actions: t.Dict[str, SoapAction]) -> _AllTypes:
 	simple_types: t.Dict[str, mod.SimpleType] = {}
 	complex_types: t.List[mod.ComplexType] = []
-	models = _gather_models(actions)
 
-	for model, children in models:
+	for model in _gather_models(actions):
 		elements = []
-		for child in children:
-			elements.append(mod.Element(
-				name=child.__name__,
-				type=f"tns:{child.__name__}"
-			))
 		for name, spec in model.model_specs().items():
-			_add_simple_type(spec, simple_types)
+			if type(spec.element_type) is not CompositeMeta:
+				_add_simple_type(spec, simple_types)
 			elements.append(mod.Element(
 				name=spec.tag or inflection.camelize(name),
 				type=spec.wsdl_type_name(with_tns=True),
@@ -61,7 +63,7 @@ def gather_all_types(actions: t.Dict[str, SoapAction]) -> _AllTypes:
 	return complex_types, list(simple_types.values())
 
 
-def _gather_models(actions: t.Dict[str, SoapAction]) -> NestedModels:
+def _gather_models(actions: t.Dict[str, SoapAction]) -> t.List[t.Type["MessageBody"]]:
 	models = []
 	for action in actions.values():
 		for model in [action.body_type, action.return_type]:
