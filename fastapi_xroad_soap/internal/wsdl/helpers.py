@@ -69,7 +69,7 @@ def _gather_models(actions: t.Dict[str, SoapAction]) -> t.List[t.Type["MessageBo
 		for model in [action.body_type, action.return_type]:
 			nested = model.nested_models()
 			models.extend(nested)
-	return models
+	return list(set(models))
 
 
 def _add_simple_type(spec: BaseElementSpec, simple_types: t.Dict[str, mod.SimpleType]) -> None:
