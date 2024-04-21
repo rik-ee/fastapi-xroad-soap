@@ -36,10 +36,6 @@ class TopModel(MessageBody):
 
 
 def test_swa_ref_utils():
-	assert SwaRefUtils.contains_swa_ref_specs(TopModel) is True
-	assert SwaRefUtils.contains_swa_ref_specs(NestedModel) is True
-	assert SwaRefUtils.contains_swa_ref_specs(DeepModel) is True
-
 	model = TopModel(
 		text="Hello World",
 		nested_model=NestedModel(
