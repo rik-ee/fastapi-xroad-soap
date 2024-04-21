@@ -56,11 +56,11 @@ def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[mod.Import]:
 		schema_loc=xro
 	)]
 	for action in actions.values():
-		for _type in [action.body_type, action.return_type]:
-			if _type is None:
+		for model in [action.body_type, action.return_type]:
+			if model is None:
 				continue
-			for model in _type.nested_models():
-				specs = model.model_specs()
+			for nested_model in model.nested_models():
+				specs = nested_model.model_specs()
 				for spec in specs.values():
 					if not isinstance(spec, SwaRefSpec):
 						continue
@@ -76,11 +76,12 @@ def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[mod.Element]:
 	elements = []
 	for name, action in actions.items():
 		for model in [action.body_type, action.return_type]:
-			if model is not None:
-				elements.append(mod.Element(
-					name=model.__name__,
-					type=f"tns:{model.__name__}"
-				))
+			if model is None:
+				continue
+			elements.append(mod.Element(
+				name=model.__name__,
+				type=f"tns:{model.__name__}"
+			))
 	return [
 		*elements,
 		mod.Element(
@@ -121,11 +122,12 @@ def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[mod.WSDLMessa
 	messages = []
 	for name, action in actions.items():
 		for model in [action.body_type, action.return_type]:
-			if model is not None:
-				messages.append(mod.WSDLMessage(
-					name=model.__name__,
-					parts=[mod.WSDLPart(element=f"tns:{model.__name__}")]
-				))
+			if model is None:
+				continue
+			messages.append(mod.WSDLMessage(
+				name=model.__name__,
+				parts=[mod.WSDLPart(element=f"tns:{model.__name__}")]
+			))
 	return [
 		*messages,
 		mod.WSDLMessage(

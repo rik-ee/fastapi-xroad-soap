@@ -80,6 +80,8 @@ def _gather_models(actions: t.Dict[str, SoapAction]) -> t.List[t.Type["MessageBo
 	models = []
 	for action in actions.values():
 		for model in [action.body_type, action.return_type]:
+			if model is None:
+				continue
 			nested = model.nested_models()
 			models.extend(nested)
 	return list(set(models))
