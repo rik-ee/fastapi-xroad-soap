@@ -14,7 +14,8 @@ from .content_utils import (
 	detect_decode,
 	convert_to_utf8,
 	remove_memory_addresses,
-	compute_signature
+	compute_signature,
+	is_incoming_request
 )
 from .path_utils import (
 	search_upwards,
@@ -35,6 +36,7 @@ __all__ = [
 	"convert_to_utf8",
 	"remove_memory_addresses",
 	"compute_signature",
+	"is_incoming_request",
 	"search_upwards",
 	"resolve_relpath",
 	"read_cached_file",

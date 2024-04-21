@@ -15,6 +15,7 @@ import functools
 import mimetypes
 import typing as t
 import charset_normalizer as charset
+from pydantic import ValidationInfo
 from ..uid_gen import UIDGenerator
 
 
@@ -24,7 +25,8 @@ __all__ = [
 	"detect_decode",
 	"convert_to_utf8",
 	"remove_memory_addresses",
-	"compute_signature"
+	"compute_signature",
+	"is_incoming_request"
 ]
 
 
@@ -85,3 +87,7 @@ def compute_signature(*args) -> str:
 	cleaned_sig = remove_memory_addresses(raw_sig)
 	raw_digest = hashlib.shake_128(cleaned_sig).digest(12)
 	return UIDGenerator(mode="key").generate(raw_digest)
+
+
+def is_incoming_request(info: ValidationInfo) -> bool:
+	return (info.context or {}).get("deserializing", False)

@@ -10,7 +10,6 @@
 #
 from __future__ import annotations
 import typing as t
-import inflection
 from pydantic_xml import model
 from pydantic import fields
 from pydantic import (
@@ -18,6 +17,7 @@ from pydantic import (
 	ValidationInfo,
 	model_validator
 )
+from .. import utils
 from ..constants import A8nType
 from .base_element_spec import BaseElementSpec
 from .composite_meta import CompositeMeta
@@ -80,8 +80,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 	@classmethod
 	def _validate_before(cls, data: t.Dict[str, t.Any], info: ValidationInfo) -> t.Any:
 		# Used for validating model instantiation in user code
-		is_incoming_request = (info.context or {}).get("deserializing", False)
-		if is_incoming_request or not isinstance(data, dict):
+		if utils.is_incoming_request(info) or not isinstance(data, dict):
 			return data
 
 		for attr, spec in cls.model_specs().items():
@@ -107,8 +106,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 	@model_validator(mode="after")
 	def _validate_after(self, info: ValidationInfo) -> MessageBody:
 		# Used for validating deserialized incoming requests
-		is_incoming_request = (info.context or {}).get("deserializing", False)
-		if not is_incoming_request:  # is model instantiation in user code
+		if not utils.is_incoming_request(info):
 			return self
 
 		specs = getattr(self, "_element_specs", None)
@@ -122,20 +120,14 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 			elif not isinstance(value, list):
 				value = [value]
 
-			count = len(value)
-			elem_name = spec.tag or inflection.camelize(attr)
-
-			if count > 1 and spec.a8n_type in [A8nType.MAND, A8nType.OPT]:
-				raise ValueError(f"only one {elem_name} element is allowed, got {count}")
-			elif count == 0 and spec.a8n_type == A8nType.MAND:
-				raise ValueError(f"must provide at least one {elem_name} element")
-			elif spec.a8n_type == A8nType.LIST:
+			vld.validate_opt_mand_a8n(attr, value, spec)
+			if spec.a8n_type == A8nType.LIST:
 				vld.validate_list_items(attr, value, spec)
 				spec.init_deserialized_data(value)
 				continue
 
 			spec.init_deserialized_data(value)
-			value = value[0] if count == 1 else None
+			value = value[0] if len(value) == 1 else None
 			setattr(self, attr, value)
 		return self
 

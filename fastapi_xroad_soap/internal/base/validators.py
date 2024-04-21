@@ -9,6 +9,8 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
+import inflection
+from ..constants import A8nType
 
 try:
 	from .message_body import MessageBody
@@ -20,7 +22,21 @@ except ImportError:  # pragma: no cover
 	BaseElementSpec: t.TypeAlias = t.Any
 
 
-__all__ = ["validate_list_items", "validate_a8n_args"]
+__all__ = [
+	"validate_opt_mand_a8n",
+	"validate_list_items",
+	"validate_a8n_args"
+]
+
+
+def validate_opt_mand_a8n(attr: str, value: t.List[t.Any], spec: BaseElementSpec) -> None:
+	elem_name = spec.tag or inflection.camelize(attr)
+	count = len(value)
+
+	if count > 1 and spec.a8n_type in [A8nType.MAND, A8nType.OPT]:
+		raise ValueError(f"only one {elem_name} element is allowed, got {count}")
+	elif count == 0 and spec.a8n_type == A8nType.MAND:
+		raise ValueError(f"must provide at least one {elem_name} element")
 
 
 def validate_list_items(attr: str, data: t.List[MessageBody], spec: BaseElementSpec):
