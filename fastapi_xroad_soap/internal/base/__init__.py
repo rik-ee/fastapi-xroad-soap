@@ -8,16 +8,15 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .body import NestedModels, MessageBody, MessageBodyType
-from .meta import ElementSpecMeta, CompositeMeta
-from .spec import BaseElementSpec
+from .message_body import MessageBody, MessageBodyType
+from .composite_meta import ElementSpecMeta, CompositeMeta
+from .base_element_spec import BaseElementSpec
 
 
 __all__ = [
-	"NestedModels",
 	"MessageBody",
 	"MessageBodyType",
-	"BaseElementSpec",
 	"ElementSpecMeta",
-	"CompositeMeta"
+	"CompositeMeta",
+	"BaseElementSpec"
 ]

@@ -11,11 +11,11 @@
 import typing as t
 
 try:
-	from .body import MessageBody
+	from .message_body import MessageBody
 except ImportError:  # pragma: no cover
 	MessageBody: t.TypeAlias = t.Any
 try:
-	from .spec import BaseElementSpec
+	from .base_element_spec import BaseElementSpec
 except ImportError:  # pragma: no cover
 	BaseElementSpec: t.TypeAlias = t.Any
 

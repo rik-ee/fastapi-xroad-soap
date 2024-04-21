@@ -10,7 +10,7 @@
 #
 from pydantic_xml import model
 from ..constants import A8nType
-from .spec import BaseElementSpec
+from .base_element_spec import BaseElementSpec
 
 
 __all__ = ["ElementSpecMeta", "CompositeMeta"]

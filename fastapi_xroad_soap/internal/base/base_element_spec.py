@@ -16,7 +16,7 @@ from ..constants import A8nType
 from . import validators as vld
 
 try:
-	from .body import MessageBody
+	from .message_body import MessageBody
 except ImportError:  # pragma: no cover
 	MessageBody: t.TypeAlias = t.Any
 
