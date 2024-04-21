@@ -12,7 +12,7 @@ import typing as t
 import inflection
 from ..constants import WSDL_NSMAP
 from ..soap.action import SoapAction
-from ..elements.models import SwaRefUtils
+from ..elements.models import SwaRefSpec
 from .helpers import gather_all_types
 from . import models as mod
 
@@ -49,22 +49,26 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 
 
 def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[mod.Import]:
-	has_specs = SwaRefUtils.contains_swa_ref_specs
-	xro_xsd = "http://x-road.eu/xsd/xroad.xsd"
+	wsi = "http://ws-i.org/profiles/basic/1.1/"
+	xro = "http://x-road.eu/xsd/xroad.xsd"
 	imports = [mod.Import(
-		namespace=xro_xsd,
-		schema_loc=xro_xsd
+		namespace=xro,
+		schema_loc=xro
 	)]
 	for action in actions.values():
-		if (
-			action.body_type is not None
-			and has_specs(action.body_type)
-		):
-			wsi = "http://ws-i.org/profiles/basic/1.1/"
-			imports.append(mod.Import(
-				namespace=f"{wsi}xsd",
-				schema_loc=f"{wsi}swaref.xsd"
-			))
+		for _type in [action.body_type, action.return_type]:
+			if _type is None:
+				continue
+			for model in _type.nested_models():
+				specs = model.model_specs()
+				for spec in specs.values():
+					if not isinstance(spec, SwaRefSpec):
+						continue
+					imports.append(mod.Import(
+						namespace=f"{wsi}xsd",
+						schema_loc=f"{wsi}swaref.xsd"
+					))
+					return imports
 	return imports
 
 

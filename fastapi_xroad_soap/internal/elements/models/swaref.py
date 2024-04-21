@@ -12,16 +12,13 @@ from __future__ import annotations
 import base64
 import hashlib
 import typing as t
-from pydantic import fields as pyd
 from pydantic.fields import Field
 from fastapi_xroad_soap.internal import utils
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
 from fastapi_xroad_soap.internal.file_size import FileSize
 from fastapi_xroad_soap.internal.base import (
-	BaseElementSpec,
-	CompositeMeta,
-	MessageBody
+	BaseElementSpec, MessageBody
 )
 
 
@@ -190,27 +187,6 @@ class SwaRef:
 
 
 class SwaRefUtils:
-	@classmethod
-	def contains_swa_ref_specs(cls, content_cls: t.Type[MessageBody]) -> bool:
-		if type(content_cls) is pyd.FieldInfo:
-			content_cls = content_cls.annotation
-		has_swa_ref = False
-
-		# Define recursion behavior
-		fields = getattr(content_cls, "model_fields", {})
-		for sub_content_cls in fields.values():
-			res = cls.contains_swa_ref_specs(sub_content_cls)
-			has_swa_ref |= res
-
-		# Check private attributes for SwaRef specs
-		if type(content_cls) is not CompositeMeta:
-			return has_swa_ref
-		specs = content_cls.model_specs()
-		for spec in specs.values():
-			if type(spec).__name__ == "SwaRefSpec":
-				has_swa_ref |= True
-		return has_swa_ref
-
 	@classmethod
 	def gather_specs_and_files(cls, content: MessageBody) -> _SwaRefTypes:
 		specs, files = [], []

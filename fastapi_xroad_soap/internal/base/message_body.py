@@ -57,6 +57,8 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 		a8ns = getattr(cls, '__annotations__', {})
 		for key, value in a8ns.items():
 			origin = t.get_origin(value)
+			if origin is None:
+				continue
 			if origin == list or "Union" in origin.__name__:
 				args = t.get_args(value)
 				args_len = len(args)
