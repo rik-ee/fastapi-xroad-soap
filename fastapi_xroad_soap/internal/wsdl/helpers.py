@@ -46,7 +46,7 @@ def gather_all_types(actions: t.Dict[str, SoapAction]) -> _AllTypes:
 				max_occurs=(
 					None if
 					spec.a8n_type != A8nType.LIST
-					else spec.max_occurs
+					else str(spec.max_occurs)
 				),
 				min_occurs={
 					A8nType.MAND: None,
