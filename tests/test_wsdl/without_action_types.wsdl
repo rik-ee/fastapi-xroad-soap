@@ -1,0 +1,74 @@
+<wsdl:definitions
+  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+  xmlns:wsi="http://ws-i.org/profiles/basic/1.1/xsd"
+  xmlns:xro="http://x-road.eu/xsd/xroad.xsd"
+  xmlns:tns="https://example.org"
+  targetNamespace="https://example.org"
+  name="SoapService">
+  <wsdl:types>
+    <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="https://example.org">
+      <import namespace="http://x-road.eu/xsd/xroad.xsd" schemaLocation="http://x-road.eu/xsd/xroad.xsd"/>
+      <element name="FaultResponse" type="tns:FaultResponse"/>
+      <complexType name="FaultResponse">
+        <sequence>
+          <element name="faultcode" type="string"/>
+          <element name="faultstring" type="string"/>
+          <element name="faultactor" type="string"/>
+          <element name="detail" type="tns:FaultResponseDetail"/>
+        </sequence>
+      </complexType>
+      <complexType name="FaultResponseDetail">
+        <sequence>
+          <any processContents="lax"/>
+        </sequence>
+      </complexType>
+    </schema>
+  </wsdl:types>
+  <wsdl:message name="FaultResponse">
+    <wsdl:part element="tns:FaultResponse" name="fault"/>
+  </wsdl:message>
+  <wsdl:message name="xroadHeader">
+    <wsdl:part element="xro:userId" name="userId"/>
+    <wsdl:part element="xro:protocolVersion" name="protocolVersion"/>
+    <wsdl:part element="xro:id" name="id"/>
+    <wsdl:part element="xro:service" name="service"/>
+    <wsdl:part element="xro:client" name="client"/>
+  </wsdl:message>
+  <wsdl:portType name="servicePortType">
+    <wsdl:operation name="pytestAction">
+      <wsdl:fault message="tns:FaultResponse" name="FaultResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="serviceBinding" type="tns:servicePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="pytestAction">
+      <soap:operation soapAction="pytestAction"/>
+      <xro:version>v1</xro:version>
+      <wsdl:input>
+        <soap:header message="tns:xroadHeader" use="literal" part="userId"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="protocolVersion"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="id"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="service"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="client"/>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:header message="tns:xroadHeader" use="literal" part="userId"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="protocolVersion"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="id"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="service"/>
+        <soap:header message="tns:xroadHeader" use="literal" part="client"/>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="FaultResponse">
+        <soap:fault name="FaultResponse" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="xroadService">
+    <wsdl:port binding="tns:serviceBinding" name="servicePort">
+      <soap:address location="http://example.org/xroad-endpoint"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
