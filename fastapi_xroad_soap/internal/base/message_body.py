@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 import typing as t
+import inflection
 from pydantic_xml import model
 from pydantic import fields
 from pydantic import (
@@ -18,26 +19,31 @@ from pydantic import (
 	model_validator
 )
 from ..constants import A8nType
-from .meta import CompositeMeta
+from .base_element_spec import BaseElementSpec
+from .composite_meta import CompositeMeta
+from .dynamic_spec import dynamic_spec
 from . import validators as vld
 
-try:
-	from .spec import BaseElementSpec
-except ImportError:  # pragma: no cover
-	BaseElementSpec: t.TypeAlias = t.Any
 
-
-__all__ = ["NestedModels", "MessageBody", "MessageBodyType"]
-
-
-NestedModels = t.List[t.Tuple[
-	t.Type["MessageBody"],
-	t.List[t.Type["MessageBody"]]
-]]
+__all__ = ["MessageBody", "MessageBodyType"]
 
 
 class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unordered', skip_empty=True):
 	_element_specs: t.Dict[str, BaseElementSpec] = PrivateAttr(default_factory=dict)
+	_T = t.TypeVar('_T', bound="MessageBody")
+
+	@classmethod
+	def Element(
+			cls: t.Type[_T],
+			*,
+			tag: t.Optional[str] = None,
+			ns: t.Optional[str] = None,
+			nsmap: t.Optional[t.Dict[str, str]] = None,
+			min_occurs: int = None,
+			max_occurs: t.Union[int, t.Literal["unbounded"]] = None
+	) -> _T:
+		kwargs = {k: v for k, v in locals().items() if v != cls}
+		return t.cast(MessageBody, dynamic_spec(cls, **kwargs))
 
 	@classmethod
 	def model_specs(cls) -> t.Dict[str, BaseElementSpec]:
@@ -46,8 +52,8 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 		return attr.get_default() if attr is not None else dict()
 
 	@classmethod
-	def nested_models(cls) -> NestedModels:
-		models, children = [], []
+	def nested_models(cls) -> t.List[t.Type["MessageBody"]]:
+		models = []
 		a8ns = getattr(cls, '__annotations__', {})
 		for key, value in a8ns.items():
 			origin = t.get_origin(value)
@@ -64,8 +70,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 			if type(value) is not CompositeMeta:
 				continue
 			models.extend(value.nested_models())
-			children.append(value)
-		models.append((cls, children))
+		models.append(cls)
 		return models
 
 	# noinspection PyNestedDecorators
@@ -114,12 +119,14 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 				continue
 			elif not isinstance(value, list):
 				value = [value]
+
 			count = len(value)
+			elem_name = spec.tag or inflection.camelize(attr)
 
 			if count > 1 and spec.a8n_type in [A8nType.MAND, A8nType.OPT]:
-				raise ValueError(f"only one {spec.tag} element is allowed, got {count}")
+				raise ValueError(f"only one {elem_name} element is allowed, got {count}")
 			elif count == 0 and spec.a8n_type == A8nType.MAND:
-				raise ValueError(f"must provide at least one {spec.tag} element")
+				raise ValueError(f"must provide at least one {elem_name} element")
 			elif spec.a8n_type == A8nType.LIST:
 				vld.validate_list_items(attr, value, spec)
 				spec.init_deserialized_data(value)
