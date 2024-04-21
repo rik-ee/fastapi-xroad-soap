@@ -12,6 +12,7 @@ from enum import Enum
 
 
 __all__ = [
+    "XSD",
     "ENV_NSMAP",
     "XRO_NSMAP",
     "IDEN_NSMAP",
@@ -21,6 +22,7 @@ __all__ = [
 ]
 
 
+XSD = "http://www.w3.org/2001/XMLSchema"
 ENV_NSMAP = {"soapenv": "http://schemas.xmlsoap.org/soap/envelope/"}
 XRO_NSMAP = {"xro": "http://x-road.eu/xsd/xroad.xsd"}
 IDEN_NSMAP = {"iden": "http://x-road.eu/xsd/identifiers"}
@@ -29,7 +31,6 @@ WSDL_NSMAP = {
     "wsdl": "http://schemas.xmlsoap.org/wsdl/",
     "soap": "http://schemas.xmlsoap.org/wsdl/soap/",
     "wsi": "http://ws-i.org/profiles/basic/1.1/xsd",
-    "xsd": "http://www.w3.org/2001/XMLSchema",
     **XRO_NSMAP
 }
 

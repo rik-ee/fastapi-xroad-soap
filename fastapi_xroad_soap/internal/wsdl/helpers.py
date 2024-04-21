@@ -8,6 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import re
 import typing as t
 import inflection
 from ..soap.action import SoapAction
@@ -22,13 +23,25 @@ from ..base import (
 from . import models as mod
 
 
-__all__ = ["gather_all_types"]
+__all__ = [
+	"format_wsdl_definitions",
+	"gather_all_types"
+]
 
 
 _AllTypes = t.Tuple[
 	t.List[mod.ComplexType],
 	t.List[mod.SimpleType]
 ]
+
+
+def format_wsdl_definitions(wsdl_string: str) -> bytes:
+	return re.sub(
+		pattern=r'(<wsdl:definitions[^>]*>)',
+		repl=lambda match: match.group(1).replace(' ', '\n  '),
+		string=wsdl_string,
+		count=1
+	).encode()
 
 
 def gather_all_types(actions: t.Dict[str, SoapAction]) -> _AllTypes:

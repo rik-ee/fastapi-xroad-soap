@@ -10,7 +10,7 @@
 #
 import typing as t
 from pydantic_xml import BaseXmlModel, attr
-from fastapi_xroad_soap.internal.constants import WSDL_NSMAP
+from fastapi_xroad_soap.internal.constants import XSD
 from .restrictions import (
     NumericTypeRestriction,
     StringTypeRestriction
@@ -67,7 +67,7 @@ class Include(BaseXmlModel, tag="include"):
 
 
 class Schema(BaseXmlModel, tag="schema"):
-    xmlns: str = attr(default=WSDL_NSMAP["xsd"])
+    xmlns: str = attr(default=XSD)
     target_ns: str = attr(name="targetNamespace")
     imports: t.List[Import]
     includes: t.List[Include]

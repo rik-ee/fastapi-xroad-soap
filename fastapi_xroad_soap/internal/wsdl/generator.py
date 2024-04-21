@@ -13,8 +13,7 @@ import inflection
 from ..constants import WSDL_NSMAP
 from ..soap.action import SoapAction
 from ..elements.models import SwaRefSpec
-from .helpers import gather_all_types
-from . import models as mod
+from . import helpers, models as mod
 
 
 __all__ = ["generate"]
@@ -25,7 +24,7 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 		"WSDLDefinitions", (mod.WSDLDefinitions,),
 		{}, nsmap={**WSDL_NSMAP, "tns": tns}
 	)
-	return wsdl_def(
+	wsdl_data: str = wsdl_def(
 		target_ns=tns,
 		name=name,
 		types=mod.WSDLTypes(
@@ -45,7 +44,8 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 				address=mod.SOAPAddress()
 			)
 		)
-	).to_xml(pretty_print=True)
+	).to_xml(pretty_print=True).decode()
+	return helpers.format_wsdl_definitions(wsdl_data)
 
 
 def _generate_imports(actions: t.Dict[str, SoapAction]) -> t.List[mod.Import]:
@@ -91,7 +91,7 @@ def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[mod.Element]:
 
 
 def _generate_types(actions: t.Dict[str, SoapAction]) -> t.Dict:
-	complex_types, simple_types = gather_all_types(actions)
+	complex_types, simple_types = helpers.gather_all_types(actions)
 	return dict(
 		complex_types=[
 			*complex_types,
