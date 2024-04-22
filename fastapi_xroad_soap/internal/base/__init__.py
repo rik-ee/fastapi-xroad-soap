@@ -11,6 +11,7 @@
 from .message_body import MessageBody, MessageBodyType
 from .composite_meta import ElementSpecMeta, CompositeMeta
 from .base_element_spec import BaseElementSpec
+from .dynamic_spec import dynamic_spec
 
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
 	"MessageBodyType",
 	"ElementSpecMeta",
 	"CompositeMeta",
-	"BaseElementSpec"
+	"BaseElementSpec",
+	"dynamic_spec"
 ]
