@@ -26,7 +26,8 @@ __all__ = [
 	"convert_to_utf8",
 	"remove_memory_addresses",
 	"compute_signature",
-	"is_incoming_request"
+	"is_incoming_request",
+	"linearize_xml"
 ]
 
 
@@ -91,3 +92,11 @@ def compute_signature(*args) -> str:
 
 def is_incoming_request(info: ValidationInfo) -> bool:
 	return (info.context or {}).get("deserializing", False)
+
+
+def linearize_xml(xml: str) -> bytes:
+	return re.sub(
+		pattern=r'>(\s+)<',
+		string=xml.strip(),
+		repl='><'
+	).encode()
