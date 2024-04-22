@@ -89,19 +89,19 @@ class InvalidActionFault(SoapFault):
 
 class MissingActionFault(SoapFault):
 	def __init__(self):
-		msg = "SOAP action HTTP header is missing."
+		msg = "SOAP action HTTP header is missing"
 		super().__init__(string=msg)
 
 
 class MissingBodyFault(SoapFault):
 	def __init__(self, action_name: str) -> None:
-		msg = f"Body element missing from envelope for {action_name} SOAP action"
+		msg = f"Body element missing from envelope for SOAP action: {action_name}"
 		super().__init__(string=msg)
 
 
 class MissingHeaderFault(SoapFault):
 	def __init__(self, action_name: str) -> None:
-		msg = f"X-Road header element missing from envelope for {action_name} SOAP action"
+		msg = f"X-Road header element missing from envelope for SOAP action: {action_name}"
 		super().__init__(string=msg)
 
 
@@ -142,9 +142,10 @@ class ValidationFault(SoapFault):
 
 		details = list()
 		for part in parts:
-			loc, msg = part.split('\n')
+			sub_parts = part.split('\n')
+			loc, msg = sub_parts[:2]
 			iv_match = re.search(r"\$\$(.*?)\$\$", msg)
-			if iv_match:
+			if iv_match:  # pragma: no cover
 				msg = msg.replace(f"$${iv_match.group(1)}$$", '')
 			ln_match = re.search(r"(\[line -?\d+]: )", msg)
 			re_match = re.search(r"\[line -?\d+]: (.+?) \[type=", msg)
