@@ -226,7 +226,7 @@ def test_duplicate_cid_fault():
 def test_validation_fault():
 	@validate_call
 	def inner(_: int) -> None:
-		pass
+		pass  # Shut Up SonarCloud
 
 	try:
 		inner(t.cast(int, "asdfg"))
