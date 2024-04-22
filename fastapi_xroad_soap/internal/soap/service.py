@@ -81,9 +81,12 @@ class SoapService(FastAPI):
 				return self._wsdl_response
 			elif http_request.method != "POST":
 				raise f.InvalidMethodFault(http_request.method)
-
 			action = self._determine_action(http_request)
-			envelope = await action.parse(http_request)
+
+			http_body = await http_request.body()
+			content_type = http_request.headers.get("content-type")
+			envelope = await action.parse(http_body, content_type)
+
 			args = action.arguments_from(envelope)
 			ret = await self._await_or_call(action.handler, *args)
 			return action.response_from(ret, envelope.header)

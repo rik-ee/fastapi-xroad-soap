@@ -86,11 +86,8 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 			return SoapResponse(content=ret, header=header)
 		raise TypeError(f"Expected return type {self.return_type}, but received {ret}")
 
-	async def parse(self, http_request: Request) -> GenericEnvelope:
-		content_type = http_request.headers.get("content-type")
+	async def parse(self, http_body: bytes, content_type: str) -> GenericEnvelope:
 		body_type = content_type.split(';')[0]
-		http_body = await http_request.body()
-
 		if body_type in ["text/xml", "application/xml", "application/soap+xml"]:
 			return self.deserialize(http_body)
 		elif body_type in ["multipart/related", "multipart/mixed"]:
