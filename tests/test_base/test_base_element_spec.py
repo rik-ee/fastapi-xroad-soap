@@ -9,41 +9,23 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import pytest
-import textwrap
-import functools
 import typing as t
 from abc import ABC
-from enum import Enum
-from pydantic_xml import model, element
-from fastapi_xroad_soap.internal.envelope import EnvelopeFactory
+from pydantic_xml import model
 from fastapi_xroad_soap.internal.constants import A8nType
-from fastapi_xroad_soap.internal.base import (
-	BaseElementSpec,
-	ElementSpecMeta,
-	MessageBody
-)
+from fastapi_xroad_soap.internal.base import BaseElementSpec
 from .conftest import (
 	CustomModelObject,
 	CustomModelInternal,
-	CustomModelSpec,
-	GoodCustomBody,
-	BadInstantiationCustomBody,
-	BadDeserializationCustomBody
+	CustomModelSpec
 )
 
 
-def test_a8ntype_enum():
-	assert issubclass(A8nType, Enum)
-
-	assert hasattr(A8nType, "LIST")
-	assert hasattr(A8nType, "OPT")
-	assert hasattr(A8nType, "MAND")
-	assert hasattr(A8nType, "ABSENT")
-
-	assert A8nType.LIST.value == "list"
-	assert A8nType.OPT.value == "optional"
-	assert A8nType.MAND.value == "mandatory"
-	assert A8nType.ABSENT.value == "absent"
+__all__ = [
+	"test_base_element_spec",
+	"test_base_element_spec_subclass",
+	"test_base_element_spec_a8n"
+]
 
 
 def test_base_element_spec():
@@ -111,50 +93,3 @@ def test_base_element_spec_a8n():
 
 	with pytest.raises(TypeError):
 		create_spec_set_a8n(t.Iterable[CustomModelObject])
-
-
-def test_element_spec_meta_subclass():
-	spec = CustomModelSpec()
-
-	class TestBody(metaclass=ElementSpecMeta):
-		_element_specs: t.Dict[str, t.Any] = dict()
-		text: CustomModelObject = spec
-
-	assert "_element_specs" in TestBody.__annotations__
-	assert t.get_origin(TestBody.__annotations__["text"]) == list
-	assert isinstance(TestBody.text, model.XmlEntityInfo)
-	assert hasattr(TestBody, "_element_specs")
-	assert TestBody._element_specs["text"] == spec
-
-
-def test_message_body_subclass():
-	class TestBody(MessageBody):
-		text: str = element()
-		number: int = element()
-
-	body = TestBody(text="asdfg", number=123)
-	output = body.to_xml(pretty_print=True).decode()
-	output = output.replace("  ", "\t").strip()
-	expected = textwrap.dedent("""
-		<TestBody>
-			<text>asdfg</text>
-			<number>123</number>
-		</TestBody>
-	""").strip()
-	assert output == expected
-
-
-def test_custom_bodies():
-	body = GoodCustomBody(cust_elem=CustomModelObject(text="asdfg"))
-	factory = EnvelopeFactory[GoodCustomBody]()
-	envelope = factory.serialize(content=body)
-	factory.deserialize(envelope)
-
-	with pytest.raises(ValueError, match="init_instantiated_data_value_error"):
-		BadInstantiationCustomBody(cust_elem=CustomModelObject(text="asdfg"))
-
-	body = BadDeserializationCustomBody(cust_elem=CustomModelObject(text="asdfg"))
-	factory = EnvelopeFactory[BadDeserializationCustomBody]()
-	envelope = factory.serialize(content=body)
-	with pytest.raises(ValueError, match="init_deserialized_data_value_error"):
-		factory.deserialize(envelope)

@@ -49,8 +49,8 @@ class CustomModelInternal(CustomModelObject):
 
 class CustomModelSpec(BaseElementSpec):
 	def __init__(self, **kwargs) -> None:
-		self.raise_error_on_instantiation = kwargs.pop("raise_error_on_instantiation", False)
-		self.raise_error_on_deserialization = kwargs.pop("raise_error_on_deserialization", False)
+		self.raise_error_on_instantiation = kwargs.get("raise_error_on_instantiation", False)
+		self.raise_error_on_deserialization = kwargs.get("raise_error_on_deserialization", False)
 		super().__init__(
 			element_type=CustomModelObject,
 			internal_type=CustomModelInternal,
@@ -60,8 +60,8 @@ class CustomModelSpec(BaseElementSpec):
 	def has_constraints(self) -> bool:
 		return False
 
-	def wsdl_type_name(self) -> bytes:
-		return b''
+	def wsdl_type_name(self, *, with_tns: bool = False) -> str:
+		return ''
 
 	def init_instantiated_data(self, data: t.List) -> t.List:
 		if self.raise_error_on_instantiation:
