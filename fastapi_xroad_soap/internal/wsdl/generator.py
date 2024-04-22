@@ -142,11 +142,11 @@ def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[mod.WSDLMessa
 		mod.WSDLMessage(
 			name="xroadHeader",
 			parts=[
-				mod.WSDLPart(element="xro:userId", name="userId"),
-				mod.WSDLPart(element="xro:protocolVersion", name="protocolVersion"),
-				mod.WSDLPart(element="xro:id", name="id"),
+				mod.WSDLPart(element="xro:client", name="client"),
 				mod.WSDLPart(element="xro:service", name="service"),
-				mod.WSDLPart(element="xro:client", name="client")
+				mod.WSDLPart(element="xro:id", name="id"),
+				mod.WSDLPart(element="xro:protocolVersion", name="protocolVersion"),
+				mod.WSDLPart(element="xro:userId", name="userId")
 			]
 		)
 	]

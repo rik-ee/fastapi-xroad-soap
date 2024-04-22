@@ -50,22 +50,22 @@ class WSDLFaultBinding(BaseXmlModel, tag="fault", ns="wsdl", nsmap=WSDL_NSMAP):
 
 class WSDLOutputBinding(BaseXmlModel, tag="output", ns="wsdl", nsmap=WSDL_NSMAP):
 	headers: t.List[SOAPHeader] = [
-		SOAPHeader(part="userId"),
-		SOAPHeader(part="protocolVersion"),
-		SOAPHeader(part="id"),
+		SOAPHeader(part="client"),
 		SOAPHeader(part="service"),
-		SOAPHeader(part="client")
+		SOAPHeader(part="id"),
+		SOAPHeader(part="protocolVersion"),
+		SOAPHeader(part="userId")
 	]
 	body: SOAPBody = SOAPBody()
 
 
 class WSDLInputBinding(BaseXmlModel, tag="input", ns="wsdl", nsmap=WSDL_NSMAP):
 	headers: t.List[SOAPHeader] = [
-		SOAPHeader(part="userId"),
-		SOAPHeader(part="protocolVersion"),
-		SOAPHeader(part="id"),
+		SOAPHeader(part="client"),
 		SOAPHeader(part="service"),
-		SOAPHeader(part="client")
+		SOAPHeader(part="id"),
+		SOAPHeader(part="protocolVersion"),
+		SOAPHeader(part="userId")
 	]
 	body: SOAPBody = SOAPBody()
 
