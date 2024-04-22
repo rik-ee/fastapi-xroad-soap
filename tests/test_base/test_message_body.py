@@ -10,10 +10,12 @@
 #
 import pytest
 import textwrap
+import typing as t
 from pydantic_xml import element
 from fastapi_xroad_soap.internal.envelope import EnvelopeFactory
 from fastapi_xroad_soap.internal.base import MessageBody
 from .conftest import (
+	CustomModelInternal,
 	CustomModelObject,
 	GoodCustomBody,
 	BadInstantiationCustomBody,
@@ -23,7 +25,9 @@ from .conftest import (
 
 __all__ = [
 	"test_message_body_subclass",
-	"test_custom_bodies"
+	"test_custom_bodies",
+	"test_nested_models",
+	"test_nested_models_errors"
 ]
 
 
@@ -58,3 +62,22 @@ def test_custom_bodies():
 	envelope = factory.serialize(content=body)
 	with pytest.raises(ValueError, match="init_deserialized_data_value_error"):
 		factory.deserialize(envelope)
+
+
+def test_nested_models():
+	class ParentModel(MessageBody):
+		nested_model = GoodCustomBody.Element()
+		not_body: t.List[str] = element()
+
+	models = ParentModel.nested_models()
+	assert CustomModelInternal in models
+	assert GoodCustomBody in models
+	assert ParentModel in models
+
+
+def test_nested_models_errors():
+	class ParentModel(MessageBody):
+		bad_a8n: t.Union[int, str] = element()
+
+	with pytest.raises(ValueError):
+		ParentModel.nested_models()

@@ -59,16 +59,15 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 			origin = t.get_origin(value)
 			if origin is None:
 				continue
-			if origin == list or "Union" in origin.__name__:
-				args = t.get_args(value)
-				args_len = len(args)
-				opt_union = args_len == 2 and type(None) in args
-				if not opt_union and args_len != 1:
-					raise ValueError(
-						f"Invalid type annotation arguments '{args}' "
-						f"for class {cls.__name__} attribute '{key}'"
-					)
-				value = [a for a in args if a is not None][0]
+			args = t.get_args(value)
+			args_len = len(args)
+			opt_union = args_len == 2 and type(None) in args
+			if not opt_union and args_len != 1:
+				raise ValueError(
+					f"Invalid type annotation arguments '{args}' "
+					f"for class {cls.__name__} attribute '{key}'"
+				)
+			value = [a for a in args if a is not None][0]
 			if type(value) is not CompositeMeta:
 				continue
 			models.extend(value.nested_models())

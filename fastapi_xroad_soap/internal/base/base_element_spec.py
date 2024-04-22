@@ -85,8 +85,9 @@ class BaseElementSpec(ABC):
 		)
 
 	def set_a8n_type_from(self, a8n: t.Any, attr: str, cls_name: str) -> None:
-		vld.validate_a8n_args(a8n, attr, cls_name, self.element_type)
-		if a8n in [A8nType.ABSENT, self.element_type]:
+		et = self.element_type
+		vld.validate_a8n_args(a8n, attr, cls_name, et)
+		if a8n in [A8nType.ABSENT, et, et.__name__]:
 			self.a8n_type = A8nType.MAND
 			return
 		if origin := t.get_origin(a8n):
