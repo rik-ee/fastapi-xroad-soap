@@ -74,16 +74,17 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 			args.insert(self.header_index, envelope.header)
 		return args
 
-	def response_from(self, ret_obj: t.Optional[MessageBody], header: XroadHeader) -> _RespFrom:
+	def response_from(
+			self,
+			ret: t.Optional[MessageBody] = None,
+			header: t.Optional[XroadHeader] = None
+	) -> _RespFrom:
 		has_return = self.return_type is not None
-		if not has_return and ret_obj is None:
+		if not has_return and ret is None:
 			return Response()
-		elif has_return and isinstance(ret_obj, self.return_type):
-			return SoapResponse(content=ret_obj, header=header)
-		raise TypeError(
-			f"Expected return type {self.return_type}, "
-			f"but received {ret_obj}"
-		)
+		elif has_return and isinstance(ret, self.return_type):
+			return SoapResponse(content=ret, header=header)
+		raise TypeError(f"Expected return type {self.return_type}, but received {ret}")
 
 	async def parse(self, http_request: Request) -> GenericEnvelope:
 		content_type = http_request.headers.get("content-type")
