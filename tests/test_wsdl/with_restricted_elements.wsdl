@@ -9,7 +9,21 @@
   <wsdl:types>
     <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="https://example.org">
       <import namespace="http://x-road.eu/xsd/xroad.xsd" schemaLocation="http://x-road.eu/xsd/xroad.xsd"/>
+      <element name="Request" type="tns:Request"/>
       <element name="FaultResponse" type="tns:FaultResponse"/>
+      <complexType name="Request">
+        <sequence>
+          <element name="BoolElement" type="boolean" minOccurs="1" maxOccurs="2"/>
+          <element name="IntElement" type="tns:CustomInteger__cTQEFEUqPBJq5KcB" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="FloatElement" type="tns:CustomFloat__bgABphex5eApAPaq" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="StrElement" type="tns:CustomString__L0SqSYLrFHcBqAkK" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="OtherStrElement" type="tns:CustomString__L0SqSYLrFHcBqAkK" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="DateElement" type="tns:CustomDate__8PG3cFkVrHM4dAOu" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="TimeElement" type="tns:CustomTime__Bj62E9robDR33DAV" minOccurs="0" maxOccurs="unbounded"/>
+          <element name="DateTimeElement" type="dateTime" minOccurs="3" maxOccurs="4"/>
+          <element name="NetResElement" type="tns:CustomAnyuri__SitC87KC2Hpd0JRU" minOccurs="0"/>
+        </sequence>
+      </complexType>
       <complexType name="FaultResponse">
         <sequence>
           <element name="faultcode" type="string"/>
@@ -23,8 +37,43 @@
           <any processContents="lax"/>
         </sequence>
       </complexType>
+      <simpleType name="CustomInteger__cTQEFEUqPBJq5KcB">
+        <restriction base="integer">
+          <totalDigits value="5"/>
+        </restriction>
+      </simpleType>
+      <simpleType name="CustomFloat__bgABphex5eApAPaq">
+        <restriction base="float">
+          <pattern value="^[0-4.]+$"/>
+        </restriction>
+      </simpleType>
+      <simpleType name="CustomString__L0SqSYLrFHcBqAkK">
+        <restriction base="string">
+          <enumeration value="first"/>
+          <enumeration value="second"/>
+          <enumeration value="third"/>
+        </restriction>
+      </simpleType>
+      <simpleType name="CustomDate__8PG3cFkVrHM4dAOu">
+        <restriction base="date">
+          <minInclusive value="2024-02-13"/>
+        </restriction>
+      </simpleType>
+      <simpleType name="CustomTime__Bj62E9robDR33DAV">
+        <restriction base="time">
+          <minInclusive value="17:33:57"/>
+        </restriction>
+      </simpleType>
+      <simpleType name="CustomAnyuri__SitC87KC2Hpd0JRU">
+        <restriction base="anyURI">
+          <length value="20"/>
+        </restriction>
+      </simpleType>
     </schema>
   </wsdl:types>
+  <wsdl:message name="Request">
+    <wsdl:part element="tns:Request" name="parameters"/>
+  </wsdl:message>
   <wsdl:message name="FaultResponse">
     <wsdl:part element="tns:FaultResponse" name="fault"/>
   </wsdl:message>
@@ -37,6 +86,7 @@
   </wsdl:message>
   <wsdl:portType name="servicePortType">
     <wsdl:operation name="pytestAction">
+      <wsdl:input message="tns:Request" name="Request"/>
       <wsdl:fault message="tns:FaultResponse" name="FaultResponse"/>
     </wsdl:operation>
   </wsdl:portType>

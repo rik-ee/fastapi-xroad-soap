@@ -9,7 +9,20 @@
   <wsdl:types>
     <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="https://example.org">
       <import namespace="http://x-road.eu/xsd/xroad.xsd" schemaLocation="http://x-road.eu/xsd/xroad.xsd"/>
+      <element name="Request" type="tns:Request"/>
       <element name="FaultResponse" type="tns:FaultResponse"/>
+      <complexType name="Request">
+        <sequence>
+          <element name="BooleanElement" type="boolean"/>
+          <element name="IntElement" type="integer"/>
+          <element name="FloatElement" type="float"/>
+          <element name="StringElement" type="string"/>
+          <element name="DateElement" type="date"/>
+          <element name="TimeElement" type="time"/>
+          <element name="DateTimeElement" type="dateTime"/>
+          <element name="NetResElement" type="anyURI"/>
+        </sequence>
+      </complexType>
       <complexType name="FaultResponse">
         <sequence>
           <element name="faultcode" type="string"/>
@@ -25,6 +38,9 @@
       </complexType>
     </schema>
   </wsdl:types>
+  <wsdl:message name="Request">
+    <wsdl:part element="tns:Request" name="parameters"/>
+  </wsdl:message>
   <wsdl:message name="FaultResponse">
     <wsdl:part element="tns:FaultResponse" name="fault"/>
   </wsdl:message>
@@ -37,6 +53,7 @@
   </wsdl:message>
   <wsdl:portType name="servicePortType">
     <wsdl:operation name="pytestAction">
+      <wsdl:input message="tns:Request" name="Request"/>
       <wsdl:fault message="tns:FaultResponse" name="FaultResponse"/>
     </wsdl:operation>
   </wsdl:portType>

@@ -8,52 +8,48 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
+import pytest
 import typing as t
-from enum import Enum
-from pydantic import AnyUrl
-from datetime import date, time, datetime
+from fastapi_xroad_soap.internal import utils, wsdl
+from fastapi_xroad_soap.internal.soap import SoapAction
 from fastapi_xroad_soap.internal.base import MessageBody
-from fastapi_xroad_soap.internal.elements.models import (
-	Boolean, Integer, Float, String, Date, Time, DateTime, NetRes, SwaRef
-)
+from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
+from fastapi_xroad_soap.internal.envelope import XroadHeader
 
 
-__all__ = ["IncomingRequest", "OutgoingResponse"]
+__all__ = [
+	"fixture_wsdl_generator",
+	"fixture_ref_wsdl_file"
+]
 
 
-class TextChoice(str, Enum):
-	FIRST = "first"
-	SECOND = "second"
-	THIRD = "third"
+@pytest.fixture(name="wsdl_generator", scope="package")
+def fixture_wsdl_generator() -> t.Callable:
+	def closure(body_type: t.Union[t.Type[MessageBody], None]) -> bytes:
+		return wsdl.generate(
+			name="SoapService",
+			tns="https://example.org",
+			actions=dict(
+				pytestAction=SoapAction(
+					name="pytestAction",
+					description=None,
+					handler=lambda: None,
+					body_type=body_type,
+					body_index=0,
+					header_type=XroadHeader,
+					header_index=1,
+					return_type=None,
+					storage=GlobalWeakStorage()
+				)
+			)
+		).strip()
+	return closure
 
 
-class DefaultModel(MessageBody):
-	e1 = Boolean(tag="BooleanElem")
-	e2 = Integer(tag="IntElem")
-	e3 = Float(tag="FloatElem")
-	e4 = String(tag="StringElem")
-	e5 = Date(tag="DateElem")
-	e6 = Time(tag="TimeElem")
-	e7 = DateTime(tag="DateTimeElem")
-	e8 = NetRes(tag="NetResElem")
-	e9 = SwaRef.Element(tag="SwaRefElem")
-
-
-class RestrictedModel(MessageBody):
-	bool_elem: t.List[bool] = Boolean(min_occurs=1, max_occurs=2)
-	int_elem: t.List[int] = Integer(total_digits=5)
-	float_elem: t.List[float] = Float(pattern=r'^[0-4.]+$')
-	str_elem: t.List[str] = String(enumerations=TextChoice)
-	date_elem: t.List[date] = Date(min_value=date(2024, 2, 13))
-	time_elem: t.List[time] = Time(min_value=time(17, 33, 57))
-	date_time_elem: t.List[datetime] = DateTime(min_occurs=3, max_occurs=4)
-	net_res_elem: t.Optional[AnyUrl] = NetRes(length=20)
-	swa_res_elem: t.Optional[SwaRef.File] = SwaRef.Element()
-
-
-class IncomingRequest(MessageBody):
-	default_model = DefaultModel.Element()
-
-
-class OutgoingResponse(MessageBody):
-	restricted_model = RestrictedModel.Element()
+@pytest.fixture(name="ref_wsdl_file", scope="package")
+def fixture_ref_wsdl_file() -> t.Callable:
+	def closure(file_name: str) -> bytes:
+		path = utils.search_upwards(file_name, __file__)
+		file_data: bytes = utils.read_cached_file(path, binary=True)
+		return file_data.replace(b'\r\n', b'\n').strip()
+	return closure
