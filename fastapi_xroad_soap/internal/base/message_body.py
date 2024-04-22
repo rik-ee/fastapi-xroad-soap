@@ -53,6 +53,7 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 
 	@classmethod
 	def nested_models(cls) -> t.List[t.Type["MessageBody"]]:
+		excluded_models = ["SwaRefInternal"]
 		models = []
 		a8ns = getattr(cls, '__annotations__', {})
 		for key, value in a8ns.items():
@@ -68,7 +69,10 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 					f"for class {cls.__name__} attribute '{key}'"
 				)
 			value = [a for a in args if a is not None][0]
-			if type(value) is not CompositeMeta:
+			if (
+				type(value) is not CompositeMeta
+				or value.__name__ in excluded_models
+			):
 				continue
 			models.extend(value.nested_models())
 		models.append(cls)
