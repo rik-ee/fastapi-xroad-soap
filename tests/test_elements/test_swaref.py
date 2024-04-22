@@ -13,7 +13,6 @@ import base64
 import hashlib
 import typing as t
 from fastapi_xroad_soap.internal.base import BaseElementSpec
-from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.multipart import DecodedBodyPart
 from fastapi_xroad_soap.internal.file_size import FileSize
 from fastapi_xroad_soap.internal.elements.models import (
@@ -40,7 +39,7 @@ def test_swa_ref_spec(spec_tester):
 	)
 
 
-def test_swa_ref_spec_data_init():
+def test_swa_ref_spec_data_init(gws):
 	spec = t.cast(SwaRefSpec, SwaRef.Element())
 
 	file = t.cast(SwaRefInternal, SwaRef.File(
@@ -60,7 +59,7 @@ def test_swa_ref_spec_data_init():
 	assert file.mimetype != ''
 	assert not hasattr(file, "content_id")
 
-	storage = GlobalWeakStorage()
+	storage = gws()
 	pretend_dbp = t.cast(DecodedBodyPart, file)
 	fingerprint = storage.insert_object(pretend_dbp)
 
@@ -87,8 +86,6 @@ def test_swa_ref_spec_data_init():
 	assert other_file.digest == file.digest
 	assert other_file.mimetype == file.mimetype
 	assert not hasattr(other_file, "content_id")
-
-	GlobalWeakStorage._inst_counter = 0  # clean up
 
 
 def test_swa_ref_spec_restrictions():

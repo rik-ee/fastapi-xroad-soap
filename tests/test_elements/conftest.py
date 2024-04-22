@@ -15,6 +15,7 @@ from enum import Enum
 from pydantic import AnyUrl
 from pydantic_xml import model
 from datetime import date, time, datetime
+from fastapi_xroad_soap.utils import GlobalWeakStorage
 from fastapi_xroad_soap.internal.base import BaseElementSpec
 from fastapi_xroad_soap.internal.constants import A8nType
 from fastapi_xroad_soap.internal.elements import NumericTypeSpec, StringTypeSpec
@@ -24,6 +25,7 @@ from fastapi_xroad_soap.internal.elements.models import (
 
 
 __all__ = [
+	"fixture_storage",
 	"fixture_spec_tester",
 	"fixture_wsdl_type_name_tester",
 	"fixture_a8n_type_tester",
@@ -42,6 +44,11 @@ __all__ = [
 _BaseSpec = t.Type[BaseElementSpec]
 _SpecType = t.Union[_BaseSpec, t.Type[NumericTypeSpec], t.Type[StringTypeSpec]]
 _Spec = t.Union[BaseElementSpec, NumericTypeSpec, StringTypeSpec]
+
+
+@pytest.fixture(name="gws", scope="function")
+def fixture_storage():
+	return GlobalWeakStorage.new_subclass()
 
 
 @pytest.fixture(name="spec_tester", scope="package")

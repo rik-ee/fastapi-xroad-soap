@@ -137,5 +137,10 @@ class GlobalWeakStorage:
 			return self._objects[obj_id]
 		return self._objects.get(obj_id, None)
 
+	@classmethod
+	def new_subclass(cls) -> t.Type[GlobalWeakStorage]:
+		new_type = type('GlobalWeakStorage', (GlobalWeakStorage,), {})
+		return t.cast(t.Type[GlobalWeakStorage], new_type)
 
-ExportableGWS = type('GlobalWeakStorage', (GlobalWeakStorage,), {})
+
+ExportableGWS = GlobalWeakStorage.new_subclass()

@@ -28,7 +28,7 @@ bases = [MessageBody, t.Generic[MessageBodyType]]
 
 class GenericEnvelope(*bases, tag="Envelope", nsmap=ENV_NSMAP, search_mode='unordered'):
 	header: t.Optional[XroadHeader] = element(tag="Header", default=None)
-	body: MessageBodyType = element(tag="Body", default=None)
+	body: t.Optional[MessageBodyType] = element(tag="Body", default=None)
 
 
 class GenericFault(*bases, tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):

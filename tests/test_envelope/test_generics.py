@@ -27,7 +27,7 @@ def test_generic_envelope():
 		text: str = element(tag="CustomText")
 
 	typed_envelope = GenericEnvelope[CustomBody]
-	obj = typed_envelope(body=CustomBody(text="asdfg"))  # type: MessageBody
+	obj = typed_envelope(body=CustomBody(text="asdfg"))
 
 	out_raw = obj.to_xml(pretty_print=True).decode()
 	out_fmt = out_raw.replace('  ', '\t').strip()

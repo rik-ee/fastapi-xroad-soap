@@ -32,25 +32,22 @@ __all__ = [
 ]
 
 
-@pytest.fixture(scope="function")
-def storage():
-    return GlobalWeakStorage()
+@pytest.fixture(name="gws", scope="function")
+def fixture_storage():
+    return GlobalWeakStorage.new_subclass()
 
 
-def test_class_attributes():
-    assert hasattr(GlobalWeakStorage, "_unique_id")
-    assert hasattr(GlobalWeakStorage, "validate_fingerprint")
-    assert hasattr(GlobalWeakStorage, "retrieve_object")
-    assert hasattr(GlobalWeakStorage, "_instances")
-    assert hasattr(GlobalWeakStorage, "_inst_counter")
-    assert hasattr(GlobalWeakStorage, "_uid")
-
-    assert len(GlobalWeakStorage._instances) == 0
-    assert GlobalWeakStorage._inst_counter == 0
-    assert GlobalWeakStorage._uid == ''
+def test_class_attributes(gws):
+    assert hasattr(gws, "_unique_id")
+    assert hasattr(gws, "validate_fingerprint")
+    assert hasattr(gws, "retrieve_object")
+    assert hasattr(gws, "_instances")
+    assert hasattr(gws, "_inst_counter")
+    assert hasattr(gws, "_uid")
 
 
-def test_instance_attributes(storage):
+def test_instance_attributes(gws):
+    storage = gws()
     assert hasattr(storage, "_objects")
     assert hasattr(storage, "_obj_counter")
     assert hasattr(storage, "retrieve_object")
@@ -62,8 +59,8 @@ def test_instance_attributes(storage):
     assert storage._uid != ''
 
 
-def test_unique_id_generation():
-    uid = GlobalWeakStorage._unique_id(123)
+def test_unique_id_generation(gws):
+    uid = gws._unique_id(123)
 
     assert isinstance(uid, str)
     assert len(uid) == 59
@@ -78,11 +75,12 @@ def test_unique_id_generation():
     for char in token:
         assert char in valid_b64_chars
 
-    uid2 = GlobalWeakStorage._unique_id(124)
+    uid2 = gws._unique_id(124)
     assert uid != uid2
 
 
-def test_validate_fingerprint(storage):
+def test_validate_fingerprint(gws):
+    storage = gws()
     uid = storage._unique_id(123)
     good_fp = f"{uid}-$$-{uid}"
 
@@ -115,29 +113,33 @@ def test_validate_fingerprint(storage):
             storage.validate_fingerprint(bad_fp)
 
 
-def test_get_object_from_class(storage):
+def test_get_object_from_class(gws):
+    storage = gws()
     test_obj = {1, 2, 3}
     fingerprint = storage.insert_object(test_obj)
-    returned_obj = GlobalWeakStorage.retrieve_object(fingerprint)
+    returned_obj = gws.retrieve_object(fingerprint)
     assert returned_obj == test_obj
 
 
-def test_get_object_from_instance(storage):
+def test_get_object_from_instance(gws):
+    storage = gws()
     test_obj = {1, 2, 3}
     fingerprint = storage.insert_object(test_obj)
     returned_obj = storage.get(fingerprint)
     assert returned_obj == test_obj
 
 
-def test_get_object_with_bad_fingerprint(storage):
+def test_get_object_with_bad_fingerprint(gws):
+    storage = gws()
     bad_fp = "invalid-$$-fingerprint"
     with pytest.raises(ValueError):
-        GlobalWeakStorage.retrieve_object(bad_fp)
+        gws.retrieve_object(bad_fp)
     with pytest.raises(ValueError):
         storage.get(bad_fp)
 
 
-def test_object_persistence(storage):
+def test_object_persistence(gws):
+    storage = gws()
     test_obj = {1, 2, 3}
     fingerprint = storage.insert_object(test_obj)
     returned_obj = storage.retrieve_object(fingerprint)
@@ -145,7 +147,9 @@ def test_object_persistence(storage):
     assert weakref.getweakrefcount(test_obj) > 0
 
 
-def test_object_removal_on_reference_loss(storage):
+def test_object_removal_on_reference_loss(gws):
+    storage = gws()
+
     def insert_obj():
         test_obj = {1, 2, 3}
         return storage.insert_object(test_obj)
@@ -159,9 +163,9 @@ def test_object_removal_on_reference_loss(storage):
         storage.retrieve_object(fingerprint, raise_on_miss=True)
 
 
-def test_multiple_instances():
-    storage1 = GlobalWeakStorage()
-    storage2 = GlobalWeakStorage()
+def test_multiple_instances(gws):
+    storage1 = gws()
+    storage2 = gws()
 
     assert storage1._uid != storage2._uid
 
@@ -182,21 +186,21 @@ def test_multiple_instances():
     with pytest.raises(KeyError):
         storage2.get(fingerprint1, raise_on_miss=True)
 
-    assert GlobalWeakStorage._instances.get(storage1._uid) is not None
-    assert GlobalWeakStorage._instances.get(storage2._uid) is not None
+    assert gws._instances.get(storage1._uid) is not None
+    assert gws._instances.get(storage2._uid) is not None
 
 
-def test_object_counter_increment(storage):
+def test_object_counter_increment(gws):
+    storage = gws()
     initial_counter = storage._obj_counter
     test_obj = {1, 2, 3}
     storage.insert_object(test_obj)
     assert storage._obj_counter == initial_counter + 1
 
 
-def test_instance_counter_wrap():
-    GlobalWeakStorage._inst_counter = 999999999
-    GlobalWeakStorage()
-    _storage = GlobalWeakStorage()
+def test_instance_counter_wrap(gws):
+    gws._inst_counter = 999999999
+    gws()
+    _storage = gws()
     uid = _storage._uid.split('..')[0]
     assert all(c == '0' for c in uid)
-    GlobalWeakStorage._inst_counter = 0
