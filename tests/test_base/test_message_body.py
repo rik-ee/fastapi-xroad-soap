@@ -28,7 +28,9 @@ __all__ = [
 	"test_message_body_subclass",
 	"test_custom_bodies",
 	"test_nested_models",
-	"test_nested_models_errors"
+	"test_nested_models_errors",
+	"test_message_body_wsdl_name",
+	"test_message_body_a8n_types"
 ]
 
 

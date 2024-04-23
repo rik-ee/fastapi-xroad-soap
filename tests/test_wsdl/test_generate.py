@@ -22,7 +22,8 @@ __all__ = [
 	"test_wsdl_gen_without_types",
 	"test_wsdl_gen_swa_ref_type",
 	"test_wsdl_gen_basic_types",
-	"test_wsdl_gen_restricted_types"
+	"test_wsdl_gen_restricted_types",
+	"test_wsdl_gen_single_type"
 ]
 
 
@@ -85,4 +86,13 @@ def test_wsdl_gen_doc_and_ret(wsdl_generator, read_wsdl_file):
 
 	wsdl_data: bytes = wsdl_generator(description="Generate Integers", return_type=Response)
 	file_data: bytes = read_wsdl_file("with_doc_and_ret.wsdl")
+	assert file_data == wsdl_data
+
+
+def test_wsdl_gen_single_type(wsdl_generator, read_wsdl_file):
+	class Model(MessageBody, tag="Model"):
+		number = Integer()
+
+	wsdl_data: bytes = wsdl_generator(body_type=Model, return_type=Model)
+	file_data: bytes = read_wsdl_file("single_type_action_io.wsdl")
 	assert file_data == wsdl_data
