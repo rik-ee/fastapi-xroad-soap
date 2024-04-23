@@ -10,7 +10,7 @@
 #
 import typing as t
 from .bodypart import DecodedBodyPart
-from .errors import NonMultipartError
+from .errors import MultipartBoundaryError
 from .. import utils
 
 
@@ -19,20 +19,18 @@ __all__ = ["MultipartDecoder"]
 
 class MultipartDecoder:
     def __init__(self, content: bytes, content_type: str) -> None:
-        self.content_type = content_type
         self.parts: t.Tuple[DecodedBodyPart, ...] = tuple()
-        self._find_boundary()
+        self.boundary = self._find_boundary(content_type)
         self._parse_body(content)
 
-    def _find_boundary(self):
-        ct_info = tuple(x.strip() for x in self.content_type.split(';'))
-        mimetype = ct_info[0]
-        if mimetype.split('/')[0].lower() != 'multipart':
-            raise NonMultipartError(mimetype)
+    @staticmethod
+    def _find_boundary(content_type) -> bytes:
+        ct_info = tuple(x.strip() for x in content_type.split(';'))
         for item in ct_info[1:]:
             attr, value = utils.split_on_find(item, separator='=')
             if attr.lower() == 'boundary':
-                self.boundary = value.strip('"').encode('utf-8')
+                return value.strip('"').encode('utf-8')
+        raise MultipartBoundaryError
 
     @staticmethod
     def _fix_first_part(part, boundary_marker):

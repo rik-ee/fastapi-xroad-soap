@@ -10,7 +10,7 @@
 #
 __all__ = [
     "MultipartError",
-    "NonMultipartError",
+    "MultipartBoundaryError",
     "InvalidSeparatorError",
     "MissingContentIDError"
 ]
@@ -20,9 +20,9 @@ class MultipartError(Exception):
     pass
 
 
-class NonMultipartError(MultipartError):
-    def __init__(self, mimetype: str):
-        msg = f"Unexpected mimetype in content-type header: '{mimetype}'"
+class MultipartBoundaryError(MultipartError):
+    def __init__(self):
+        msg = f"Unable to locate multipart boundary in Content-Type header"
         super().__init__(msg)
 
 

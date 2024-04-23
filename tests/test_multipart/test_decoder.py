@@ -11,7 +11,7 @@
 import pytest
 from fastapi_xroad_soap.internal import utils
 from fastapi_xroad_soap.internal.multipart import (
-	MultipartDecoder, NonMultipartError
+	MultipartDecoder, MultipartBoundaryError
 )
 
 
@@ -19,7 +19,7 @@ __all__ = ["test_multipart_decoder"]
 
 
 def test_multipart_decoder():
-	with pytest.raises(NonMultipartError):
+	with pytest.raises(MultipartBoundaryError):
 		MultipartDecoder(b"content", "text/plain")
 
 	c_type = '; '.join([

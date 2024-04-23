@@ -13,7 +13,7 @@ from .decoder import MultipartDecoder
 from .encoder import MultipartEncoder
 from .errors import (
 	MultipartError,
-	NonMultipartError,
+	MultipartBoundaryError,
 	InvalidSeparatorError,
 	MissingContentIDError
 )
@@ -24,7 +24,7 @@ __all__ = [
 	"MultipartDecoder",
 	"MultipartEncoder",
 	"MultipartError",
-	"NonMultipartError",
+	"MultipartBoundaryError",
 	"InvalidSeparatorError",
 	"MissingContentIDError"
 ]

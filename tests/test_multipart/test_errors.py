@@ -19,8 +19,8 @@ __all__ = [
 
 
 def test_non_multipart_error():
-	obj = e.NonMultipartError(mimetype="text/plain")
-	assert str(obj) == "Unexpected mimetype in content-type header: 'text/plain'"
+	obj = e.MultipartBoundaryError()
+	assert str(obj) == "Unable to locate multipart boundary in Content-Type header"
 
 
 def test_invalid_separator_error():
