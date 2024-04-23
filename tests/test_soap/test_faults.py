@@ -243,7 +243,7 @@ def test_validation_fault():
 						<detail>
 							<validationError>
 								<location>Unknown</location>
-								<reason>Unknown</reason>
+								<reason>Input should be a valid integer, unable to parse string as an integer</reason>
 								<inputValue>Unknown</inputValue>
 							</validationError>
 						</detail>
