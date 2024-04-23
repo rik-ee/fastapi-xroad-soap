@@ -10,17 +10,14 @@
 #
 import pytest
 import typing as t
-from fastapi_xroad_soap.internal import utils, wsdl
+from fastapi_xroad_soap.internal import wsdl
 from fastapi_xroad_soap.internal.soap import SoapAction
 from fastapi_xroad_soap.internal.base import MessageBody
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.envelope import XroadHeader
 
 
-__all__ = [
-	"fixture_wsdl_generator",
-	"fixture_ref_wsdl_file"
-]
+__all__ = ["fixture_wsdl_generator"]
 
 
 @pytest.fixture(name="wsdl_generator", scope="package")
@@ -43,13 +40,4 @@ def fixture_wsdl_generator() -> t.Callable:
 				)
 			)
 		).strip()
-	return closure
-
-
-@pytest.fixture(name="ref_wsdl_file", scope="package")
-def fixture_ref_wsdl_file() -> t.Callable:
-	def closure(file_name: str) -> bytes:
-		path = utils.search_upwards(file_name, __file__)
-		file_data: bytes = utils.read_cached_file(path, binary=True)
-		return file_data.replace(b'\r\n', b'\n').strip()
 	return closure

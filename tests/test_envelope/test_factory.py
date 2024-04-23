@@ -14,11 +14,7 @@ from pydantic_xml import element
 from fastapi_xroad_soap.internal import utils, constants as const
 from fastapi_xroad_soap.internal.base import MessageBody
 from fastapi_xroad_soap.internal.envelope import (
-	EnvelopeFactory,
-	XroadHeader,
-	GenericFault,
-	GenericBody,
-	AnyBody
+	EnvelopeFactory, GenericFault, GenericBody, AnyBody
 )
 
 
@@ -112,7 +108,7 @@ def test_factory_ser_without_header():
 		assert obj.header is None
 
 
-def test_factory_ser_with_header(header: XroadHeader):
+def test_factory_ser_with_header(xroad_header):
 	class CustomBody(MessageBody, tag="CustomBody"):
 		text: str = element(tag="CustomText")
 
@@ -121,7 +117,7 @@ def test_factory_ser_with_header(header: XroadHeader):
 
 	xml_str = envelope.serialize(
 		content=CustomBody(text="qwerty"),
-		header=header,
+		header=xroad_header,
 		pretty_print=False
 	).replace(b'\n', b'')
 

@@ -26,22 +26,22 @@ __all__ = [
 ]
 
 
-def test_wsdl_gen_without_types(wsdl_generator, ref_wsdl_file):
-	file_data = ref_wsdl_file("without_action_types.wsdl")
+def test_wsdl_gen_without_types(wsdl_generator, read_wsdl_file):
+	file_data = read_wsdl_file("without_action_types.wsdl")
 	wsdl_data = wsdl_generator(None)
 	assert file_data == wsdl_data
 
 
-def test_wsdl_gen_swa_ref_type(wsdl_generator, ref_wsdl_file):
+def test_wsdl_gen_swa_ref_type(wsdl_generator, read_wsdl_file):
 	class Request(MessageBody):
 		files: t.List[SwaRef.File] = SwaRef.Element()
 
-	file_data = ref_wsdl_file("with_swa_ref_element.wsdl")
+	file_data = read_wsdl_file("with_swa_ref_element.wsdl")
 	wsdl_data = wsdl_generator(Request)
 	assert file_data == wsdl_data
 
 
-def test_wsdl_gen_basic_types(wsdl_generator, ref_wsdl_file):
+def test_wsdl_gen_basic_types(wsdl_generator, read_wsdl_file):
 	class Request(MessageBody):
 		e1 = Boolean(tag="BooleanElement")
 		e2 = Integer(tag="IntElement")
@@ -52,12 +52,12 @@ def test_wsdl_gen_basic_types(wsdl_generator, ref_wsdl_file):
 		e7 = DateTime(tag="DateTimeElement")
 		e8 = NetRes(tag="NetResElement")
 
-	file_data = ref_wsdl_file("with_basic_elements.wsdl")
+	file_data = read_wsdl_file("with_basic_elements.wsdl")
 	wsdl_data = wsdl_generator(Request)
 	assert file_data == wsdl_data
 
 
-def test_wsdl_gen_restricted_types(wsdl_generator, ref_wsdl_file):
+def test_wsdl_gen_restricted_types(wsdl_generator, read_wsdl_file):
 	class TextChoice(str, Enum):
 		FIRST = "first"
 		SECOND = "second"
@@ -74,6 +74,6 @@ def test_wsdl_gen_restricted_types(wsdl_generator, ref_wsdl_file):
 		date_time_element: t.List[datetime] = DateTime(min_occurs=3, max_occurs=4)
 		net_res_element: t.Optional[AnyUrl] = NetRes(length=20)
 
-	file_data = ref_wsdl_file("with_restricted_elements.wsdl")
+	file_data = read_wsdl_file("with_restricted_elements.wsdl")
 	wsdl_data = wsdl_generator(Request)
 	assert file_data == wsdl_data

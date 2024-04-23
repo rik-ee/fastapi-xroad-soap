@@ -13,15 +13,12 @@ import typing as t
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.base import MessageBody
 from fastapi_xroad_soap.internal.soap import SoapAction
-from fastapi_xroad_soap.internal.envelope import (
-	XroadHeader, XroadService, XroadClient
-)
+from fastapi_xroad_soap.internal.envelope import XroadHeader
 
 
 __all__ = [
 	"fixture_storage",
-	"fixture_create_action",
-	"fixture_xroad_header"
+	"fixture_create_action"
 ]
 
 
@@ -51,26 +48,3 @@ def fixture_create_action(gws) -> t.Callable:
 		)
 
 	return closure
-
-
-@pytest.fixture(name="xroad_header", scope="function")
-def fixture_xroad_header() -> XroadHeader:
-	return XroadHeader(
-		user_id="user_id",
-		proto_ver="proto_ver",
-		id="id",
-		service=XroadService(
-			xroad_instance="xroad_instance",
-			member_class="member_class",
-			member_code="member_code",
-			subsystem_code="subsystem_code",
-			service_code="service_code",
-			service_version="service_version"
-		),
-		client=XroadClient(
-			xroad_instance="xroad_instance",
-			member_class="member_class",
-			member_code="member_code",
-			subsystem_code="subsystem_code"
-		)
-	)
