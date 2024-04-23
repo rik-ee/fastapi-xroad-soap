@@ -9,7 +9,7 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import typing as t
-from pydantic_xml import BaseXmlModel, attr
+from pydantic_xml import BaseXmlModel, element, attr
 from fastapi_xroad_soap.internal.constants import XSD
 from .restrictions import (
     NumericTypeRestriction,
@@ -21,6 +21,7 @@ __all__ = [
     "AnyXML",
     "Element",
     "Sequence",
+    "Attribute",
     "ComplexType",
     "SimpleType",
     "Import",
@@ -44,9 +45,15 @@ class Sequence(BaseXmlModel, tag="sequence"):
     elements: t.List[t.Union[Element, AnyXML]]
 
 
-class ComplexType(BaseXmlModel, tag="complexType"):
+class Attribute(BaseXmlModel, tag="attribute"):
+    name: str = attr()
+    type: str = attr()
+
+
+class ComplexType(BaseXmlModel, tag="complexType", skip_empty=True):
     name: str = attr()
     sequence: Sequence
+    attribute: t.List[Attribute] = element(tag="attribute", default=None)
 
 
 class SimpleType(BaseXmlModel, tag="simpleType"):
