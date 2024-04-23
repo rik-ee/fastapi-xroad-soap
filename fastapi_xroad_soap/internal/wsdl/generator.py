@@ -78,18 +78,20 @@ def _add_swaref_import(model: t.Type[MessageBody], imports: t.List[mod.Import]) 
 
 
 def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[mod.Element]:
-	elements = []
+	elements = {}
 	for name, action in actions.items():
 		for model in [action.body_type, action.return_type]:
 			if model is None:
 				continue
 			wsdl_name = model.wsdl_name()
-			elements.append(mod.Element(
+			if wsdl_name in elements:
+				continue
+			elements[wsdl_name] = mod.Element(
 				name=wsdl_name,
 				type=f"tns:{wsdl_name}"
-			))
+			)
 	return [
-		*elements,
+		*list(elements.values()),
 		mod.Element(
 			name="FaultResponse",
 			type="tns:FaultResponse"
@@ -125,20 +127,22 @@ def _generate_types(actions: t.Dict[str, SoapAction]) -> t.Dict:
 
 
 def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[mod.WSDLMessage]:
-	messages = []
-	for name, action in actions.items():
+	messages = {}
+	for action in actions.values():
 		for model in [action.body_type, action.return_type]:
 			if model is None:
 				continue
 			wsdl_name = model.wsdl_name()
-			messages.append(mod.WSDLMessage(
+			if wsdl_name in messages:
+				continue
+			messages[wsdl_name] = mod.WSDLMessage(
 				name=wsdl_name,
 				parts=[mod.WSDLPart(
 					element=f"tns:{wsdl_name}"
 				)]
-			))
+			)
 	return [
-		*messages,
+		*list(messages.values()),
 		mod.WSDLMessage(
 			name="FaultResponse",
 			parts=[mod.WSDLPart(element="tns:FaultResponse", name="fault")]
