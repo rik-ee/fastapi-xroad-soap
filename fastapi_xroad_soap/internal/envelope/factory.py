@@ -39,9 +39,12 @@ class EnvelopeFactory(t.Generic[MessageBodyType]):
 			content_type.__xml_tag__ = content_type.__name__
 		return type(cls_name, (cls,), {"_type": content_type})
 
-	def __init__(self) -> None:
+	def __init__(self, *, exclude_xroad_nsmap: bool = False) -> None:
 		nsmap = {**ENV_NSMAP}
-		if self._type and not issubclass(self._type, GenericFault):
+		if (
+			not exclude_xroad_nsmap and self._type
+			and not issubclass(self._type, GenericFault)
+		):
 			nsmap.update({**XRO_NSMAP, **IDEN_NSMAP})
 			if isinstance(self._type.__xml_nsmap__, dict):
 				nsmap.update(self._type.__xml_nsmap__)

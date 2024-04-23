@@ -18,7 +18,7 @@ __all__ = ["MultipartDecoder"]
 
 
 class MultipartDecoder:
-    def __init__(self, content, content_type) -> None:
+    def __init__(self, content: bytes, content_type: str) -> None:
         self.content_type = content_type
         self.parts: t.Tuple[DecodedBodyPart, ...] = tuple()
         self._find_boundary()

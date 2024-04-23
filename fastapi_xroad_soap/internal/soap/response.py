@@ -51,7 +51,9 @@ class SoapResponse(Response):
 
 	@staticmethod
 	def serialize(content: MessageBody, header: t.Optional[XroadHeader]) -> bytes:
-		envelope = EnvelopeFactory[content.__class__]()
+		envelope = EnvelopeFactory[content.__class__](
+			exclude_xroad_nsmap=header is None
+		)
 		return envelope.serialize(
 			content=content,
 			header=header,
