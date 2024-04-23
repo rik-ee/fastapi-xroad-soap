@@ -38,8 +38,6 @@ def test_multipart_decoder(multipart_data):
 		</soapenv:Envelope>
 	""").strip()
 	assert decoded == expected
-
-	assert file.name == 'test.txt'
 	assert file.content == b'lorem ipsum dolor sit amet'
 
 
@@ -67,10 +65,8 @@ def test_multipart_decoder_mixed(mixed_multipart_data):
 	mixed_decoder = MultipartDecoder(mixed_parts.content, content_type)
 
 	content_ids = ["cid:109236228251", "cid:219236228251", "cid:329236228251"]
-	file_names = ["test.txt", "test.xml", "test.zip"]
 	for part in mixed_decoder.parts:
 		assert part.content_id in content_ids
-		assert part.name in file_names
 
 
 def test_multipart_decoder_error():

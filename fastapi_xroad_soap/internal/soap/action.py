@@ -10,7 +10,7 @@
 #
 import re
 import typing as t
-from fastapi import Request, Response
+from fastapi import Response
 from pydantic import (
 	BaseModel,
 	ValidationError,
