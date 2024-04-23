@@ -68,7 +68,7 @@ def gather_all_types(actions: t.Dict[str, SoapAction]) -> _AllTypes:
 				}[spec.a8n_type]
 			))
 		complex_types.append(mod.ComplexType(
-			name=model.__name__,
+			name=model.wsdl_name(),
 			sequence=mod.Sequence(
 				elements=elements
 			)

@@ -83,9 +83,10 @@ def _generate_elements(actions: t.Dict[str, SoapAction]) -> t.List[mod.Element]:
 		for model in [action.body_type, action.return_type]:
 			if model is None:
 				continue
+			wsdl_name = model.wsdl_name()
 			elements.append(mod.Element(
-				name=model.__name__,
-				type=f"tns:{model.__name__}"
+				name=wsdl_name,
+				type=f"tns:{wsdl_name}"
 			))
 	return [
 		*elements,
@@ -129,9 +130,12 @@ def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[mod.WSDLMessa
 		for model in [action.body_type, action.return_type]:
 			if model is None:
 				continue
+			wsdl_name = model.wsdl_name()
 			messages.append(mod.WSDLMessage(
-				name=model.__name__,
-				parts=[mod.WSDLPart(element=f"tns:{model.__name__}")]
+				name=wsdl_name,
+				parts=[mod.WSDLPart(
+					element=f"tns:{wsdl_name}"
+				)]
 			))
 	return [
 		*messages,
@@ -155,28 +159,28 @@ def _generate_messages(actions: t.Dict[str, SoapAction]) -> t.List[mod.WSDLMessa
 def _generate_port_type(actions: t.Dict[str, SoapAction]) -> mod.WSDLPortType:
 	ops = []
 	for name, action in actions.items():
+		port_docs = port_input = port_output = None
+		if action.description is not None:
+			port_docs = mod.WSDLDocumentation(
+				title=inflection.titleize(name),
+				notes=action.description
+			)
+		if action.body_type is not None:
+			wsdl_name = action.body_type.wsdl_name()
+			port_input = mod.WSDLInputPort(
+				message=f"tns:{wsdl_name}",
+				name=wsdl_name
+			)
+		if action.return_type is not None:
+			wsdl_name = action.return_type.wsdl_name()
+			port_output = mod.WSDLOutputPort(
+				message=f"tns:{wsdl_name}",
+				name=wsdl_name
+			)
 		ops.append(mod.WSDLOperationPort(
-			documentation=(
-				None if action.description is None else
-				mod.WSDLDocumentation(
-					title=inflection.titleize(name),
-					notes=action.description
-				)
-			),
-			input=(
-				None if action.body_type is None else
-				mod.WSDLInputPort(
-					message=f"tns:{action.body_type.__name__}",
-					name=action.body_type.__name__
-				)
-			),
-			output=(
-				None if action.return_type is None else
-				mod.WSDLOutputPort(
-					message=f"tns:{action.return_type.__name__}",
-					name=action.return_type.__name__
-				)
-			),
+			documentation=port_docs,
+			input=port_input,
+			output=port_output,
 			name=name
 		))
 	return mod.WSDLPortType(operations=ops)

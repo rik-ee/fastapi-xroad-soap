@@ -33,7 +33,7 @@ def test_wsdl_gen_without_types(wsdl_generator, read_wsdl_file):
 
 
 def test_wsdl_gen_swa_ref_type(wsdl_generator, read_wsdl_file):
-	class Request(MessageBody):
+	class Request(MessageBody, tag="Request"):
 		files: t.List[SwaRef.File] = SwaRef.Element()
 
 	file_data = read_wsdl_file("with_swa_ref_element.wsdl")
@@ -42,7 +42,7 @@ def test_wsdl_gen_swa_ref_type(wsdl_generator, read_wsdl_file):
 
 
 def test_wsdl_gen_basic_types(wsdl_generator, read_wsdl_file):
-	class Request(MessageBody):
+	class Request(MessageBody, tag="Request"):
 		e1 = Boolean(tag="BooleanElement")
 		e2 = Integer(tag="IntElement")
 		e3 = Float(tag="FloatElement")
@@ -63,7 +63,7 @@ def test_wsdl_gen_restricted_types(wsdl_generator, read_wsdl_file):
 		SECOND = "second"
 		THIRD = "third"
 
-	class Request(MessageBody):
+	class Request(MessageBody, tag="Request"):
 		bool_element: t.List[bool] = Boolean(min_occurs=1, max_occurs=2)
 		int_element: t.List[int] = Integer(total_digits=5)
 		float_element: t.List[float] = Float(pattern=r'^[0-4.]+$')

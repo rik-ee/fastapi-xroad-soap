@@ -33,6 +33,10 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 	_T = t.TypeVar('_T', bound="MessageBody")
 
 	@classmethod
+	def wsdl_name(cls) -> str:
+		return cls.__xml_tag__ or cls.__name__
+
+	@classmethod
 	def Element(
 			cls: t.Type[_T],
 			*,
