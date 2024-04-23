@@ -10,14 +10,11 @@
 #
 import pytest
 import typing as t
-import textwrap
 from pydantic_xml import element
-from fastapi_xroad_soap.internal import constants as const
+from fastapi_xroad_soap.internal import utils, constants as const
 from fastapi_xroad_soap.internal.base import MessageBody
 from fastapi_xroad_soap.internal.envelope import (
 	EnvelopeFactory,
-	XroadService,
-	XroadClient,
 	XroadHeader,
 	GenericFault,
 	GenericBody,
@@ -25,32 +22,7 @@ from fastapi_xroad_soap.internal.envelope import (
 )
 
 
-@pytest.fixture(name="header", scope="function")
-def fixture_header():
-	service = XroadService(
-		xroad_instance="xroad_instance",
-		member_class="member_class",
-		member_code="member_code",
-		subsystem_code="subsystem_code",
-		service_code="service_code",
-		service_version="service_version"
-	)
-	client = XroadClient(
-		xroad_instance="xroad_instance",
-		member_class="member_class",
-		member_code="member_code",
-		subsystem_code="subsystem_code"
-	)
-	return XroadHeader(
-		user_id="user_id",
-		proto_ver="proto_ver",
-		id="id",
-		service=service,
-		client=client
-	)
-
-
-def test_factory_1():
+def test_factory_attributes():
 	assert hasattr(EnvelopeFactory, "serialize")
 	assert hasattr(EnvelopeFactory, "deserialize")
 	assert issubclass(EnvelopeFactory, t.Generic)
@@ -59,8 +31,8 @@ def test_factory_1():
 	assert name == "EnvelopeFactory[MessageBody]"
 
 
-def test_factory_2():
-	class CustomBody(MessageBody, tag="CustomBody"):
+def test_factory_class_args():
+	class CustomBody(MessageBody, tag="CustomBody", nsmap={"abc": "qwerty"}):
 		pass
 
 	factory = EnvelopeFactory[CustomBody]
@@ -73,25 +45,11 @@ def test_factory_2():
 		assert k in nsmap
 		assert v == nsmap[k]
 
-
-def test_factory_3():
-	class CustomBody(MessageBody, nsmap={"abc": "qwerty"}):
-		pass
-
-	factory = EnvelopeFactory[CustomBody]
-	tag = getattr(factory, "_type").__xml_tag__
-	assert tag == "MessageBody"
-
-	factory = getattr(factory(), "_factory")
-	nsmap = factory.__xml_nsmap__
-	for k, v in const.HEADER_NSMAP.items():
-		assert k in nsmap
-		assert v == nsmap[k]
 	assert "abc" in nsmap
 	assert "qwerty" == nsmap["abc"]
 
 
-def test_factory_4():
+def test_factory_fault():
 	class CustomFault(GenericFault):
 		pass
 
@@ -103,31 +61,34 @@ def test_factory_4():
 		assert v == const.ENV_NSMAP[k]
 
 
-def test_factory_5():
+def test_factory_ser_without_header():
 	class CustomBody(MessageBody, tag="CustomBody"):
 		text: str = element(tag="CustomText")
 
 	class AltBody(MessageBody):
 		pass
 
-	envelope = EnvelopeFactory[CustomBody]()
+	factory = EnvelopeFactory[CustomBody]
+	envelope = factory(exclude_xroad_nsmap=True)
+
 	with pytest.raises(TypeError):
 		envelope.serialize(content=AltBody())
 
 	xml_str = envelope.serialize(
-		content=CustomBody(text="qwerty"), pretty_print=True
-	).replace(b'  ', b'\t').strip()
+		content=CustomBody(text="qwerty"),
+		pretty_print=False
+	).replace(b'\n', b'')
 
-	expected = textwrap.dedent("""
+	expected = utils.linearize_xml("""
 		<?xml version='1.0' encoding='utf-8' standalone='no'?>
-		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xro="http://x-road.eu/xsd/xroad.xsd" xmlns:iden="http://x-road.eu/xsd/identifiers">
+		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<CustomBody>
 					<CustomText>qwerty</CustomText>
 				</CustomBody>
 			</soapenv:Body>
 		</soapenv:Envelope>
-	""").encode().strip()
+	""")
 	assert xml_str == expected
 
 	for content in [xml_str, xml_str.decode()]:
@@ -139,6 +100,7 @@ def test_factory_5():
 		assert isinstance(obj.body.content, CustomBody)
 		assert hasattr(obj.body.content, "text")
 		assert obj.body.content.text == "qwerty"
+		assert obj.header is None
 
 		envelope2 = EnvelopeFactory()
 		obj = envelope2.deserialize(content)
@@ -147,22 +109,28 @@ def test_factory_5():
 		assert isinstance(obj.body, AnyBody)
 		assert hasattr(obj.body, "content")
 		assert isinstance(obj.body.content, MessageBody)
+		assert obj.header is None
 
 
-def test_factory_6(header: XroadHeader):
+def test_factory_ser_with_header(header: XroadHeader):
 	class CustomBody(MessageBody, tag="CustomBody"):
 		text: str = element(tag="CustomText")
 
-	envelope = EnvelopeFactory[CustomBody]()
+	factory = EnvelopeFactory[CustomBody]
+	envelope = factory(exclude_xroad_nsmap=False)
+
 	xml_str = envelope.serialize(
 		content=CustomBody(text="qwerty"),
 		header=header,
-		pretty_print=True
-	).replace(b'  ', b'\t').strip()
+		pretty_print=False
+	).replace(b'\n', b'')
 
-	expected = textwrap.dedent("""
+	expected = utils.linearize_xml("""
 		<?xml version='1.0' encoding='utf-8' standalone='no'?>
-		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xro="http://x-road.eu/xsd/xroad.xsd" xmlns:iden="http://x-road.eu/xsd/identifiers">
+		<soapenv:Envelope 
+			xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+			xmlns:xro="http://x-road.eu/xsd/xroad.xsd" 
+			xmlns:iden="http://x-road.eu/xsd/identifiers">
 			<soapenv:Header>
 				<xro:userId>user_id</xro:userId>
 				<xro:protocolVersion>proto_ver</xro:protocolVersion>
@@ -188,5 +156,7 @@ def test_factory_6(header: XroadHeader):
 				</CustomBody>
 			</soapenv:Body>
 		</soapenv:Envelope>
-	""").encode().strip()
+	""")
+	for char in [b'\t', b'\n']:
+		expected = expected.replace(char, b'')
 	assert xml_str == expected

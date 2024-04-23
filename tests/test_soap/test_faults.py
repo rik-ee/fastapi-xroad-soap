@@ -16,7 +16,20 @@ from fastapi_xroad_soap.internal.soap import faults as f
 from fastapi_xroad_soap.internal.base import MessageBody
 
 
-__all__ = ["test_soap_fault"]
+__all__ = [
+	"test_soap_fault",
+	"test_soap_fault_details",
+	"test_client_fault",
+	"test_server_fault",
+	"test_invalid_method_fault",
+	"test_invalid_action_fault",
+	"test_missing_action_fault",
+	"test_missing_body_fault",
+	"test_missing_header_fault",
+	"test_missing_cid_fault",
+	"test_duplicate_cid_fault",
+	"test_validation_fault"
+]
 
 
 def test_soap_fault():

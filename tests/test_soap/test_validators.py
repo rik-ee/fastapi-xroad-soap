@@ -14,6 +14,15 @@ from fastapi_xroad_soap.internal.envelope import XroadHeader
 from fastapi_xroad_soap.internal.base import MessageBody
 
 
+__all__ = [
+	"test_validate_annotations_correct",
+	"test_validate_annotations_incorrect_body",
+	"test_validate_annotations_incorrect_header",
+	"test_validate_annotations_incorrect_return",
+	"test_validate_annotations_disallowed_parameter_name"
+]
+
+
 class CustomMessageBody(MessageBody):
 	pass  # Shut Up SonarCloud
 
@@ -87,6 +96,6 @@ def test_validate_annotations_incorrect_return():
 		validate_annotations('', incorrect_return_annotation)
 
 
-def test_validate_annotations_unallowed_parameter_name():
+def test_validate_annotations_disallowed_parameter_name():
 	with pytest.raises(ValueError):
 		validate_annotations('', unallowed_parameter_name)

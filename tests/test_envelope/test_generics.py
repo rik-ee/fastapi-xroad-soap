@@ -8,9 +8,9 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-import textwrap
 import typing as t
 from pydantic_xml import element
+from fastapi_xroad_soap.internal import utils
 from fastapi_xroad_soap.internal.base import MessageBody
 from fastapi_xroad_soap.internal.envelope import (
 	GenericEnvelope,
@@ -29,16 +29,15 @@ def test_generic_envelope():
 	typed_envelope = GenericEnvelope[CustomBody]
 	obj = typed_envelope(body=CustomBody(text="asdfg"))
 
-	out_raw = obj.to_xml(pretty_print=True).decode()
-	out_fmt = out_raw.replace('  ', '\t').strip()
-	expected = textwrap.dedent("""
+	output = obj.to_xml(pretty_print=False)
+	expected = utils.linearize_xml("""
 		<Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<Body>
 				<CustomText>asdfg</CustomText>
 			</Body>
 		</Envelope>
-	""").strip()
-	assert out_fmt == expected
+	""")
+	assert output == expected
 
 
 def test_generic_fault():
@@ -57,9 +56,8 @@ def test_generic_fault():
 		)
 	)  # type: MessageBody
 
-	out_raw = obj.to_xml(pretty_print=True).decode()
-	out_fmt = out_raw.replace('  ', '\t').strip()
-	expected = textwrap.dedent("""
+	output = obj.to_xml(pretty_print=False)
+	expected = utils.linearize_xml("""
 		<soapenv:Fault xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<faultcode>ClientError</faultcode>
 			<faultstring>Custom Error Message</faultstring>
@@ -68,8 +66,8 @@ def test_generic_fault():
 				<CustomText>asdfg</CustomText>
 			</detail>
 		</soapenv:Fault>
-	""").strip()
-	assert out_fmt == expected
+	""")
+	assert output == expected
 
 
 def test_generic_body():
@@ -81,20 +79,19 @@ def test_generic_body():
 	typed_body = GenericBody[CustomContent]
 	obj = typed_body(content=CustomContent(text="asdfg"))
 
-	out_raw = obj.to_xml(pretty_print=True).decode()
-	out_fmt = out_raw.replace('  ', '\t').strip()
-	expected = textwrap.dedent("""
+	output = obj.to_xml(pretty_print=False)
+	expected = utils.linearize_xml("""
 		<Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<CustomContent>
 				<CustomText>asdfg</CustomText>
 			</CustomContent>
 		</Body>
-	""").strip()
-	assert out_fmt == expected
+	""")
+	assert output == expected
 
 
 def test_any_body():
 	assert issubclass(AnyBody, MessageBody)
-	out_raw = AnyBody().to_xml(pretty_print=True).decode()
-	expected = '<Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"/>'
-	assert out_raw.strip() == expected.strip()
+	output = AnyBody().to_xml(pretty_print=False)
+	expected = b'<Body xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"/>'
+	assert output == expected

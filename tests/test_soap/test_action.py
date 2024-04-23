@@ -21,7 +21,9 @@ from fastapi_xroad_soap.internal.soap import (
 
 __all__ = [
 	"test_soap_action_name",
-	"test_arguments_from_empty_envelope"
+	"test_arguments_from_empty_envelope",
+	"test_arguments_from_full_envelope",
+	"test_response_from"
 ]
 
 

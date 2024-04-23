@@ -9,9 +9,9 @@
 #   SPDX-License-Identifier: EUPL-1.2
 #
 import pytest
-import textwrap
 import typing as t
 from pydantic_xml import element
+from fastapi_xroad_soap.internal import utils
 from fastapi_xroad_soap.internal.envelope import EnvelopeFactory
 from fastapi_xroad_soap.internal.base import MessageBody
 from .conftest import (
@@ -37,14 +37,13 @@ def test_message_body_subclass():
 		number: int = element()
 
 	body = TestBody(text="asdfg", number=123)
-	output = body.to_xml(pretty_print=True).decode()
-	output = output.replace("  ", "\t").strip()
-	expected = textwrap.dedent("""
+	output = body.to_xml(pretty_print=False)
+	expected = utils.linearize_xml("""
 		<TestBody>
 			<text>asdfg</text>
 			<number>123</number>
 		</TestBody>
-	""").strip()
+	""")
 	assert output == expected
 
 
