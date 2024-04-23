@@ -24,6 +24,7 @@ __all__ = [
 	"test_invalid_method_fault",
 	"test_invalid_action_fault",
 	"test_missing_action_fault",
+	"test_invalid_content_type_fault",
 	"test_missing_body_fault",
 	"test_missing_header_fault",
 	"test_missing_cid_fault",
@@ -156,6 +157,24 @@ def test_missing_action_fault():
 				<soapenv:Fault>
 					<faultcode>Client</faultcode>
 					<faultstring>SOAPAction HTTP header is missing</faultstring>
+				</soapenv:Fault>
+			</soapenv:Body>
+		</soapenv:Envelope>
+	""")
+	assert body == expected
+	assert fault.response.status_code == 400
+
+
+def test_invalid_content_type_fault():
+	fault = f.InvalidContentTypeFault(None)
+	body = fault.response.body.replace(b'\n', b'')
+	expected = utils.linearize_xml("""
+		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+			<soapenv:Body>
+				<soapenv:Fault>
+					<faultcode>Client</faultcode>
+					<faultstring>Invalid content type: None</faultstring>
 				</soapenv:Fault>
 			</soapenv:Body>
 		</soapenv:Envelope>

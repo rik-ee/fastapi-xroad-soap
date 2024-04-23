@@ -24,6 +24,7 @@ __all__ = [
 	"InvalidMethodFault",
 	"InvalidActionFault",
 	"MissingActionFault",
+	"InvalidContentTypeFault",
 	"MissingBodyFault",
 	"MissingHeaderFault",
 	"MissingCIDFault",
@@ -90,6 +91,12 @@ class InvalidActionFault(SoapFault):
 class MissingActionFault(SoapFault):
 	def __init__(self):
 		msg = "SOAPAction HTTP header is missing"
+		super().__init__(string=msg)
+
+
+class InvalidContentTypeFault(SoapFault):
+	def __init__(self, content_type: t.Any) -> None:
+		msg = f"Invalid content type: {content_type}"
 		super().__init__(string=msg)
 
 

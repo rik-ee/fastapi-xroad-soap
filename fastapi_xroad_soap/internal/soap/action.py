@@ -87,6 +87,8 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 		raise TypeError(f"Expected return type {self.return_type}, but received {ret}")
 
 	async def parse(self, http_body: bytes, content_type: str) -> GenericEnvelope:
+		if content_type is None:
+			raise f.InvalidContentTypeFault(content_type)
 		body_type = content_type.split(';')[0]
 		if body_type in ["text/xml", "application/xml", "application/soap+xml"]:
 			return self.deserialize(http_body)
@@ -106,7 +108,7 @@ class SoapAction(BaseModel, arbitrary_types_allowed=True):
 					files.append(part)
 			http_body = self.process_files(envelope.content, files)
 			return self.deserialize(http_body)
-		raise f.ClientFault(f"Invalid content type: {body_type}")
+		raise f.InvalidContentTypeFault(body_type)
 
 	def process_files(self, xml_str: bytes, files: t.List[DecodedBodyPart]) -> bytes:
 		ids = [file.content_id for file in files]
