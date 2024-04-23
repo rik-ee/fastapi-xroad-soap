@@ -111,16 +111,16 @@ class SoapService(FastAPI):
 
 	def _determine_action(self, http_request: Request) -> SoapAction:
 		name = http_request.headers.get("soapaction", '').strip('"')
-		valid_names = self._actions.keys()
 		if not name:
 			raise f.MissingActionFault()
-		elif name in valid_names:
+		valid_names = self._actions.keys()
+		if name in valid_names:
 			return self._actions[name]
 		sep = '#' if '#' in name else '/'
 		fragment: str = name.split(sep)[-1]
 		for vn in valid_names:
 			if vn == fragment:
-				return self._actions[name]
+				return self._actions[fragment]
 		raise f.InvalidActionFault(name)
 
 	@staticmethod
