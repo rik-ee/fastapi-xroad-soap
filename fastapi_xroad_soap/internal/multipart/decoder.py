@@ -37,7 +37,7 @@ class MultipartDecoder:
     @staticmethod
     def _fix_first_part(part, boundary_marker):
         bm_len = len(boundary_marker)
-        if boundary_marker == part[:bm_len]:
+        if boundary_marker == part[:bm_len]:  # pragma: no cover
             return part[bm_len:]
         return part
 

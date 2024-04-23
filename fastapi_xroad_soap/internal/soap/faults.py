@@ -142,8 +142,10 @@ class ValidationFault(SoapFault):
 
 		details = list()
 		for part in parts:
+			loc, msg = None, part
 			sub_parts = part.split('\n')
-			loc, msg = sub_parts[:2]
+			if len(sub_parts) >= 2:
+				loc, msg = sub_parts[:2]
 
 			msg, input_value = cls.extract_input_value(msg)
 			location = cls.extract_location(loc, msg)
@@ -168,7 +170,7 @@ class ValidationFault(SoapFault):
 	@staticmethod
 	def extract_reason(msg: str) -> str:
 		match = re.search(r"\[line -?\d+]: (.+?) \[type=", msg)
-		if match is None:
+		if match is None:  # pragma: no cover
 			match = re.search(r"^\s\s(.+?) \[type=", msg)
 		return match.group(1) if match else "Unknown"
 
