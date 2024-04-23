@@ -12,8 +12,9 @@ import pytest
 import typing as t
 from pydantic_xml import element
 from fastapi_xroad_soap.internal import utils
-from fastapi_xroad_soap.internal.envelope import EnvelopeFactory
 from fastapi_xroad_soap.internal.base import MessageBody
+from fastapi_xroad_soap.internal.envelope import EnvelopeFactory
+from fastapi_xroad_soap.internal.elements.models import String
 from .conftest import (
 	CustomModelInternal,
 	CustomModelObject,
@@ -80,3 +81,44 @@ def test_nested_models_errors():
 
 	with pytest.raises(ValueError):
 		ParentModel.nested_models()
+
+
+def test_message_body_wsdl_name():
+	class AwesomeModel(MessageBody):
+		pass  # Shut Up SonarCloud
+
+	assert AwesomeModel.wsdl_name() == "AwesomeModel"
+
+	class AwesomeModel(MessageBody, tag="FantasticModel"):
+		pass  # Shut Up SonarCloud
+
+	assert AwesomeModel.wsdl_name() == "FantasticModel"
+
+
+def test_message_body_a8n_types():
+	class MandatoryTextModel(MessageBody):
+		text: str = String()
+
+	obj = MandatoryTextModel(text="asdfg")
+	assert obj.text == ["asdfg"]
+
+	with pytest.raises(ValueError):
+		MandatoryTextModel()
+	with pytest.raises(ValueError):
+		MandatoryTextModel(text=123)
+
+	class OptionalTextModel(MessageBody):
+		text: t.Optional[str] = String()
+
+	obj = OptionalTextModel(text=None)
+	assert obj.text == []
+	obj = OptionalTextModel(text="asdfg")
+	assert obj.text == ["asdfg"]
+
+	class ListTextModel(MessageBody):
+		text: t.List[str] = String()
+
+	obj = ListTextModel(text=[])
+	assert obj.text == []
+	obj = ListTextModel(text=["asdfg"])
+	assert obj.text == ["asdfg"]
