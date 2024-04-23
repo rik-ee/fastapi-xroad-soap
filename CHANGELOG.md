@@ -5,7 +5,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.org/project/devtools-cli/), **do not edit manually**._
 
 
-### [0.3.0] - 2024-04-18 - _latest_
+### [0.4.0] - 2024-04-24 - _latest_
+
+- Added a lot of logic for validating requests and responses
+- Fixed multiple bugs across codebase
+- Added a swaths of pytests for everything
+- WSDL simple type elements now support minOccurs and maxOccurs
+- WSDL content is now generated as pretty-printed
+- SoapResponse now excludes Xroad namespace from envelope if Xroad header is None
+
+### [0.3.0] - 2024-04-18
 
 - UIDGenerator is now able to work in deterministic mode
 - SoapAction now enforces action name type and length restrictions
@@ -40,6 +49,7 @@ _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.or
 
 - Initialized project
 
+[0.4.0]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.2.2...0.3.0
 [0.2.2]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.2.0...0.2.1
