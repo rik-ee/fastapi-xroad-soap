@@ -22,7 +22,7 @@ class MultipartError(Exception):
 
 class MultipartBoundaryError(MultipartError):
     def __init__(self):
-        msg = f"Unable to locate multipart boundary in Content-Type header"
+        msg = "Unable to locate multipart boundary in Content-Type header"
         super().__init__(msg)
 
 
