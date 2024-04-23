@@ -125,13 +125,13 @@ class ValidationFault(SoapFault):
 		string = match.group(1) if match else "validation error"
 		super().__init__(
 			http_status_code=400,
-			detail=self.extract_details(parts[1:]),
+			detail=self.extract_details(parts),
 			string=string + " in SOAP envelope",
 			code="Client"
 		)
 
-	@staticmethod
-	def extract_details(parts: t.List[str]) -> MessageBody:
+	@classmethod
+	def extract_details(cls, parts: t.List[str]) -> MessageBody:
 		class Detail(MessageBody):
 			location: str = element()
 			reason: str = element()
@@ -144,14 +144,35 @@ class ValidationFault(SoapFault):
 		for part in parts:
 			sub_parts = part.split('\n')
 			loc, msg = sub_parts[:2]
-			iv_match = re.search(r"\$\$(.*?)\$\$", msg)
-			if iv_match:  # pragma: no cover
-				msg = msg.replace(f"$${iv_match.group(1)}$$", '')
-			ln_match = re.search(r"(\[line -?\d+]: )", msg)
-			re_match = re.search(r"\[line -?\d+]: (.+?) \[type=", msg)
-			details.append(Detail(
-				location=inflection.camelize(loc) if ln_match else "Unknown",
-				reason=re_match.group(1) if re_match else "Unknown",
-				input_value=iv_match.group(1) if iv_match else "Unknown",
-			))
+
+			msg, input_value = cls.extract_input_value(msg)
+			location = cls.extract_location(loc, msg)
+			reason = cls.extract_reason(msg)
+
+			params = [location, reason, input_value]
+			if any(d != "Unknown" for d in params):
+				details.append(Detail(
+					location=location,
+					reason=reason,
+					input_value=input_value,
+				))
 		return ErrorDetails(details=details)
+
+	@staticmethod
+	def extract_input_value(msg: str) -> t.Tuple[str, str]:
+		match = re.search(r"\$\$(.*?)\$\$", msg)
+		if match:  # pragma: no cover
+			msg = msg.replace(f"$${match.group(1)}$$", '')
+		return msg, match.group(1) if match else "Unknown"
+
+	@staticmethod
+	def extract_reason(msg: str) -> str:
+		match = re.search(r"\[line -?\d+]: (.+?) \[type=", msg)
+		if match is None:
+			match = re.search(r"^\s\s(.+?) \[type=", msg)
+		return match.group(1) if match else "Unknown"
+
+	@staticmethod
+	def extract_location(loc: str, msg: str) -> str:
+		ln_match = re.search(r"(\[line -?\d+]: )", msg)
+		return inflection.camelize(loc) if ln_match else "Unknown"
