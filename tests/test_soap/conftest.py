@@ -22,7 +22,9 @@ from fastapi_xroad_soap.internal.elements.models import Integer, SwaRef
 __all__ = [
 	"fixture_storage",
 	"fixture_create_action",
-	"fixture_create_client"
+	"fixture_create_client",
+	"fixture_create_multipart_client",
+	"fixture_create_mixed_multipart_client"
 ]
 
 
@@ -75,4 +77,40 @@ def fixture_create_client() -> t.Callable:
 
 		return TestClient(soap)
 
+	return closure
+
+
+@pytest.fixture(name="create_multipart_client", scope="function")
+def fixture_create_multipart_client() -> t.Callable:
+	def closure() -> TestClient:
+		soap = SoapService()
+
+		class MultipartModel(MessageBody, tag="Request"):
+			file: SwaRef.File = SwaRef.Element(tag="File")
+
+		@soap.action("MultipartPytest")
+		def handler(body: MultipartModel) -> MultipartModel:
+			assert isinstance(body.file, SwaRef.File)
+			return MultipartModel(file=body.file)
+
+		return TestClient(soap)
+	return closure
+
+
+@pytest.fixture(name="create_mixed_multipart_client", scope="function")
+def fixture_create_mixed_multipart_client() -> t.Callable:
+	def closure() -> TestClient:
+		soap = SoapService()
+
+		class MixedMultipartModel(MessageBody, tag="Request"):
+			files: t.List[SwaRef.File] = SwaRef.Element(tag="File")
+
+		@soap.action("MixedMultipartPytest")
+		def handler(body: MixedMultipartModel) -> MixedMultipartModel:
+			assert isinstance(body.files, list)
+			for item in body.files:
+				assert isinstance(item, SwaRef.File)
+			return MixedMultipartModel(files=body.files)
+
+		return TestClient(soap)
 	return closure

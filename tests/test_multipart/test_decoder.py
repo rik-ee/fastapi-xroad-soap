@@ -15,52 +15,25 @@ from fastapi_xroad_soap.internal.multipart import (
 )
 
 
-__all__ = ["test_multipart_decoder"]
+__all__ = [
+	"test_multipart_decoder",
+	"test_multipart_decoder_mixed",
+	"test_multipart_decoder_error"
+]
 
 
-def test_multipart_decoder():
-	with pytest.raises(MultipartBoundaryError):
-		MultipartDecoder(b"content", "text/plain")
-
-	c_type = '; '.join([
-		'multipart/related',
-		'type="text/xml"',
-		'start="<rootpart@soapui.org>"',
-		'boundary="----=_Part_29_1072688887.1713872993708"'
-	])
-	content = b''.join([
-		b'\r\n------=_Part_29_1072688887.1713872993708',
-		b'\r\nContent-Type: text/xml; charset=UTF-8',
-		b'\r\nContent-Transfer-Encoding: 8bit',
-		b'\r\nContent-ID: <rootpart@soapui.org>',
-		b'\r\n\r\n',
-		b'<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">',
-		b'\t<soapenv:Body>',
-		b'\t\t<SubmitDataRequest>',
-		b'\t\t\t<DataFile>cid:783266853352</DataFile>',
-		b'\t\t</SubmitDataRequest>',
-		b'\t</soapenv:Body>',
-		b'</soapenv:Envelope>',
-		b'\r\n------=_Part_29_1072688887.1713872993708',
-		b'\r\nContent-Type: text/plain; charset=us-ascii; name=test.txt',
-		b'\r\nContent-Transfer-Encoding: 7bit',
-		b'\r\nContent-ID: <783266853352>',
-		b'\r\nContent-Disposition: attachment; name="test.txt"; filename="test.txt"',
-		b'\r\n\r\n',
-		b'lorem ipsum dolor sit amet',
-		b'\r\n------=_Part_29_1072688887.1713872993708--\r\n'
-	])
-
-	decoder = MultipartDecoder(content, c_type)
+def test_multipart_decoder(multipart_data):
+	content, content_type = multipart_data
+	decoder = MultipartDecoder(content, content_type)
 	envelope, file = decoder.parts
 
 	decoded = utils.linearize_xml(envelope.content.decode()).strip()
 	expected = utils.linearize_xml("""
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">    
 			<soapenv:Body>          
-				<SubmitDataRequest>                     
-					<DataFile>cid:783266853352</DataFile>         
-				</SubmitDataRequest>    
+				<Request>                     
+					<File>cid:783266853352</File>         
+				</Request>    
 			</soapenv:Body>
 		</soapenv:Envelope>
 	""").strip()
@@ -68,3 +41,38 @@ def test_multipart_decoder():
 
 	assert file.name == 'test.txt'
 	assert file.content == b'lorem ipsum dolor sit amet'
+
+
+def test_multipart_decoder_mixed(mixed_multipart_data):
+	content, content_type = mixed_multipart_data
+	decoder = MultipartDecoder(content, content_type)
+	envelope, mixed_parts = decoder.parts
+
+	decoded = utils.linearize_xml(envelope.content.decode()).strip()
+	expected = utils.linearize_xml("""
+		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">    
+			<soapenv:Body>          
+				<Request>                     
+					<File>cid:109236228251</File>
+					<File>cid:219236228251</File>
+					<File>cid:329236228251</File>
+				</Request>    
+			</soapenv:Body>
+		</soapenv:Envelope>
+	""").strip()
+	assert decoded == expected
+
+	assert mixed_parts.is_mixed_multipart is True
+	content_type = mixed_parts.headers.get('content-type')
+	mixed_decoder = MultipartDecoder(mixed_parts.content, content_type)
+
+	content_ids = ["cid:109236228251", "cid:219236228251", "cid:329236228251"]
+	file_names = ["test.txt", "test.xml", "test.zip"]
+	for part in mixed_decoder.parts:
+		assert part.content_id in content_ids
+		assert part.name in file_names
+
+
+def test_multipart_decoder_error():
+	with pytest.raises(MultipartBoundaryError):
+		MultipartDecoder(b"content", "text/plain")

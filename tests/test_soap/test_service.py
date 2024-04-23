@@ -16,6 +16,22 @@ from fastapi_xroad_soap.internal.soap import SoapService
 from fastapi.testclient import TestClient
 
 
+__all__ = [
+	"test_soap_service_attributes",
+	"test_soap_service_invalid_action",
+	"test_soap_service_simple_request",
+	"test_soap_service_multipart_request",
+	"test_soap_service_request_errors",
+	"test_soap_service_request_validation_error",
+	"test_soap_service_garbage_content",
+	"test_soap_service_invalid_multipart",
+	"test_soap_service_fault_callback",
+	"test_soap_service_wsdl",
+	"test_soap_service_wsdl_gen",
+	"test_soap_service_wsdl_override"
+]
+
+
 def test_soap_service_attributes():
 	soap = SoapService()
 	assert hasattr(soap, "add_action")
@@ -43,15 +59,15 @@ def test_soap_service_invalid_action():
 		soap.add_action("asdfg", lambda: None)
 
 
-def test_soap_service_request_success(create_client):
+def test_soap_service_simple_request(create_client):
 	client: TestClient = create_client()
 
 	request_content = utils.linearize_xml("""
-		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:extra="extra">
 			<soapenv:Body>
-				<Request>
+				<extra:Request>
 					<Number>1234</Number>
-				</Request>
+				</extra:Request>
 			</soapenv:Body>
 		</soapenv:Envelope>
 	""")
@@ -86,6 +102,38 @@ def test_soap_service_request_success(create_client):
 		assert resp.status_code == 200
 		response_content = resp.content.replace(b'\n', b'')
 		assert response_content == expected_response
+
+
+def test_soap_service_multipart_request(create_multipart_client, multipart_data):
+	client: TestClient = create_multipart_client()
+	content, content_type = multipart_data
+
+	resp = client.post(
+		url="/service",
+		content=content,
+		headers={
+			"SOAPAction": "MultipartPytest",
+			"Content-Type": content_type
+		}
+	)
+	assert resp.status_code == 200
+	assert "multipart/related" in resp.headers["Content-Type"]
+
+
+def test_soap_service_mixed_multipart_request(create_mixed_multipart_client, mixed_multipart_data):
+	client: TestClient = create_mixed_multipart_client()
+	content, content_type = mixed_multipart_data
+
+	resp = client.post(
+		url="/service",
+		content=content,
+		headers={
+			"SOAPAction": "MixedMultipartPytest",
+			"Content-Type": content_type
+		}
+	)
+	assert resp.status_code == 200
+	assert "multipart/related" in resp.headers["Content-Type"]
 
 
 def test_soap_service_request_errors(create_client):
