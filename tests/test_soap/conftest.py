@@ -17,6 +17,7 @@ from fastapi_xroad_soap.internal.envelope import (
 	XroadHeader, XroadService, XroadClient
 )
 
+
 __all__ = [
 	"fixture_storage",
 	"fixture_create_action",
