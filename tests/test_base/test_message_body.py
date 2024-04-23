@@ -100,7 +100,7 @@ def test_message_body_a8n_types():
 		text: str = String()
 
 	obj = MandatoryTextModel(text="asdfg")
-	assert obj.text == ["asdfg"]
+	assert obj.text == t.cast(str, ["asdfg"])
 
 	with pytest.raises(ValueError):
 		MandatoryTextModel()
@@ -111,9 +111,9 @@ def test_message_body_a8n_types():
 		text: t.Optional[str] = String()
 
 	obj = OptionalTextModel(text=None)
-	assert obj.text == []
+	assert obj.text == t.cast(t.Optional[str], [])
 	obj = OptionalTextModel(text="asdfg")
-	assert obj.text == ["asdfg"]
+	assert obj.text == t.cast(t.Optional[str], ["asdfg"])
 
 	class ListTextModel(MessageBody):
 		text: t.List[str] = String()
