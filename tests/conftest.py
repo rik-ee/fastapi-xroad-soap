@@ -79,10 +79,10 @@ def fixture_multipart_data() -> t.Tuple[bytes, str]:
 		b'\t</soapenv:Body>',
 		b'</soapenv:Envelope>',
 		b'\r\n------=_Part_29_1072688887.1713872993708',
-		b'\r\nContent-Type: text/plain; charset=us-ascii; name=test.txt',
+		b'\r\nContent-Type: text/plain; charset=us-ascii',
 		b'\r\nContent-Transfer-Encoding: 7bit',
 		b'\r\nContent-ID: <783266853352>',
-		b'\r\nContent-Disposition: attachment; name="test1.txt"; filename="test1.txt"',
+		b'\r\nContent-Disposition: attachment; name="test1.txt"',
 		b'\r\n\r\n',
 		b'lorem ipsum dolor sit amet',
 		b'\r\n------=_Part_29_1072688887.1713872993708--\r\n'

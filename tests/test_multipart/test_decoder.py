@@ -10,9 +10,8 @@
 #
 import pytest
 from fastapi_xroad_soap.internal import utils
-from fastapi_xroad_soap.internal.multipart import (
-	MultipartDecoder, MultipartBoundaryError
-)
+from fastapi_xroad_soap.internal.multipart import MultipartDecoder
+from fastapi_xroad_soap.internal.multipart import errors
 
 
 __all__ = [
@@ -69,6 +68,15 @@ def test_multipart_decoder_mixed(mixed_multipart_data):
 		assert part.content_id in content_ids
 
 
-def test_multipart_decoder_error():
-	with pytest.raises(MultipartBoundaryError):
+def test_multipart_decoder_error(multipart_data):
+	with pytest.raises(errors.MultipartBoundaryError):
 		MultipartDecoder(b"content", "text/plain")
+
+	content, content_type = multipart_data
+	with pytest.raises(errors.InvalidSeparatorError):
+		bad_content = content.replace(b'\r\n\r\n', b'')
+		MultipartDecoder(bad_content, content_type)
+
+	with pytest.raises(errors.MissingContentIDError):
+		bad_content = content.replace(b'\r\nContent-ID: <783266853352>', b'')
+		MultipartDecoder(bad_content, content_type)
