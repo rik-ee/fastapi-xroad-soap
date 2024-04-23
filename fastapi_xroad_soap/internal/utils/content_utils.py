@@ -27,7 +27,8 @@ __all__ = [
 	"remove_memory_addresses",
 	"compute_signature",
 	"is_incoming_request",
-	"linearize_xml"
+	"linearize_xml",
+	"extract_content_ids"
 ]
 
 
@@ -100,3 +101,10 @@ def linearize_xml(xml: str) -> bytes:
 		string=xml.strip(),
 		repl='><'
 	).encode()
+
+
+def extract_content_ids(xml_string: str, *, remove_from_xml: bool = False) -> t.Tuple[t.List[str], str]:
+	matches = re.findall(r"(cid:[0-9a-fA-F]+)", xml_string)
+	if remove_from_xml:  # pragma: no branch
+		xml_string = re.sub(r"cid:[0-9a-fA-F]+", 'cid:', xml_string)
+	return matches, xml_string

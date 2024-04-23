@@ -16,7 +16,8 @@ from .content_utils import (
 	remove_memory_addresses,
 	compute_signature,
 	is_incoming_request,
-	linearize_xml
+	linearize_xml,
+	extract_content_ids
 )
 from .path_utils import (
 	search_upwards,
@@ -39,6 +40,7 @@ __all__ = [
 	"compute_signature",
 	"is_incoming_request",
 	"linearize_xml",
+	"extract_content_ids",
 	"search_upwards",
 	"resolve_relpath",
 	"read_cached_file",
