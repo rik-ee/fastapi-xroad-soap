@@ -155,7 +155,7 @@ def test_missing_action_fault():
 			<soapenv:Body>
 				<soapenv:Fault>
 					<faultcode>Client</faultcode>
-					<faultstring>SOAP action HTTP header is missing</faultstring>
+					<faultstring>SOAPAction HTTP header is missing</faultstring>
 				</soapenv:Fault>
 			</soapenv:Body>
 		</soapenv:Envelope>

@@ -89,7 +89,7 @@ class InvalidActionFault(SoapFault):
 
 class MissingActionFault(SoapFault):
 	def __init__(self):
-		msg = "SOAP action HTTP header is missing"
+		msg = "SOAPAction HTTP header is missing"
 		super().__init__(string=msg)
 
 
