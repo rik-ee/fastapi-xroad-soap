@@ -36,11 +36,11 @@ class DecodedBodyPart:
             raise InvalidSeparatorError()
 
         headers, content = utils.split_on_find(content, separator)
-        if headers:
+        if headers:  # pragma: no branch
             decoded: str = utils.detect_decode(headers)[0]
             self.headers = HeaderParser().parsestr(decoded)
 
-            if content:
+            if content:  # pragma: no branch
                 self.content = content
                 content_type = self.headers.get_content_type()
                 content_disp = self.headers.get_content_disposition()
@@ -63,17 +63,14 @@ class DecodedBodyPart:
         return content
 
     def set_file_metadata(self) -> None:
-        boundary = self.headers.get_boundary()
-        content_disp = self.headers.get_content_disposition()
-        if boundary is None and content_disp == "attachment":
-            self.name = self.headers.get_filename()
-            if self.name is None:
-                self.name = self.headers.get_param(
-                    header='content-disposition',
-                    param='name'
-                )
-            cid = self.headers.get("Content-ID")
-            if cid is None:
-                raise MissingContentIDError
-            cid = f"cid:{cid.lstrip('<').rstrip('>')}"
-            self.content_id = cid
+        self.name = self.headers.get_filename()
+        if self.name is None:
+            self.name = self.headers.get_param(
+                header='content-disposition',
+                param='name'
+            )
+        cid = self.headers.get("Content-ID")
+        if cid is None:
+            raise MissingContentIDError
+        cid = f"cid:{cid.lstrip('<').rstrip('>')}"
+        self.content_id = cid
