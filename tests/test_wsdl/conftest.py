@@ -22,20 +22,24 @@ __all__ = ["fixture_wsdl_generator"]
 
 @pytest.fixture(name="wsdl_generator", scope="package")
 def fixture_wsdl_generator() -> t.Callable:
-	def closure(body_type: t.Union[t.Type[MessageBody], None]) -> bytes:
+	def closure(
+			description: t.Optional[str] = None,
+			body_type: t.Optional[t.Type[MessageBody]] = None,
+			return_type: t.Optional[t.Type[MessageBody]] = None,
+	) -> bytes:
 		return wsdl.generate(
 			name="SoapService",
 			tns="https://example.org",
 			actions=dict(
 				pytestAction=SoapAction(
 					name="pytestAction",
-					description=None,
+					description=description,
 					handler=lambda: None,
 					body_type=body_type,
 					body_index=0,
 					header_type=XroadHeader,
 					header_index=1,
-					return_type=None,
+					return_type=return_type,
 					storage=GlobalWeakStorage()
 				)
 			)
