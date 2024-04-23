@@ -32,11 +32,7 @@ class MultipartDecoder:
         for item in ct_info[1:]:
             attr, value = utils.split_on_find(item, separator='=')
             if attr.lower() == 'boundary':
-                string = value.strip('"')
-                if not (string is None or isinstance(string, bytes)):
-                    self.boundary = string.encode('utf-8')
-                    continue
-                self.boundary = string
+                self.boundary = value.strip('"').encode('utf-8')
 
     @staticmethod
     def _fix_first_part(part, boundary_marker):
