@@ -91,14 +91,9 @@ def test_soap_service_simple_request(create_client):
 		f"{url}#PytestAsync"
 	]
 	for action in action_variants:
-		resp = client.post(
-			url="/service",
-			content=request_content,
-			headers={
-				"SOAPAction": action,
-				"Content-Type": "text/xml"
-			}
-		)
+		headers = {"SOAPAction": action, "Content-Type": "text/xml"}
+		resp = client.post(url="/service", content=request_content, headers=headers)
+
 		assert resp.status_code == 200
 		response_content = resp.content.replace(b'\n', b'')
 		assert response_content == expected_response
@@ -108,14 +103,9 @@ def test_soap_service_multipart_request(create_multipart_client, multipart_data)
 	client: TestClient = create_multipart_client()
 	content, content_type = multipart_data
 
-	resp = client.post(
-		url="/service",
-		content=content,
-		headers={
-			"SOAPAction": "MultipartPytest",
-			"Content-Type": content_type
-		}
-	)
+	headers = {"SOAPAction": "MultipartPytest", "Content-Type": content_type}
+	resp = client.post(url="/service", content=content, headers=headers)
+
 	assert resp.status_code == 200
 	assert "multipart/related" in resp.headers["Content-Type"]
 
@@ -124,16 +114,38 @@ def test_soap_service_mixed_multipart_request(create_mixed_multipart_client, mix
 	client: TestClient = create_mixed_multipart_client()
 	content, content_type = mixed_multipart_data
 
-	resp = client.post(
-		url="/service",
-		content=content,
-		headers={
-			"SOAPAction": "MixedMultipartPytest",
-			"Content-Type": content_type
-		}
-	)
+	headers = {"SOAPAction": "MixedMultipartPytest", "Content-Type": content_type}
+	resp = client.post(url="/service", content=content, headers=headers)
+
 	assert resp.status_code == 200
 	assert "multipart/related" in resp.headers["Content-Type"]
+
+
+def test_soap_multipart_errors(create_mixed_multipart_client, mixed_multipart_data):
+	client: TestClient = create_mixed_multipart_client()
+	content, content_type = mixed_multipart_data
+	headers = {"SOAPAction": "MixedMultipartPytest", "Content-Type": content_type}
+
+	bad_content = content.replace(b'<329236228251>', b'<219236228251>')
+	resp = client.post(url="/service", content=bad_content, headers=headers)
+
+	assert resp.status_code == 400
+	err_msg = b"Duplicate Content-ID not allowed: 219236228251"
+	assert err_msg in resp.content
+
+	bad_content = content.replace(b'cid:329236228251', b'cid:219236228251')
+	resp = client.post(url="/service", content=bad_content, headers=headers)
+
+	assert resp.status_code == 400
+	err_msg = b"Duplicate Content-ID not allowed: 219236228251"
+	assert err_msg in resp.content
+
+	bad_content = content.replace(b'cid:329236228251', b'cid:00000000000')
+	resp = client.post(url="/service", content=bad_content, headers=headers)
+
+	assert resp.status_code == 400
+	err_msg = b"Content-ID missing from envelope: cid:329236228251"
+	assert err_msg in resp.content
 
 
 def test_soap_service_request_errors(create_client):
@@ -189,6 +201,30 @@ def test_soap_service_request_validation_error(create_client):
 	)
 	assert resp.status_code == 400
 	err_msg = b"Input should be a valid integer, unable to parse string as an integer"
+	assert err_msg in resp.content
+
+
+def test_soap_service_invalid_nsmap(create_client):
+	client: TestClient = create_client()
+	request_content = utils.linearize_xml("""
+		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:extra="extra">
+			<soapenv:Body>
+				<Request>
+					<Number>1234</Number>
+				</Request>
+			</soapenv:Body>
+		</soapenv:Envelope>
+	""")
+	resp = client.post(
+		url="/service",
+		content=request_content,
+		headers={
+			"SOAPAction": "PytestSync",
+			"Content-Type": "text/xml"
+		}
+	)
+	assert resp.status_code == 400
+	err_msg = b"<location>Body.content</location><reason>Field required</reason>"
 	assert err_msg in resp.content
 
 
