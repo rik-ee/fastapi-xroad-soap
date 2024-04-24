@@ -43,7 +43,8 @@ class SoapService(FastAPI):
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None,
 			fault_callback: t.Optional[t.Callable[[Request, Exception], None]] = None,
-			hide_ise_cause: bool = False
+			hide_ise_cause: bool = False,
+			debug: bool = False
 	) -> None:
 		self._name = name
 		self._tns = this_namespace
@@ -61,6 +62,7 @@ class SoapService(FastAPI):
 				content=wsdl_file
 			)
 		super().__init__(
+			debug=debug,
 			root_path=path,
 			lifespan=lifespan,
 			openapi_url=None,
