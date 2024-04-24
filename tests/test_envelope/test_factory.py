@@ -76,7 +76,7 @@ def test_factory_ser_without_header():
 	).replace(b'\n', b'')
 
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<CustomBody>

@@ -34,7 +34,7 @@ def test_soap_response_simple():
 
 	normalized = resp.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<SimpleResponse>
@@ -69,7 +69,7 @@ def test_soap_response_with_one_file():
 
 	normalized = modified_xml.encode().replace(b'\r\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<FileResponse>
@@ -110,7 +110,7 @@ def test_soap_response_with_two_files():
 
 	normalized = modified_xml.encode().replace(b'\r\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<FilesResponse>

@@ -37,7 +37,7 @@ def test_soap_fault():
 	fault = f.SoapFault()
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -58,7 +58,7 @@ def test_soap_fault_details():
 	fault = f.SoapFault(detail=ExtraDetail(text="asdfg"))
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -79,7 +79,7 @@ def test_client_fault():
 	fault = f.ClientFault("asdfg")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -97,7 +97,7 @@ def test_server_fault():
 	fault = f.ServerFault("qwerty")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -115,7 +115,7 @@ def test_invalid_method_fault():
 	fault = f.InvalidMethodFault("GET")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -133,7 +133,7 @@ def test_invalid_action_fault():
 	fault = f.InvalidActionFault("ExplodeServer")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -151,7 +151,7 @@ def test_missing_action_fault():
 	fault = f.MissingActionFault()
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -169,7 +169,7 @@ def test_invalid_content_type_fault():
 	fault = f.InvalidContentTypeFault(None)
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -187,7 +187,7 @@ def test_missing_body_fault():
 	fault = f.MissingBodyFault("AwesomeAction")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -205,7 +205,7 @@ def test_missing_header_fault():
 	fault = f.MissingHeaderFault("AwesomeAction")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -223,7 +223,7 @@ def test_missing_cid_fault():
 	fault = f.MissingCIDFault("cid:123456789")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -241,7 +241,7 @@ def test_duplicate_cid_fault():
 	fault = f.DuplicateCIDFault("cid:123456789")
 	body = fault.response.body.replace(b'\n', b'')
 	expected = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<soapenv:Fault>
@@ -266,7 +266,7 @@ def test_validation_fault():
 		fault = f.ValidationFault(ex)
 		body = fault.response.body.replace(b'\n', b'')
 		expected = utils.linearize_xml("""
-			<?xml version='1.0' encoding='utf-8' standalone='no'?>
+			<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 			<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 				<soapenv:Body>
 					<soapenv:Fault>

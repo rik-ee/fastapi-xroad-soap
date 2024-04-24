@@ -72,7 +72,7 @@ def test_soap_service_simple_request(create_client):
 		</soapenv:Envelope>
 	""")
 	expected_response = utils.linearize_xml("""
-		<?xml version='1.0' encoding='utf-8' standalone='no'?>
+		<?xml version='1.0' encoding='utf-8' standalone='yes'?>
 		<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
 			<soapenv:Body>
 				<Response>
