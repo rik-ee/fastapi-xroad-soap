@@ -58,7 +58,7 @@ _**Note 2:**_ You also need a third-party application for making HTTP requests. 
 you can also use any other software like [Postman](https://www.postman.com/downloads/) or [Insomnia](https://insomnia.rest/download). 
 The main requirement for the software is that it must support setting custom request headers and making HTTP POST requests with raw body content. 
 
-Next, create a `.py` file with the following contents:
+Next, create an `example.py` file with the following contents:
 ```python
 import uvicorn
 from fastapi_xroad_soap import SoapService, MessageBody
