@@ -5,7 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.org/project/devtools-cli/), **do not edit manually**._
 
 
-### [0.4.0] - 2024-04-24 - _latest_
+### [0.4.1] - 2024-04-24 - _latest_
+
+- SoapService now supports debug argument which is passed to the underlying FastAPI constructor
+- Standalone parameter in the envelope xml declaration is now automatically determined
+- Improved testing of multipart attachment transfer encodings and requests without bodies
+
+### [0.4.0] - 2024-04-24
 
 - Added a lot of logic for validating requests and responses
 - Fixed multiple bugs across codebase
@@ -49,6 +55,7 @@ _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.or
 
 - Initialized project
 
+[0.4.1]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.2.2...0.3.0
 [0.2.2]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.2.1...0.2.2
