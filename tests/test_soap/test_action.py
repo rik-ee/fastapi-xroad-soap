@@ -10,6 +10,8 @@
 #
 import pytest
 from pydantic_xml import element
+from fastapi.testclient import TestClient
+from fastapi_xroad_soap.internal import utils
 from fastapi_xroad_soap.internal.base import MessageBody
 from fastapi_xroad_soap.internal.envelope import (
 	GenericEnvelope, AnyBody, XroadHeader
@@ -98,3 +100,45 @@ def test_response_from(create_action):
 
 	with pytest.raises(TypeError):
 		action.response_from(AnyBody())
+
+
+def test_deserialize_without_body(create_header_model_client):
+	client: TestClient = create_header_model_client("1234567890")
+
+	request_content = utils.linearize_xml("""
+		<soapenv:Envelope 
+			xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+			xmlns:xro="http://x-road.eu/xsd/xroad.xsd" 
+			xmlns:iden="http://x-road.eu/xsd/identifiers" 
+			xmlns:exam="https://example.org">
+			<soapenv:Header>
+				<xro:userId>1234567890</xro:userId>
+				<xro:protocolVersion>0</xro:protocolVersion>
+				<xro:id>0</xro:id>
+				<xro:service iden:objectType="SERVICE">
+					<iden:xRoadInstance>0</iden:xRoadInstance>
+					<iden:memberClass>0</iden:memberClass>
+					<iden:memberCode>0</iden:memberCode>
+					<iden:subsystemCode>0</iden:subsystemCode>
+					<iden:serviceCode>0</iden:serviceCode>
+					<iden:serviceVersion>0</iden:serviceVersion>
+				</xro:service>
+				<xro:client iden:objectType="SUBSYSTEM">
+					<iden:xRoadInstance>0</iden:xRoadInstance>
+					<iden:memberClass>0</iden:memberClass>
+					<iden:memberCode>0</iden:memberCode>
+					<iden:subsystemCode>0</iden:subsystemCode>
+				</xro:client>
+			</soapenv:Header>
+		</soapenv:Envelope>
+	""")
+	resp = client.post(
+		url="/service",
+		content=request_content,
+		headers={
+			"SOAPAction": "Pytest",
+			"Content-Type": "text/xml"
+		}
+	)
+	assert resp.status_code == 200
+	assert resp.content == b''

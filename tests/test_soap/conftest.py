@@ -10,6 +10,7 @@
 #
 import pytest
 import typing as t
+from pydantic_xml import element
 from fastapi.testclient import TestClient
 from fastapi_xroad_soap.internal.storage import GlobalWeakStorage
 from fastapi_xroad_soap.internal.soap import SoapAction
@@ -24,7 +25,8 @@ __all__ = [
 	"fixture_create_action",
 	"fixture_create_client",
 	"fixture_create_multipart_client",
-	"fixture_create_mixed_multipart_client"
+	"fixture_create_mixed_multipart_client",
+	"fixture_create_header_model_client"
 ]
 
 
@@ -63,6 +65,7 @@ def fixture_create_client() -> t.Callable:
 
 		class PytestRequest(MessageBody, tag="Request"):
 			number = Integer(tag="Number")
+			value: t.Optional[str] = element(tag="Value", default=None)
 
 		class PytestResponse(MessageBody, tag="Response"):
 			number = Integer(tag="Number")
@@ -111,6 +114,20 @@ def fixture_create_mixed_multipart_client() -> t.Callable:
 			for item in body.files:
 				assert isinstance(item, SwaRef.File)
 			return MixedMultipartModel(files=body.files)
+
+		return TestClient(soap)
+	return closure
+
+
+@pytest.fixture(name="create_header_model_client", scope="function")
+def fixture_create_header_model_client() -> t.Callable:
+	def closure(user_id: str) -> TestClient:
+		soap = SoapService()
+
+		@soap.action("Pytest")
+		def handler(header: XroadHeader) -> None:
+			assert isinstance(header, XroadHeader)
+			assert header.user_id == user_id
 
 		return TestClient(soap)
 	return closure
