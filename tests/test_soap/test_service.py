@@ -101,13 +101,15 @@ def test_soap_service_simple_request(create_client):
 
 def test_soap_service_multipart_request(create_multipart_client, multipart_data):
 	client: TestClient = create_multipart_client()
-	content, content_type = multipart_data
 
-	headers = {"SOAPAction": "MultipartPytest", "Content-Type": content_type}
-	resp = client.post(url="/service", content=content, headers=headers)
+	for transfer_encoding in ["base64", "quoted-printable", "binary", "7bit"]:
+		content, content_type = multipart_data(transfer_encoding)
 
-	assert resp.status_code == 200
-	assert "multipart/related" in resp.headers["Content-Type"]
+		headers = {"SOAPAction": "MultipartPytest", "Content-Type": content_type}
+		resp = client.post(url="/service", content=content, headers=headers)
+
+		assert resp.status_code == 200
+		assert "multipart/related" in resp.headers["Content-Type"]
 
 
 def test_soap_service_mixed_multipart_request(create_mixed_multipart_client, mixed_multipart_data):

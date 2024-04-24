@@ -22,7 +22,7 @@ __all__ = [
 
 
 def test_multipart_decoder(multipart_data):
-	content, content_type = multipart_data
+	content, content_type = multipart_data()
 	decoder = MultipartDecoder(content, content_type)
 	envelope, file = decoder.parts
 
@@ -72,7 +72,7 @@ def test_multipart_decoder_error(multipart_data):
 	with pytest.raises(errors.MultipartBoundaryError):
 		MultipartDecoder(b"content", "text/plain")
 
-	content, content_type = multipart_data
+	content, content_type = multipart_data()
 	with pytest.raises(errors.InvalidSeparatorError):
 		bad_content = content.replace(b'\r\n\r\n', b'')
 		MultipartDecoder(bad_content, content_type)

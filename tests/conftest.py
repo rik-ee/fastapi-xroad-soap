@@ -58,36 +58,46 @@ def fixture_xroad_header() -> XroadHeader:
 
 
 @pytest.fixture(name="multipart_data", scope="session")
-def fixture_multipart_data() -> t.Tuple[bytes, str]:
-	content_type = '; '.join([
-		'multipart/related',
-		'type="text/xml"',
-		'start="<rootpart@soapui.org>"',
-		'boundary="----=_Part_29_1072688887.1713872993708"'
-	])
-	content = b''.join([
-		b'\r\n------=_Part_29_1072688887.1713872993708',
-		b'\r\nContent-Type: text/xml; charset=UTF-8',
-		b'\r\nContent-Transfer-Encoding: 8bit',
-		b'\r\nContent-ID: <rootpart@soapui.org>',
-		b'\r\n\r\n',
-		b'<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">',
-		b'\t<soapenv:Body>',
-		b'\t\t<Request>',
-		b'\t\t\t<File>cid:783266853352</File>',
-		b'\t\t</Request>',
-		b'\t</soapenv:Body>',
-		b'</soapenv:Envelope>',
-		b'\r\n------=_Part_29_1072688887.1713872993708',
-		b'\r\nContent-Type: text/plain; charset=us-ascii',
-		b'\r\nContent-Transfer-Encoding: 7bit',
-		b'\r\nContent-ID: <783266853352>',
-		b'\r\nContent-Disposition: attachment; name="test1.txt"',
-		b'\r\n\r\n',
-		b'lorem ipsum dolor sit amet',
-		b'\r\n------=_Part_29_1072688887.1713872993708--\r\n'
-	])
-	return content, content_type
+def fixture_multipart_data() -> t.Callable:
+	tr_enc = t.Literal["base64", "quoted-printable", "binary"]
+
+	def closure(transfer_encoding: tr_enc = "7bit") -> t.Tuple[bytes, str]:
+		attachment_content = b'lorem ipsum dolor sit amet'
+		if transfer_encoding == "base64":
+			attachment_content = b'bG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQ='
+		elif transfer_encoding == "quoted-printable":
+			attachment_content = b'lorem=20ipsum=20dolor=20sit=20amet'
+
+		content_type = '; '.join([
+			'multipart/related',
+			'type="text/xml"',
+			'start="<rootpart@soapui.org>"',
+			'boundary="----=_Part_29_1072688887.1713872993708"'
+		])
+		content = b''.join([
+			b'\r\n------=_Part_29_1072688887.1713872993708',
+			b'\r\nContent-Type: text/xml; charset=UTF-8',
+			b'\r\nContent-Transfer-Encoding: 8bit',
+			b'\r\nContent-ID: <rootpart@soapui.org>',
+			b'\r\n\r\n',
+			b'<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">',
+			b'\t<soapenv:Body>',
+			b'\t\t<Request>',
+			b'\t\t\t<File>cid:783266853352</File>',
+			b'\t\t</Request>',
+			b'\t</soapenv:Body>',
+			b'</soapenv:Envelope>',
+			b'\r\n------=_Part_29_1072688887.1713872993708',
+			b'\r\nContent-Type: text/plain; charset=us-ascii',
+			b'\r\nContent-Transfer-Encoding: ', transfer_encoding.encode(),
+			b'\r\nContent-ID: <783266853352>',
+			b'\r\nContent-Disposition: attachment; name="test1.txt"',
+			b'\r\n\r\n',
+			attachment_content,
+			b'\r\n------=_Part_29_1072688887.1713872993708--\r\n'
+		])
+		return content, content_type
+	return closure
 
 
 @pytest.fixture(name="mixed_multipart_data", scope="session")
