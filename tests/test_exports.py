@@ -18,8 +18,7 @@ from fastapi_xroad_soap.elements import (
 )
 from fastapi_xroad_soap.faults import (
 	SoapFault,
-	ClientFault,
-	ServerFault
+	ClientFault
 )
 from fastapi_xroad_soap.utils import (
 	FileSize,
@@ -34,7 +33,6 @@ __all__ = [
 	"SwaRef",
 	"SoapFault",
 	"ClientFault",
-	"ServerFault",
 	"FileSize",
 	"GlobalWeakStorage"
 ]
