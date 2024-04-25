@@ -27,6 +27,10 @@ class FileSize(ABC):
 	GB: t.Type[FileSizeGB]
 
 	def __init__(self, size: int = 1) -> None:
+		"""
+		This class is a container of KB, MB and GB child
+		classes and cannot be instantiated directly.
+		"""
 		if size < 0:
 			raise ValueError("File size cannot be a negative number")
 		elif not isinstance(size, int):
