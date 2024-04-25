@@ -8,15 +8,7 @@
 #
 #   SPDX-License-Identifier: EUPL-1.2
 #
-from .internal.soap import (
-	SoapFault,
-	ClientFault,
-	ServerFault
-)
+from .internal.soap import SoapFault, ClientFault
 
 
-__all__ = [
-	"SoapFault",
-	"ClientFault",
-	"ServerFault"
-]
+__all__ = ["SoapFault", "ClientFault"]

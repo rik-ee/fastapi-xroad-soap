@@ -42,6 +42,7 @@ class SoapFault(Exception):
 			detail: t.Optional[MessageBody] = None,
 			http_status_code: t.Optional[int] = 400
 	) -> None:
+		"""Base exception class of all exceptions raised by the library."""
 		fault_type = MessageBody
 		kwargs = dict(
 			faultcode=code,
@@ -64,11 +65,13 @@ class SoapFault(Exception):
 
 class ClientFault(SoapFault):
 	def __init__(self, ex: t.Union[str, Exception]) -> None:
+		"""Exception that is raised when the client has made an invalid request."""
 		super().__init__(string=str(ex))
 
 
 class ServerFault(SoapFault):
 	def __init__(self, ex: t.Union[str, Exception]) -> None:
+		"""Error response that is returned to the client on uncaught exceptions."""
 		super().__init__(
 			http_status_code=500,
 			string=str(ex),
