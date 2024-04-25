@@ -27,7 +27,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 packages = [
-    { include = "**/*", from = "fastapi_xroad_soap" }
+    { include = "fastapi_xroad_soap" }
 ]
 
 [tool.poetry.urls]
