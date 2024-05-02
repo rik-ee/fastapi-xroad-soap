@@ -110,8 +110,8 @@ def _generate_types(actions: t.Dict[str, SoapAction]) -> t.Dict:
 					elements=[
 						mod.Element(name="faultcode", type="string"),
 						mod.Element(name="faultstring", type="string"),
-						mod.Element(name="faultactor", type="string"),
-						mod.Element(name="detail", type="tns:FaultResponseDetail")
+						mod.Element(name="faultactor", type="string", min_occurs="0"),
+						mod.Element(name="detail", type="tns:FaultResponseDetail", min_occurs="0")
 					]
 				)
 			),

@@ -35,7 +35,7 @@ class GenericFault(*bases, tag="Fault", ns="soapenv", nsmap=ENV_NSMAP):
 	faultcode: str = element(tag="faultcode", ns='')
 	faultstring: str = element(tag="faultstring", ns='')
 	faultactor: t.Optional[str] = element(tag="faultactor", ns='', default=None)
-	detail: MessageBodyType = element(tag="detail", ns='', default=None)
+	detail: t.Optional[MessageBodyType] = element(tag="detail", ns='', default=None)
 
 
 class GenericBody(*bases, tag="Body", nsmap=ENV_NSMAP):

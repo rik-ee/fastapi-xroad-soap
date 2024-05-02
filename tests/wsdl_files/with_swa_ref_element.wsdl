@@ -21,8 +21,8 @@
         <sequence>
           <element name="faultcode" type="string"/>
           <element name="faultstring" type="string"/>
-          <element name="faultactor" type="string"/>
-          <element name="detail" type="tns:FaultResponseDetail"/>
+          <element name="faultactor" type="string" minOccurs="0"/>
+          <element name="detail" type="tns:FaultResponseDetail" minOccurs="0"/>
         </sequence>
       </complexType>
       <complexType name="FaultResponseDetail">
