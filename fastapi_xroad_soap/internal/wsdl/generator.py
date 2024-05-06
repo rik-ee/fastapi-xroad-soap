@@ -20,7 +20,7 @@ from . import helpers, models as mod
 __all__ = ["generate"]
 
 
-def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
+def generate(actions: t.Dict[str, SoapAction], name: str, tns: str, version: int) -> bytes:
 	wsdl_def = type(
 		"WSDLDefinitions", (mod.WSDLDefinitions,),
 		{}, nsmap={**WSDL_NSMAP, "tns": tns}
@@ -39,7 +39,7 @@ def generate(actions: t.Dict[str, SoapAction], name: str, tns: str) -> bytes:
 		),
 		messages=_generate_messages(actions),
 		port_type=_generate_port_type(actions),
-		binding=_generate_binding(actions),
+		binding=_generate_binding(actions, version),
 		service=mod.WSDLService(
 			port=mod.WSDLPortBinding(
 				address=mod.SOAPAddress()
@@ -190,7 +190,7 @@ def _generate_port_type(actions: t.Dict[str, SoapAction]) -> mod.WSDLPortType:
 	return mod.WSDLPortType(operations=ops)
 
 
-def _generate_binding(actions: t.Dict[str, SoapAction]) -> mod.WSDLBinding:
+def _generate_binding(actions: t.Dict[str, SoapAction], version: int) -> mod.WSDLBinding:
 	return mod.WSDLBinding(
 		binding=mod.SOAPBinding(),
 		operations=[
@@ -198,7 +198,8 @@ def _generate_binding(actions: t.Dict[str, SoapAction]) -> mod.WSDLBinding:
 				name=key,
 				operation=mod.SOAPOperationBinding(
 					soap_action=key
-				)
+				),
+				version=mod.XROADVersion(version=f"v{version}")
 			)
 			for key in actions.keys()
 		]
