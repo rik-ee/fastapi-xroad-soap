@@ -318,3 +318,10 @@ def test_soap_service_wsdl_override():
 	with pytest.raises(RuntimeError):
 		soap.regenerate_wsdl(force=False)
 	soap.regenerate_wsdl(force=True)
+
+
+def test_soap_service_not_found():
+	soap = SoapService(path="/service")
+	client = TestClient(soap)
+	response = client.get("/service_not_found?wsdl")
+	assert response.status_code == 404

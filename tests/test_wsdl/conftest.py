@@ -30,6 +30,7 @@ def fixture_wsdl_generator() -> t.Callable:
 		return wsdl.generate(
 			name="SoapService",
 			tns="https://example.org",
+			version=1,
 			actions=dict(
 				pytestAction=SoapAction(
 					name="pytestAction",
