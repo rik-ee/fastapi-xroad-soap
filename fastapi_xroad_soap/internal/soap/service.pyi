@@ -10,6 +10,7 @@
 #
 import typing as t
 from pathlib import Path
+from pydantic import Field, validate_call
 from fastapi.types import DecoratedCallable
 from starlette.types import Scope, Receive, Send, Lifespan
 from fastapi import Request, Response, FastAPI as ASGIApp
@@ -26,6 +27,8 @@ class FastAPI:
 
 class SoapService(FastAPI):
 	_name: str
+	_path: str
+	_version: int
 	_tns: str
 	_wsdl_response: t.Union[Response, None]
 	_wsdl_override: t.Optional[t.Union[str, Path]]
@@ -34,12 +37,14 @@ class SoapService(FastAPI):
 	_storage: GlobalWeakStorage
 	_actions: dict[str, SoapAction]
 
+	@validate_call
 	def __init__(
 			self,
 			*,
-			name: str = "SoapService",
-			path: str = "/service",
-			this_namespace: str = "https://example.org",
+			name: t.Annotated[str, Field(min_length=5)] = "SoapService",
+			path: t.Annotated[str, Field(min_length=1)] = "/service",
+			version: t.Annotated[int, Field(ge=1, le=99)] = 1,
+			this_namespace: t.Annotated[str, Field(min_length=5)] = "https://example.org",
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None,
 			fault_callback: t.Optional[t.Callable[[Request, Exception], None]] = None,

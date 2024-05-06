@@ -12,7 +12,7 @@ import inspect
 import typing as t
 from pathlib import Path
 from lxml.etree import LxmlError
-from pydantic import ValidationError
+from pydantic import Field, ValidationError, validate_call
 from fastapi import FastAPI, Request, Response
 from fastapi.types import DecoratedCallable
 from starlette.types import Lifespan
@@ -34,12 +34,14 @@ ActionType = t.Callable[[DecoratedCallable], DecoratedCallable]
 
 
 class SoapService(FastAPI):
+	@validate_call
 	def __init__(
 			self,
 			*,
-			name: str = "SoapService",
-			path: str = "/service",
-			this_namespace: str = "https://example.org",
+			name: t.Annotated[str, Field(min_length=5)] = "SoapService",
+			path: t.Annotated[str, Field(min_length=1)] = "/service",
+			version: t.Annotated[int, Field(ge=1, le=99)] = 1,
+			this_namespace: t.Annotated[str, Field(min_length=5)] = "https://example.org",
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None,
 			fault_callback: t.Optional[t.Callable[[Request, Exception], None]] = None,
@@ -47,6 +49,8 @@ class SoapService(FastAPI):
 			debug: bool = False
 	) -> None:
 		self._name = name
+		self._path = path
+		self._version = version
 		self._tns = this_namespace
 		self._wsdl_response = None
 		self._wsdl_override = wsdl_override
@@ -77,7 +81,9 @@ class SoapService(FastAPI):
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]:
 		try:
-			if "wsdl" in http_request.query_params:
+			if http_request.url.path != self._path:
+				return Response(status_code=404)
+			elif "wsdl" in http_request.query_params:
 				if self._wsdl_response is None:
 					self.regenerate_wsdl()
 				return self._wsdl_response
@@ -165,6 +171,7 @@ class SoapService(FastAPI):
 			content=wsdl.generate(
 				self._actions,
 				self._name,
-				self._tns
+				self._tns,
+				self._version
 			)
 		)
