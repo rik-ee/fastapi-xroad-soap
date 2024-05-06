@@ -5,7 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.org/project/devtools-cli/), **do not edit manually**._
 
 
-### [0.4.3] - 2024-05-02 - _latest_
+### [0.4.4] - 2024-05-06 - _latest_
+
+- SoapService now validates __init__ arguments
+- WSDL generator now supports setting X-Road service version
+- Added pytest to assert 404 response on mismatching URL path
+
+### [0.4.3] - 2024-05-02
 
 - Actor and detail elements in Fault complexType are now optional with minOccurs="0"
 
@@ -65,6 +71,7 @@ _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.or
 
 - Initialized project
 
+[0.4.4]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.3...0.4.4
 [0.4.3]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.1...0.4.2
 [0.4.1]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.0...0.4.1
