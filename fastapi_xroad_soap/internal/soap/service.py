@@ -81,7 +81,7 @@ class SoapService(FastAPI):
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]:
 		try:
-			if http_request.url.path != self._path:
+			if self._path != '/' and http_request.url.path != self._path:
 				return Response(status_code=404)
 			elif "wsdl" in http_request.query_params:
 				if self._wsdl_response is None:
