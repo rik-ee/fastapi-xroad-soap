@@ -10,6 +10,7 @@
 #
 from __future__ import annotations
 import typing as t
+from enum import Enum
 from pydantic_xml import model
 from pydantic import fields
 from pydantic import (
@@ -93,6 +94,8 @@ class MessageBody(model.BaseXmlModel, metaclass=CompositeMeta, search_mode='unor
 		for attr, spec in cls.model_specs().items():
 			expected = spec.internal_type or spec.element_type
 			value = data.get(attr)
+			if isinstance(value, Enum):
+				value = value.value
 
 			if spec.a8n_type == A8nType.LIST:
 				vld.validate_list_items(attr, value, spec)
