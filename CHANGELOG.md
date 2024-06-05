@@ -5,7 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.org/project/devtools-cli/), **do not edit manually**._
 
 
-### [0.4.5] - 2024-05-13 - _latest_
+### [0.4.6] - 2024-06-05 - _latest_
+
+- MessageBody subclasses now accept Enum classes as arguments on instantiation
+
+### [0.4.5] - 2024-05-13
 
 - Fixed minor bug which caused invalid 404 responses when mounting SoapService into another FastAPI app
 
@@ -75,6 +79,7 @@ _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.or
 
 - Initialized project
 
+[0.4.6]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.5...0.4.6
 [0.4.5]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.4...0.4.5
 [0.4.4]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.3...0.4.4
 [0.4.3]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.2...0.4.3
