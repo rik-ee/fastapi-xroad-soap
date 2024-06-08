@@ -19,6 +19,7 @@ from .action import SoapAction
 
 
 FuncOrCoro = t.Union[t.Callable[..., t.Any], t.Awaitable[t.Any]]
+FaultCallback = t.Callable[[Request, Exception], t.Union[None, t.Coroutine[t.Any, t.Any, None]]]
 
 
 class FastAPI:
@@ -32,7 +33,7 @@ class SoapService(FastAPI):
 	_tns: str
 	_wsdl_response: t.Union[Response, None]
 	_wsdl_override: t.Optional[t.Union[str, Path]]
-	_fault_callback: t.Optional[t.Callable[[Request, Exception], None]] = None
+	_fault_callback: t.Optional[FaultCallback] = None
 	_hide_ise_cause: bool = False
 	_storage: GlobalWeakStorage
 	_actions: dict[str, SoapAction]
@@ -47,7 +48,7 @@ class SoapService(FastAPI):
 			this_namespace: t.Annotated[str, Field(min_length=5)] = "https://example.org",
 			wsdl_override: t.Optional[t.Union[str, Path]] = None,
 			lifespan: t.Optional[Lifespan[FastAPI]] = None,
-			fault_callback: t.Optional[t.Callable[[Request, Exception], None]] = None,
+			fault_callback: t.Optional[FaultCallback] = None,
 			hide_ise_cause: bool = False
 	) -> None: ...
 
