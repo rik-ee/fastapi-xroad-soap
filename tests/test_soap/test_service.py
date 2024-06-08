@@ -265,8 +265,9 @@ def test_soap_service_invalid_multipart(create_client):
 def test_soap_service_fault_callback(create_client):
 	container = []
 
-	def fault_callback(http_request: Request, ex: Exception):
-		assert http_request.headers.get("SOAPAction") == "KABOOM"
+	def fault_callback(body: bytes, headers: dict, ex: Exception):
+		assert isinstance(body, bytes) and len(body) == 0
+		assert headers.get("SOAPAction") == "KABOOM"
 		assert isinstance(ex, Exception)
 		container.append(True)
 

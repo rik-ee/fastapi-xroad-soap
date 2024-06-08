@@ -81,6 +81,7 @@ class SoapService(FastAPI):
 		)
 
 	async def _soap_middleware(self, http_request: Request, _: t.Callable) -> t.Optional[Response]:
+		http_body = await http_request.body()
 		try:
 			if self._path != '/' and http_request.url.path != self._path:
 				return Response(status_code=404)
@@ -90,9 +91,8 @@ class SoapService(FastAPI):
 				return self._wsdl_response
 			elif http_request.method != "POST":
 				raise f.InvalidMethodFault(http_request.method)
-			action = self._determine_action(http_request)
 
-			http_body = await http_request.body()
+			action = self._determine_action(http_request)
 			content_type = http_request.headers.get("content-type")
 			envelope = await action.parse(http_body, content_type)
 
@@ -113,10 +113,8 @@ class SoapService(FastAPI):
 			).response
 
 		if self._fault_callback is not None:
-			await self._await_or_call(
-				self._fault_callback,
-				http_request, err
-			)
+			args = [http_body, http_request.headers, err]
+			await self._await_or_call(self._fault_callback, *args)
 		return resp
 
 	def _determine_action(self, http_request: Request) -> SoapAction:
