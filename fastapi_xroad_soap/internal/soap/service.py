@@ -107,9 +107,10 @@ class SoapService(FastAPI):
 		except (MultipartError, LxmlError) as ex:
 			err, resp = ex, f.ClientFault(ex).response
 		except Exception as ex:  # pragma: no cover
-			if self._hide_ise_cause:
-				ex = "Internal Server Error"
-			err, resp = ex, f.ServerFault(ex).response
+			err, resp = ex, f.ServerFault(
+				"Internal Server Error" if
+				self._hide_ise_cause else ex
+			).response
 
 		if self._fault_callback is not None:
 			await self._await_or_call(
