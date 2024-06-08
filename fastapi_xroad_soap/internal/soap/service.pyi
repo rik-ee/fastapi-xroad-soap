@@ -19,7 +19,7 @@ from .action import SoapAction
 
 
 FuncOrCoro = t.Union[t.Callable[..., t.Any], t.Awaitable[t.Any]]
-FaultCallback = t.Callable[[Request, Exception], t.Union[None, t.Coroutine[t.Any, t.Any, None]]]
+FaultCallback = t.Callable[[bytes, dict, Exception], t.Union[None, t.Coroutine[t.Any, t.Any, None]]]
 
 
 class FastAPI:

@@ -30,7 +30,7 @@ __all__ = ["SoapService"]
 
 SoapMiddleware: t.TypeAlias = BaseHTTPMiddleware
 FuncOrCoro = t.Union[t.Callable[..., t.Any], t.Awaitable[t.Any]]
-FaultCallback = t.Callable[[Request, Exception], t.Union[None, t.Coroutine[t.Any, t.Any, None]]]
+FaultCallback = t.Callable[[bytes, dict, Exception], t.Union[None, t.Coroutine[t.Any, t.Any, None]]]
 ActionType = t.Callable[[DecoratedCallable], DecoratedCallable]
 
 
