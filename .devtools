@@ -18,7 +18,7 @@
     "gh_repo": "fastapi-xroad-soap"
   },
   "version_cmd": {
-    "app_version": "0.4.6",
+    "app_version": "0.4.7",
     "track_descriptor": true,
     "track_chart": false,
     "components": [

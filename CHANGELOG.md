@@ -5,7 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.org/project/devtools-cli/), **do not edit manually**._
 
 
-### [0.4.6] - 2024-06-05 - _latest_
+### [0.4.7] - 2024-06-10 - _latest_
+
+- Hiding ISE cause will not hide the cause in the fault_callback
+- fault_callback is now provided with three arguments: body, headers and exception
+- Fixed fault_callback type annotations to match recent change of input arguments
+
+### [0.4.6] - 2024-06-05
 
 - MessageBody subclasses now accept Enum classes as arguments on instantiation
 
@@ -79,6 +85,7 @@ _NOTE: This changelog is generated and managed by [devtools-cli](https://pypi.or
 
 - Initialized project
 
+[0.4.7]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.6...0.4.7
 [0.4.6]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.5...0.4.6
 [0.4.5]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.4...0.4.5
 [0.4.4]: https://github.com/rik-ee/fastapi-xroad-soap/compare/0.4.3...0.4.4
